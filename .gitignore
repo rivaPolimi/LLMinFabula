@@ -29,7 +29,10 @@ render.experimental.xml
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
-prova.json
+#firebase-credentials
 
 # Android Profiling
 *.hprof
+
+#env file
+.env
