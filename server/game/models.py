@@ -101,7 +101,7 @@ class Poll(models.Model):
     REQUIRED_FIELDS = [game_id]
 
 class Vote(models.Model):
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
+    # poll_id is unique, in any case I can check if the game is correct from the poll instance
     poll_id = models.ForeignKey(Poll, on_delete=models.CASCADE)
     voter = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
     target = models.PositiveIntegerField()
