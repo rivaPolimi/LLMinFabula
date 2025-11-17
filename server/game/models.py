@@ -45,7 +45,7 @@ class Role(models.Model):
     hunter = models.PositiveSmallIntegerField(default=0)
     jailer = models.PositiveSmallIntegerField(default=0)
     copycat = models.PositiveSmallIntegerField(default=0)
-    sentry = models.PositiveSmallIntegerField(default=0)
+    guard = models.PositiveSmallIntegerField(default=0)
 
     def get_fields(self):
         return [(field.name, getattr(self, field.name)) for field in Role._meta.fields if not field.name == "game_id"]
