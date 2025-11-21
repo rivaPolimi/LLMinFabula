@@ -9,27 +9,48 @@ class CreateJoinScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GradientPage(
-      title: 'LLM in Fabula',
+      //title: 'LLM in Fabula',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min, //evita che la colonna riempia l’intero schermo
           children: [
-            PrimaryButton(
-              label: 'create a lobby',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HostSetupScreen()),
-                );
-              },
+            SizedBox(
+              width: 220,
+              height: 65,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  textStyle: const TextStyle(fontSize: 20, color: const Color(0xFFDCC8A0)),
+                  backgroundColor: const Color(0xFFDCC8A0),
+                  foregroundColor: const Color(0xFF003943)
+                ),
+                child: const Text('create a lobby'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HostSetupScreen()),
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 16),
-            PrimaryButton(
-              label: 'join a lobby',
-              onPressed: () {
-                // QUI ADESSO NON FA NIENTE, VA IMPLEMENTATO ANCORA IL JOIN ALLA LOBBY
-              },
+
+            const SizedBox(height: 40),
+
+            SizedBox(
+              width: 220,
+              height: 65,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 20, color: const Color(0xFFDCC8A0)),
+                    backgroundColor: const Color(0xFFDCC8A0),
+                    foregroundColor: const Color(0xFF003943)
+                ),
+                child: const Text('join a lobby'),
+                onPressed: () {
+
+                },
+              ),
             ),
+
           ],
         ),
       ),
