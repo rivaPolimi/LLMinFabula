@@ -31,9 +31,15 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
       body: SafeArea(
         child: Center(
           child: Container(
-            margin: const EdgeInsets.all(16),
+            /*margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(24),
-            width: 320, // larghezza fissa tipo "card" centrale
+            width: 320, // larghezza fissa tipo "card" centrale*/
+
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            width: double.infinity, // occupa quasi tutta la larghezza
+
+
             decoration: BoxDecoration(
               color: const Color(0xFFC9B486),
               borderRadius: BorderRadius.circular(8),
@@ -46,7 +52,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   child: Text(
                     'HOST',
                     style: TextStyle(
-                      color: Colors.black54,
+                      color: const Color(0xFF003943),
                       letterSpacing: 2,
                       fontSize: 14,
                     ),
@@ -56,7 +62,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
                 const Text(
                   'Insert the NUMBER OF PLAYERS',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
+                  style: TextStyle(color: const Color(0xFF003943), fontSize: 12),
                 ),
                 const SizedBox(height: 8),
 
@@ -95,27 +101,46 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                 const SizedBox(height: 24),
                 const Text(
                   'Select the SETTING for the game',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
+                  style: TextStyle(color: const Color(0xFF003943), fontSize: 12),
                 ),
                 const SizedBox(height: 12),
 
                 // le 4 icone dei ruoli
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: const [
-                    _RoleIcon(icon: Icons.pets, label: 'Wolf'),
-                    _RoleIcon(icon: Icons.visibility, label: 'Seer'),
-                    _RoleIcon(icon: Icons.healing, label: 'Doctor'),
-                    _RoleIcon(icon: Icons.people, label: 'Villager'),
-                  ],
+                // le 4 icone dei ruoli
+                //PER ORA LSCIAMO UNA GRID, VISTO CHE I RUOLI SONO 4 FISSI
+                //SE NE VANNO AGGIUNTI ALTRI O SI MODIFICA LA GRID (SE SONO FISSI) O METTO UN WRAPPED
+                SizedBox(
+                  height: 200,
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 8,
+                    //childAspectRatio: 2.2,
+                    childAspectRatio: 1.65,
+                    children: const [
+                      _RoleIcon(fgAsset: 'assets/icons/babyWolf.png'),
+                      _RoleIcon(fgAsset: 'assets/icons/wolf.png'),
+                      _RoleIcon(fgAsset: 'assets/icons/vampire.png'),
+                      _RoleIcon(fgAsset: 'assets/icons/zombie.png'),
+                    ],
+                  ),
                 ),
+
+
+
+
+
+
+
 
                 const SizedBox(height: 24),
 
                 // NICKNAME SOPRA
                 const Text(
                   'Choose your NICKNAME',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
+                  style: TextStyle(color: const Color(0xFF003943), fontSize: 12),
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -138,7 +163,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                 // PASSWORD SOTTO + TASTO COPIA
                 const Text(
                   'Create a PASSWORD',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
+                  style: TextStyle(color: const Color(0xFF003943), fontSize: 12),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -209,7 +234,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
-                    child: const Text('next'),
+                    child: const Text('next', style: TextStyle(color: const Color(0xFFDCC8A0)), ),
                   ),
                 ),
 
@@ -243,30 +268,59 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 }
 
 class _RoleIcon extends StatelessWidget {
-  final IconData icon;
-  final String label;
+  final String fgAsset;
 
-  const _RoleIcon({required this.icon, required this.label});
+  // diametro "desiderato" del cerchio, in pixel logici
+  final double circleDiameter;
+
+  // quanto è grande l'icona rispetto al cerchio (0–1)
+  final double iconScale;
+
+  const _RoleIcon({
+    super.key,
+    required this.fgAsset,
+    this.circleDiameter = 120, // MODIFICA QUESTO PER AVERE CERCHI PIÙ GRANDI / PICCOLI
+    this.iconScale = 0.6,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30, // PRIMA 22, ora solo più grande
-          backgroundColor: const Color(0xFFE4D2A6), // come avevi tu
-          child: Icon(
-            icon,
-            color: const Color(0xFF08313F),
-            size: 28, // un po' più grande per riempire il cerchio
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // quanto massimo può essere grande la cosa dentro la cella
+        final maxSize = constraints.biggest.shortestSide;
+
+        // il cerchio sarà il minimo tra quello che vuoi e lo spazio disponibile
+        final circleSize = circleDiameter <= maxSize ? circleDiameter : maxSize;
+
+        final charSize = circleSize * iconScale;
+
+        return Center(
+          child: SizedBox(
+            width: circleSize,
+            height: circleSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/moon.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Image.asset(
+                  fgAsset,
+                  width: charSize,
+                  height: charSize,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.black, fontSize: 11),
-        ),
-      ],
+        );
+
+
+      },
     );
   }
 }
