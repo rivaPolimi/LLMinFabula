@@ -1,11 +1,11 @@
 {
-    "name": "llm_in_fabula",
-    "short_name": "llm_in_fabula",
+    "name": "mockup1",
+    "short_name": "mockup1",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "realizzazione layout del mockup con classi gia divise",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

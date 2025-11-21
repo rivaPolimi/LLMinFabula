@@ -1,6 +1,6 @@
-# llm_in_fabula
+# mockup1
 
-A new Flutter project.
+realizzazione layout del mockup con classi gia divise
 
 ## Getting Started
 
