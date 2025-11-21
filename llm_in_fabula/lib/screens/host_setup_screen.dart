@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mockup1/screens/adult_settiings_screen.dart';
 import '../shared_widgets.dart';
 import 'lobby_screen.dart';
 
@@ -223,7 +224,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => LobbyScreen(players: players),
+                          builder: (_) => AdultSettingsScreen(/*players: players*/),
                         ),
                       );
                     },
