@@ -40,7 +40,7 @@ class Game(models.Model, GameFSMMixin):
         """
 
         return Player.objects.filter(game_id = self.id, is_dead = False)
-    
+
     def active_roles(self):
         """
         Return all the roles that have at least one living player.
@@ -124,6 +124,7 @@ class Poll(models.Model):
     REQUIRED_FIELDS = [game_id]
 
 class Vote(models.Model):
+    # poll_id is unique, in any case I can check if the game is correct from the poll instance
     poll_id = models.ForeignKey(Poll, on_delete=models.CASCADE)
     voter = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="voter")
     target = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="target")
