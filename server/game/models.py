@@ -1,7 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django_fsm import FSMField, transition
+from .fsm import GameFSMMixin
 
-class Game(models.Model):
+#TODO: riempire il db con i vari ruoli
+class Role(models.Model):
+    name = models.CharField(max_length=50)
+    order = models.PositiveIntegerField()
+    action_class = models.CharField(max_length=255, null=True, blank=True)
+
+
+class Game(models.Model, GameFSMMixin):
 
     SETTING_CHOICES = {
         ("child", "Child"),
@@ -10,47 +18,61 @@ class Game(models.Model):
         ("zombie", "Zombie"),
     }
 
-    PHASE_CHOICES = {
-        ("lobby", "Lobby"),
-        ("first_night", "First night wolf attack"), #first night is alone because only wolf can play
-        ("day", "Day"),
-        ("discussion", "Discussion"), #also includes vote
-        ("extra_vote", "Extra vote time"), #used in case someone didn't vote in the discussion phase
-        ("night", "Night")
-    }
-
-    num_players = models.IntegerField(default=5)
+    max_players = models.IntegerField(default=5)
     setting = models.CharField(
                     max_length=7,
                     choices=SETTING_CHOICES,
                     default="wolf")
     password = models.CharField(max_length=20)
-    is_full = models.BooleanField(default=False)
-    phase = models.CharField(
-                    max_length=15,
-                    choices=PHASE_CHOICES,
-                    default="lobby")
+    available_roles = models.JSONField()
+    
+    # FSM helper fields
+    state = FSMField(default="lobby", protected=True)
+    current_turn_role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL)
+
+    # Role choices TODO: needed?
     
     REQUIRED_FIELDS = [password]
+
+    def get_active_players(self):
+        """
+        Return all the alive players.
+        """
+
+        return Player.objects.filter(game_id = self.id, is_dead = False)
     
-class Role(models.Model):
-    #TODO: maybe setup a One-to-one relationship?
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
-    wolf = models.PositiveSmallIntegerField(default=1)
-    villager = models.PositiveSmallIntegerField(default=4)
-    seer = models.PositiveSmallIntegerField(default=0)
-    madman = models.PositiveSmallIntegerField(default=0)
-    courtesan = models.PositiveSmallIntegerField(default=0)
-    medium = models.PositiveSmallIntegerField(default=0)
-    hunter = models.PositiveSmallIntegerField(default=0)
-    jailer = models.PositiveSmallIntegerField(default=0)
-    copycat = models.PositiveSmallIntegerField(default=0)
-    sentry = models.PositiveSmallIntegerField(default=0)
+    def active_roles(self):
+        """
+        Return all the roles that have at least one living player.
+        """
 
-    def get_fields(self):
-        return [(field.name, getattr(self, field.name)) for field in Role._meta.fields if not field.name == "game_id"]
+        roles = (
+            self.players.filter(game_id = self.id, is_dead = False).values_list("role", flat=True).distinct()
+        )
+        return Role.objects.filter(id__in = roles).order_by("order")
 
-    REQUIRED_FIELDS = [game_id]
+    def next_active_role(self):
+        """
+        Return the next role in turn order which has alive players.
+        """
+
+        roles = list(self.active_roles())
+
+        if not roles:
+            return None
+        
+        # First turn after lynching
+        if self.current_turn_role is None:
+            return roles[0]
+        
+        # Normal progression
+        for i, role in enumerate(roles):
+            if role.id == self.current_turn_role.id and i + 1 < len(roles):
+                return roles[i + 1]
+            
+        # Reached end
+        return None
+    
 
 class Player(models.Model):
     
@@ -69,10 +91,11 @@ class Player(models.Model):
         ("ghost", "Ghost"), # fake role for dead players
     }
     
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game_id = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="players")
     nickname = models.CharField(max_length=20)
-    role = models.CharField(max_length=10, choices=ROLES_CHOICES, default="none")
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     is_dead = models.BooleanField(default=False)
+    protected = models.BooleanField(default=False)
 
     REQUIRED_FIELDS = [game_id, nickname]
 
@@ -101,14 +124,13 @@ class Poll(models.Model):
     REQUIRED_FIELDS = [game_id]
 
 class Vote(models.Model):
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
     poll_id = models.ForeignKey(Poll, on_delete=models.CASCADE)
-    voter = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
-    target = models.PositiveIntegerField()
+    voter = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="voter")
+    target = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="target")
 
     class Meta:
         unique_together = ("poll_id", "voter") # One vote per poll
 
-    REQUIRED_FIELDS = [game_id, poll_id, voter, target]
+    REQUIRED_FIELDS = [poll_id, voter, target]
 
 
