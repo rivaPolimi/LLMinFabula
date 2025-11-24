@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mockup1/screens/lobby_screen.dart';
-import 'package:mockup1/screens/role_tutorials_screen.dart';
+import 'package:llm_in_fabula/screens/lobby_screen.dart';
+import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
 
 import '../shared_widgets.dart';
 
