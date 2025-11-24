@@ -3,10 +3,7 @@ import 'package:mockup1/screens/lobby_screen.dart';
 import 'package:mockup1/screens/role_tutorials_screen.dart';
 
 import '../shared_widgets.dart';
-// Assicurati di importare i tuoi file corretti se necessario
-// import '../shared_widgets.dart';
-// import 'lobby_screen.dart';
-// import 'role_tutorials_screen.dart';
+
 
 class AdultSettingsScreen extends StatelessWidget {
   const AdultSettingsScreen({super.key});
@@ -127,8 +124,7 @@ class AdultSettingsScreen extends StatelessWidget {
                     // Dimensione UNICA per tutti i pulsanti della griglia
                     const double gridBtnSize = 62.0;
 
-                    // --- DEFINISCI QUI I TUOI 3 PERCORSI DIVERSI ---
-                    // Puoi aggiungerne quanti ne vuoi, la griglia si adatterà da sola.
+
                     final List<String> activeRoles = [
                       'assets/icons/wolf.png',       // Ruolo per la casella 0
                       'assets/icons/witch.png',      // Ruolo per la casella 1 (esempio)
