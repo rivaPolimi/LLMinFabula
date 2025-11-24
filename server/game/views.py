@@ -101,7 +101,7 @@ class StartGameView(APIView):
 
         # Generates introduction
         gen_introduction(game_id, game.setting)
-        #TODO: FIX RENDERLO COERENTE CON NUOVA FSM
-        transition(game.id)
+        game.next_phase()
+        game.save()
 
         return Response({"detail": "Game started"})

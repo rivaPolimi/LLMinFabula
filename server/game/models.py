@@ -30,7 +30,16 @@ class Game(models.Model, GameFSMMixin):
     state = FSMField(default="lobby", protected=True)
     current_turn_role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL)
 
-    # Role choices TODO: needed?
+    # Role choices
+    wolf_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    courtesan_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    hunter_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    jailer_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    guard_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    
+    # Target of the daily lynching
+    lynch_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+
     
     REQUIRED_FIELDS = [password]
 
@@ -72,10 +81,11 @@ class Game(models.Model, GameFSMMixin):
             
         # Reached end
         return None
-    
+
 
 class Player(models.Model):
     
+    #TODO: TOGLIERLI
     ROLES_CHOICES = {
         ("none", "None"),
         ("wolf", "Wolf"),

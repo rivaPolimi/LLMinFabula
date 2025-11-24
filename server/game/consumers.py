@@ -24,11 +24,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
         
-        # Group name
+        # Groups name
         self.group_all = f"game_{self.game_id}_all"
+        self.group_self = f"game_{self.game_id}_{self.player_id}" # Group used for personal notifications
         self.group_role = "none" #role not assigned yet
 
         await self.channel_layer.group_add(self.group_all, self.channel_name)
+        await self.channel_layer.group_add(self.group_self, self.channel_name)
 
         await self.accept()
 
@@ -86,5 +88,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             f"game_{self.game_id}_{poll.role}",
             {"type": "tally", "tally": tally}
         )
+
+    async def game_ended(self, event):
+        self.send_json({
+            "type": "game_ended",
+            "outcome": event["outcome"],
+        })
+
         
 

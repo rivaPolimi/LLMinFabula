@@ -1,4 +1,5 @@
 from django_fsm import transition
+from .utils import check_win, handle_win
 from .models import *
 
 #TODO: VANNO TOLTI MA LI TENGO QUI PER RICORDAMI COSA FANNO I VARI STATI
@@ -27,6 +28,7 @@ class GameFSMMixin:
 
     @transition(field=Game.state, source="lobby", target="first_night")
     def next_phase(self):
+
         pass
 
     @transition(field=Game.state, source="first_night", target="first_night_wolf")
@@ -53,7 +55,14 @@ class GameFSMMixin:
         pass
 
     @transition(field=Game.state, source="lynching", target="night")
-    def next_phase(self):
+    def next_phase(self, game):
+
+        result, winners = check_win(game)
+        if result:
+            game.state = "end"
+            game.save()
+            handle_win(game, winners)
+            return
         pass
 
     @transition(field=Game.state, source="night", target="night")
@@ -68,12 +77,3 @@ class GameFSMMixin:
         
         game.current_turn_role = next_role
         game.save()
-
-    # --- END GAME ---
-    @transition(field=Game.state, source="day", target="end")
-    def next_phase(self):
-        pass
-
-    @transition(field=Game.state, source="lynching", target="end")
-    def next_phase(self):
-        pass
