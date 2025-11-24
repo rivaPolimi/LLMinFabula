@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../shared_widgets.dart';
+//import '../shared_widgets.dart';
 import 'create_join_screen.dart';
 
 // 1.5) PLAY SCREEN (schermata centrale 'play with friends')
@@ -31,7 +31,7 @@ class PlayScreen extends StatelessWidget {
                 'LLM in Fabula',
                 style: TextStyle(
                   fontSize: 54,
-                  color: const Color(0xFFDCC8A0),
+                  color: Color(0xFFDCC8A0),
                   //fontWeight: FontWeight.bold,
                   decoration: TextDecoration.none,
                   fontFamily: 'JollyLodger-Regular'
@@ -42,14 +42,14 @@ class PlayScreen extends StatelessWidget {
                 'play with friends',
                 style: TextStyle(
                   fontSize: 20,
-                  color: const Color(0xFFDCC8A0),
+                  color:  Color(0xFFDCC8A0),
                     decoration: TextDecoration.none
                 ),
               ),
               SizedBox(height: 32),
               Text(
                 'tap to continue',
-                style: TextStyle(color: const Color(0xFFDCC8A0),
+                style: TextStyle(color:  Color(0xFFDCC8A0),
                     fontSize: 15,
                     decoration: TextDecoration.none,
                     fontStyle: FontStyle.italic

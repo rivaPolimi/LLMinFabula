@@ -19,7 +19,7 @@ class CreateJoinScreen extends StatelessWidget {
               height: 65,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 20, color: const Color(0xFFDCC8A0)),
+                  textStyle: const TextStyle(fontSize: 20, color:  Color(0xFFDCC8A0)),
                   backgroundColor: const Color(0xFFDCC8A0),
                   foregroundColor: const Color(0xFF003943)
                 ),
@@ -40,7 +40,7 @@ class CreateJoinScreen extends StatelessWidget {
               height: 65,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 20, color: const Color(0xFFDCC8A0)),
+                    textStyle: const TextStyle(fontSize: 20, color: Color(0xFFDCC8A0)),
                     backgroundColor: const Color(0xFFDCC8A0),
                     foregroundColor: const Color(0xFF003943)
                 ),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'adult_settings_screen.dart'; // Assicurati che l'import sia corretto (ho corretto il typo 'settiings')
-import '../shared_widgets.dart';
-import 'lobby_screen.dart';
+import 'adult_settings_screen.dart';
+// Rimosso import inutilizzato shared_widgets.dart
+// Rimosso import inutilizzato lobby_screen.dart
 
-// 4) Host: setup partita (numero giocatori, ruoli, password, nickname)
 class HostSetupScreen extends StatefulWidget {
   const HostSetupScreen({super.key});
 
@@ -27,22 +26,14 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC9B486), // beige di sfondo
+      backgroundColor: const Color(0xFFC9B486),
       body: SafeArea(
         child: Center(
-          // --- MODIFICA QUI: Aggiunto SingleChildScrollView ---
-          // Questo rende il contenuto scrollabile se supera l'altezza dello schermo
-          // o se appare la tastiera.
           child: SingleChildScrollView(
             child: Container(
-              /*margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(24),
-              width: 320, // larghezza fissa tipo "card" centrale*/
-
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              width: double.infinity, // occupa quasi tutta la larghezza
-
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: const Color(0xFFC9B486),
                 borderRadius: BorderRadius.circular(8),
@@ -69,7 +60,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  // DROPDOWN in stile "campo input"
+                  // DROPDOWN
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
@@ -109,8 +100,6 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   const SizedBox(height: 12),
 
                   // GRIGLIA RUOLI
-                  // Nota: GridView qui dentro funziona bene perché ha shrinkWrap: true
-                  // e physics: NeverScrollableScrollPhysics (lo scroll lo gestisce SingleChildScrollView esterno)
                   SizedBox(
                     height: 200,
                     child: GridView.count(
@@ -131,7 +120,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
                   const SizedBox(height: 24),
 
-                  // NICKNAME SOPRA
+                  // NICKNAME
                   const Text(
                     'Choose your NICKNAME',
                     style: TextStyle(color: Color(0xFF003943), fontSize: 12),
@@ -154,7 +143,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
                   const SizedBox(height: 16),
 
-                  // PASSWORD SOTTO + TASTO COPIA
+                  // PASSWORD
                   const Text(
                     'Create a PASSWORD',
                     style: TextStyle(color: Color(0xFF003943), fontSize: 12),
@@ -206,13 +195,6 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        final players = List.generate(
-                          _players,
-                              (i) => PlayerAvatarModel(
-                            name: 'Player ${i + 1}',
-                            isAlive: true,
-                          ),
-                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -266,18 +248,16 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
 class _RoleIcon extends StatelessWidget {
   final String fgAsset;
-  final double circleDiameter;
-  final double iconScale;
 
   const _RoleIcon({
-    super.key,
     required this.fgAsset,
-    this.circleDiameter = 120,
-    this.iconScale = 0.6,
   });
 
   @override
   Widget build(BuildContext context) {
+    const double circleDiameter = 120;
+    const double iconScale = 0.6;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxSize = constraints.biggest.shortestSide;
