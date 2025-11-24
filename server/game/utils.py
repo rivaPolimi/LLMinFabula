@@ -15,6 +15,20 @@ def get_players(game):
 
     return players
 
+def kill_player(game, player):
+    channel_layer = get_channel_layer()
+
+    player.is_dead = True
+    player.protected = False
+    ghost = Role.objects.filter(name = "ghost")
+    player.role = ghost
+    player.save()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game.id}_{player.id}",
+        {"type": "player.eliminated", "message": "You've been killed",},
+    )
+
 def check_win(game):
     """
     Check if somebody as won
@@ -25,11 +39,11 @@ def check_win(game):
         return True, game.lynch_target
     
     wolves = game.get_active_players().filter(role__name = "wolf")
-    villagers = game.get_active_players().filter(~Q(role__name = "wolf"))
+    villagers = game.get_active_players().exclude(role__name = "wolf")
 
     # Good guys win if no wolf remain
     if not wolves:
-        return True, game.get_active_players().filter(~Q(role__name = "madman") | ~Q(role__name = "copycat"))
+        return True, game.get_active_players().exclude(role__name = "madman").exclude(role__name = "copycat")
     
     # Wolves wins if they are equal or more than the good roles
     if len(wolves) >= len(villagers):
@@ -55,9 +69,12 @@ def handle_win(game, winners):
                 f"game_{game.id}_{player.id}",
                 {"type": "game.ended", "outcome": "lost",},
             )
-    clear_game(game)
+    clear_game(game.id)
 
-def clear_game(game):
+def clear_game(game_id):
     """
     Removes the game instance from the DB
     """
+    #TODO: se i poll li cancello appena finiti non serve cancellarli qui se no devo cancellarli qui
+    Player.objects.filter(game_id=game_id).delete()
+    Game.objects.filter(id = game_id).delete()

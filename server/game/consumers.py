@@ -89,6 +89,16 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             {"type": "tally", "tally": tally}
         )
 
+    async def player_eliminated(self, event):
+        # Remove player from the role channel
+        await self.channel_layer.group_discard(self.group_role, self.channel_layer)
+        self.group_role = ""
+        
+        self.send_json({
+            "type": "death",
+            "message": event["message"],
+        })
+
     async def game_ended(self, event):
         self.send_json({
             "type": "game_ended",

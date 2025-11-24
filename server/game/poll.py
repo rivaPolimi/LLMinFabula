@@ -47,3 +47,7 @@ def get_result(game_id, poll_id):
 
     winner = max(tally, key=tally.get) if tally else None
     return winner
+
+def clear_poll(game_id, poll_id):
+    Vote.objects.filter(game_id = game_id, poll_id = poll_id).delete()
+    #TODO: also delete poll?
