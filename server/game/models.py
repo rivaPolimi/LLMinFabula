@@ -96,7 +96,7 @@ class Player(models.Model):
         ("medium", "Medium"),
         ("hunter", "Hunter"),
         ("jailer", "Jailer"),
-        ("copycat", "Copycat"),
+        ("copycat", "Copycat"), #TODO: immune al jailer
         ("guard", "Guard"),
         ("ghost", "Ghost"), # fake role for dead players
     }
@@ -106,6 +106,9 @@ class Player(models.Model):
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     is_dead = models.BooleanField(default=False)
     protected = models.BooleanField(default=False)
+
+    # Queried by the medium to check the role of the player when he was alive
+    role_name = models.CharField(max_length=20, default=None) 
 
     REQUIRED_FIELDS = [game_id, nickname]
 
