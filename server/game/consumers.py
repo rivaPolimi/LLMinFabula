@@ -77,17 +77,53 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         except Poll.DoesNotExist:
             self.send_json({
                 "type": "Vote error",
-                "Text": "Poll not found, vote not registered",
+                "text": "Poll not found, vote not registered",
+            })
+
+        if not self.player.role.name == poll.role:
+            self.send_json({
+                "type": "Vote error",
+                "text": "Not allowed",
             })
         
-        record_vote(self.game_id, poll.id, self.player_id, content.get("target"))
-        tally = tally_votes(self.game_id, poll.id)
+        finished = record_vote(self.game_id, poll.id, self.player_id, content.get("target"))
+
+        if finished:
+            if poll.role == "all":
+                #TODO: gestire lynch (su FSM)
+
+
+                # send all player the vote result
+                self.channel_layer.group_send(
+                    f"game_{self.game_id}_all",
+                    {"type": "vote_result", "target": get_result(self.game_id, poll.id)}
+                )
+            else:
+                #TODO: si può mettere nella macchina a stati?
+                # get target
+                target = get_result(self.game_ended, poll.id)
+                targeted_player = Player.objects.get(id = target)
+
+                # call action handler
+                game = Game.objects.get(id = self.game_id)
+                handler = game.get_action_handler(poll.role)
+                outcome = handler.perform_action(self.player, targeted_player, game)
+
+                # Send outcome
+                self.channel_layer.group_send(
+                    f"game_{self.game_id}_{poll.role}",
+                    {"type": "action_result", "target": target, "outcome": outcome}
+                )
+
+            
+        else:
+            tally = tally_votes(self.game_id, poll.id)
         
-        # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
-        self.channel_layer.group_send(
-            f"game_{self.game_id}_{poll.role}",
-            {"type": "tally", "tally": tally}
-        )
+            # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
+            self.channel_layer.group_send(
+                f"game_{self.game_id}_{poll.role}",
+                {"type": "tally", "tally": tally}
+            )
 
     async def player_eliminated(self, event):
         # Remove player from the role channel

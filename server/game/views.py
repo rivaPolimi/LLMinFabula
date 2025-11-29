@@ -102,7 +102,7 @@ class StartGameView(APIView):
 
         # Generates introduction
         gen_introduction(game_id, game.setting)
-        game.next_phase()
+        game.fsm.first_night(game)
         game.save()
 
         return Response({"detail": "Game started"})

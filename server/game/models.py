@@ -1,6 +1,6 @@
 from django.db import models
-from django_fsm import FSMField, transition
-from .fsm import GameFSMMixin
+from django.utils.module_loading import import_string
+from .fsm import GameStateMachine
 
 #TODO: riempire il db con i vari ruoli
 class Role(models.Model):
@@ -9,7 +9,7 @@ class Role(models.Model):
     action_class = models.CharField(max_length=255, null=True, blank=True)
 
 
-class Game(models.Model, GameFSMMixin):
+class Game(models.Model):
 
     SETTING_CHOICES = {
         ("child", "Child"),
@@ -27,7 +27,8 @@ class Game(models.Model, GameFSMMixin):
     available_roles = models.JSONField()
     
     # FSM helper fields
-    state = FSMField(default="lobby", protected=True)
+    fsm = GameStateMachine
+    state = models.CharField(default="lobby")
     current_turn_role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL)
 
     # Role choices
@@ -81,7 +82,17 @@ class Game(models.Model, GameFSMMixin):
             
         # Reached end
         return None
+    
+    def get_action_handler(self, role_name):
+        role = Role.objects.get(name = role_name)
+        if not role or not role.action_class or not role == self.current_turn_role:
+            from .actions import NoActionHandler
+            return NoActionHandler()
+        
+        cls = import_string(role.action_class)
+        return cls()
 
+    
 
 class Player(models.Model):
     
@@ -134,7 +145,7 @@ class Poll(models.Model):
     duration = models.PositiveIntegerField(default=30)
     role = models.CharField(max_length=10, choices=ROLES_CHOICES, default="none")
 
-    REQUIRED_FIELDS = [game_id]
+    REQUIRED_FIELDS = [game_id, duration, role]
 
 class Vote(models.Model):
     # poll_id is unique, in any case I can check if the game is correct from the poll instance

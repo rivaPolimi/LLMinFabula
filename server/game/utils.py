@@ -15,6 +15,15 @@ def get_players(game):
 
     return players
 
+def send_poll(game, poll):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game.id}_{poll.role}",
+        {"type": "poll", "poll_id": poll.id, "duration": poll.duration}
+    )
+    pass
+
 def kill_player(game, player):
     channel_layer = get_channel_layer()
 

@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from .models import *
 from .utils import kill_player
 
@@ -8,6 +8,9 @@ class BaseActionHandler:
     """
 
     def perform_action(self, acting_player, target_player, game):
+        """
+        Perform the role-specific action.
+        """
         raise NotImplementedError()
     
     def valid_target(self, acting_player, game):
@@ -21,8 +24,7 @@ class BaseActionHandler:
         Some roles may not need to act every night.
         """
         return True
-    
-#TODO: Implement role specific action handlers
+
 
 class NoActionHandler(BaseActionHandler):
     """
@@ -32,6 +34,7 @@ class NoActionHandler(BaseActionHandler):
     def perform_action(self, acting_player, target_player, game):
         return
     
+
 class WolfActionHandler(BaseActionHandler):
     """
     Every night Wolves choose one player to kill.
@@ -66,6 +69,7 @@ class WolfActionHandler(BaseActionHandler):
     def valid_target(self, acting_player, game):
         return game.get_active_players().exclude(role__name = "wolf")
     
+
 class CourtesanActionHandler(BaseActionHandler):
     """
     Every night the Courtesan can protect one player, but if wolves check the courtesan house, they both die.
@@ -77,9 +81,7 @@ class CourtesanActionHandler(BaseActionHandler):
             game.courtesan_target = None
             return "Jailer blocked your ability"
 
-        if (not target_player in self.valid_target(acting_player, game) or 
-            target_player.id == acting_player.id or 
-            target_player.id == game.courtesan_target.id):
+        if not target_player in self.valid_target(acting_player, game):
             game.courtesan_target = None
             return "No one was protected, invalid target"
         
@@ -87,6 +89,10 @@ class CourtesanActionHandler(BaseActionHandler):
         game.courtesan_target = target_player
         
         return "Target protected"
+
+    def valid_target(self, acting_player, game):
+        return super().valid_target(acting_player, game).exclude(id == acting_player.id).exclude(id == game.courtesan_target.id)
+
 
 class GuardActionHandler(BaseActionHandler):
     """
@@ -98,9 +104,7 @@ class GuardActionHandler(BaseActionHandler):
             game.guard_target = None
             return "Jailer blocked your ability"
         
-        if(not target_player in self.valid_target(acting_player, game) or
-           target_player.id == acting_player.id or
-           target_player.id == game.guard_target.id):
+        if not target_player in self.valid_target(acting_player, game):
             game.guard_target = None
             return "No one was protected, invalid target"
         
@@ -109,8 +113,10 @@ class GuardActionHandler(BaseActionHandler):
 
         return "Target protected"
     
-#TODO: serve? In teoria no se salvo la sua scelta nel db appena vota. Inoltre non modifica nulla nel db, 
-#       succede qualcosa solo se muore, può anche votare più volte la stessa persona
+    def valid_target(self, acting_player, game):
+        return super().valid_target(acting_player, game).exclude(id == acting_player.id).exclude(id == game.guard_target.id)
+
+
 class HunterActionHandler(BaseActionHandler):
     """
     Every night the Hunter chooses a target. If the wolves kill the hunter he will shoot his target.
@@ -121,13 +127,16 @@ class HunterActionHandler(BaseActionHandler):
             game.hunter_target = None
             return "Jailer blocked your ability"
         
-        if (not target_player in self.valid_target(acting_player, game) or 
-            target_player.id == acting_player.id):
+        if not target_player in self.valid_target(acting_player, game):
             game.hunter_target = None
             return "No one is targeted, invalid target"
         
         game.hunter_target = target_player
         return "Target aimed"
+    
+    def valid_target(self, acting_player, game):
+        return super().valid_target(acting_player, game).exclude(id == acting_player.id)
+
 
 class JailerActionHandler(BaseActionHandler):
     """
@@ -135,17 +144,20 @@ class JailerActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player, target_player, game):
-        if (not target_player in self.valid_target(acting_player, game) or
-            acting_player.id == target_player.id):
+        if not target_player in self.valid_target(acting_player, game):
             game.jailer_target = None
             return "No one has been put in jail tonight, invalid target"
         
         game.jailer_target = target_player
         target_player.protected = True
         
-        #TODO: senda la notifica dove chiami questa funzione
+        #TODO: senda la notifica
         return "Player in jail"
     
+    def valid_target(self, acting_player, game):
+        return super().valid_target(acting_player, game).exclude(id == acting_player.id)
+
+
 class SeerActionHandler(BaseActionHandler):
     """
     Every night the Seer chooses a player and he is revealed if his target is a wolf or a villager.
@@ -162,7 +174,8 @@ class SeerActionHandler(BaseActionHandler):
             return "wolf"
         else:
             return "villager"
-        
+
+
 class MediumActionHandler(BaseActionHandler):
     """
     Every night the Medium chooses a dead player and asks him if he was a wolf or not.
@@ -179,7 +192,8 @@ class MediumActionHandler(BaseActionHandler):
     
     def valid_target(self, acting_player, game):
         return Player.objects.filter(game_id = game.id, is_dead = True)
-    
+
+
 class CopycatActionHandler(BaseActionHandler):
     """
     Every night the Copycat chooses one player. If his target is a wolf the Copycat becomes a wolf.
@@ -190,7 +204,9 @@ class CopycatActionHandler(BaseActionHandler):
             return "No one copied"
         
         if target_player.role.name == "wolf":
-            #TODO: change role
+            role = get_object_or_404(Role, name="wolf")
+            acting_player.role = role
+            acting_player.role_name = "wolf"
             return "You are now a wolf"
         else:
             return "No one copied"
