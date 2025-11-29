@@ -1,6 +1,8 @@
 
 
 
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'adult_settings_screen.dart';
@@ -14,6 +16,10 @@ class HostSetupScreen extends StatefulWidget {
 
 class _HostSetupScreenState extends State<HostSetupScreen> {
   int _players = 8;
+
+  // Indice del ruolo selezionato (-1 = nessuno)
+  int _selectedRoleIndex = -1;
+
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
 
@@ -100,7 +106,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // GRIGLIA RUOLI (Aggiornata con RoleButton)
+                  // GRIGLIA RUOLI
                   SizedBox(
                     height: 200,
                     child: GridView.count(
@@ -111,34 +117,10 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                       mainAxisSpacing: 8,
                       childAspectRatio: 1.65,
                       children: [
-                        Center(
-                          child: RoleButton(
-                            size: 90,
-                            iconAsset: 'assets/icons/babyWolf.png',
-                            onTap: () {}, // Click vuoto
-                          ),
-                        ),
-                        Center(
-                          child: RoleButton(
-                            size: 90,
-                            iconAsset: 'assets/icons/wolf.png',
-                            onTap: () {},
-                          ),
-                        ),
-                        Center(
-                          child: RoleButton(
-                            size: 90,
-                            iconAsset: 'assets/icons/vampire.png',
-                            onTap: () {},
-                          ),
-                        ),
-                        Center(
-                          child: RoleButton(
-                            size: 90,
-                            iconAsset: 'assets/icons/zombie.png',
-                            onTap: () {},
-                          ),
-                        ),
+                        _buildSelectableRole(0, 'assets/icons/babyWolf.png'),
+                        _buildSelectableRole(1, 'assets/icons/wolf.png'),
+                        _buildSelectableRole(2, 'assets/icons/vampire.png'),
+                        _buildSelectableRole(3, 'assets/icons/zombie.png'),
                       ],
                     ),
                   ),
@@ -269,31 +251,70 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
       ),
     );
   }
+
+  Widget _buildSelectableRole(int index, String asset) {
+    return Center(
+      child: RoleButton(
+        size: 90,
+        iconAsset: asset,
+        isSelected: _selectedRoleIndex == index,
+        onTap: () {
+          setState(() {
+            _selectedRoleIndex = index;
+          });
+        },
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------
-// NUOVO WIDGET UNIFICATO: RoleButton
-// (Copiato da AdultSettingsScreen per coerenza)
+// WIDGET ROLE BUTTON PERFETTO (Usa DecorationImage)
 // ---------------------------------------------------------
 
 class RoleButton extends StatelessWidget {
   final double size;
-  final String? iconAsset; // Se null, disegna il cerchio vuoto
-  final VoidCallback? onTap; // Funzione al click
+  final String? iconAsset;
+  final VoidCallback? onTap;
+  final bool isSelected;
 
   const RoleButton({
     super.key,
     required this.size,
     this.iconAsset,
     this.onTap,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // --- CONFIGURAZIONE STILI ---
-    const borderColor = Color(0xFF5D4D33); // Marrone/Bronzo scuro
-    const emptyFillColor = Color(0xFFDCC8A0); // Beige scuro per slot vuoti
-    const double borderWidth = 1.7;
+    // 1. STILI
+    final borderColor = isSelected
+        ? const Color(0xFF003943) // Blu scuro se selezionato
+        : const Color(0xFF5D4D33); // Marrone se normale
+
+    final double borderWidth = isSelected ? 4.0 : 1.0;
+    const emptyFillColor = Color(0xFFDCC8A0);
+
+    // 2. CONFIGURAZIONE DECORAZIONE (Qui avviene la magia)
+    final decoration = BoxDecoration(
+      shape: BoxShape.circle,
+      // Il bordo viene disegnato esattamente sul perimetro
+      border: Border.all(
+        color: borderColor,
+        width: borderWidth,
+      ),
+      // SE C'È L'ASSET: Imposta l'immagine della luna come sfondo del cerchio.
+      // BoxFit.cover assicura che riempia tutto lo spazio senza lasciare buchi.
+      image: iconAsset != null
+          ? const DecorationImage(
+        image: AssetImage('assets/images/moon2.png'),
+        fit: BoxFit.cover,
+      )
+          : null,
+      // SE NON C'È L'ASSET: Usa il colore solido beige
+      color: iconAsset == null ? emptyFillColor : null,
+    );
 
     return SizedBox(
       width: size,
@@ -302,63 +323,31 @@ class RoleButton extends StatelessWidget {
         alignment: Alignment.center,
         children: [
 
-          // 1. SFONDO (Luna o Colore Piatto)
-          if (iconAsset != null) ...[
-            // --- CASO PIENO (Luna) ---
-            // Usiamo Transform.scale per ingrandire appena l'immagine
-            // e farla finire sotto il bordo (evita spazi bianchi)
-            Transform.scale(
-              scale: 1.25,
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/moon.png',
-                  width: size,
-                  height: size,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            // Icona del personaggio sopra la luna
-            Image.asset(
-              iconAsset!,
-              width: size * 0.55, // L'icona è circa il 55% del cerchio
-              height: size * 0.55,
-              fit: BoxFit.contain,
-            ),
-          ] else ...[
-            // --- CASO VUOTO (Colore) ---
-            Container(
-              width: size,
-              height: size,
-              decoration: const BoxDecoration(
-                color: emptyFillColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-
-          // 2. BORDO (Sempre presente e sopra allo sfondo)
+          // LIVELLO 1: Sfondo (Luna o Colore) + Bordo UNIFICATI
           Container(
             width: size,
             height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: borderColor,
-                width: borderWidth,
-              ),
-            ),
+            decoration: decoration, // Usa la decorazione definita sopra
           ),
 
-          // 3. INTERAZIONE (Effetto Click)
-          // Un Material trasparente con InkWell per l'effetto "onda" al tocco
+          // LIVELLO 2: Icona Personaggio (Lupo, ecc.)
+          // Disegnata sopra lo sfondo
+          if (iconAsset != null)
+            Image.asset(
+              iconAsset!,
+              width: size * 0.55,
+              height: size * 0.55,
+              fit: BoxFit.contain,
+            ),
+
+          // LIVELLO 3: Interazione (Ripple Effect)
           Material(
             color: Colors.transparent,
             shape: const CircleBorder(),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              onTap: onTap ?? () {}, // Gestisce il tap
-              splashColor: Colors.white24, // Colore dell'effetto click
+              onTap: onTap ?? () {},
+              splashColor: Colors.white24,
               child: SizedBox(
                 width: size,
                 height: size,
