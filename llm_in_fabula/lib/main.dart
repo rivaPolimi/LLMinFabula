@@ -5,7 +5,7 @@ void main() {
   runApp(const MyApp());
 }
 
-// APP + TEMA BASE
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        fontFamily: 'Roboto', // poi lo cambi col font che hai importato
+        fontFamily: 'Roboto',
         useMaterial3: true,
       ),
       home: const PlayScreen(),
