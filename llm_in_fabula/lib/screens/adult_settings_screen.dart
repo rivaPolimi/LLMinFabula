@@ -1,12 +1,30 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
-
 import '../shared_widgets.dart';
 
-
-class AdultSettingsScreen extends StatelessWidget {
+class AdultSettingsScreen extends StatefulWidget {
   const AdultSettingsScreen({super.key});
+
+  @override
+  State<AdultSettingsScreen> createState() => _AdultSettingsScreenState();
+}
+
+class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
+  // Variabile per tracciare quale slot è selezionato.
+  // -1: Nessuno
+  // 0: Primo ruolo primario (sx)
+  // 1: Secondo ruolo primario (dx)
+  // 2+: Ruoli nella griglia
+  int _selectedSlotId = -1;
+
+  void _handleSelection(int id) {
+    setState(() {
+      _selectedSlotId = id;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +57,10 @@ class AdultSettingsScreen extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // Naviga alla schermata dei tutorial ruoli
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>  RoleTutorialsScreen(),
+                                builder: (_) => const RoleTutorialsScreen(),
                               ),
                             );
                           },
@@ -51,12 +68,13 @@ class AdultSettingsScreen extends StatelessWidget {
                           label: const Text('Roles'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF003943),
-                            foregroundColor: Color(0xFFDCC8A0),
+                            foregroundColor: const Color(0xFFDCC8A0),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 6,
                             ),
-                            textStyle: const TextStyle(fontSize: 12, color: Color(0xFFDCC8A0)),
+                            textStyle: const TextStyle(
+                                fontSize: 12, color: Color(0xFFDCC8A0)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -82,18 +100,20 @@ class AdultSettingsScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Ruolo Primario 1
-                    RoleButton(
-                      size: 80, // Dimensione specifica per i ruoli in alto
-                      iconAsset: 'assets/icons/wolf.png',
-                      onTap: () => debugPrint("Primary 1 clicked"),
-                    ),
-                    const SizedBox(width: 24),
-                    // Ruolo Primario 2
+                    // Ruolo Primario 1 (ID: 0)
                     RoleButton(
                       size: 80,
                       iconAsset: 'assets/icons/wolf.png',
-                      onTap: () => debugPrint("Primary 2 clicked"),
+                      isSelected: _selectedSlotId == 0,
+                      onTap: () => _handleSelection(0),
+                    ),
+                    const SizedBox(width: 24),
+                    // Ruolo Primario 2 (ID: 1)
+                    RoleButton(
+                      size: 80,
+                      iconAsset: 'assets/icons/wolf.png',
+                      isSelected: _selectedSlotId == 1,
+                      onTap: () => _handleSelection(1),
                     ),
                   ],
                 ),
@@ -110,9 +130,7 @@ class AdultSettingsScreen extends StatelessWidget {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  // Padding laterale per centrare e dimensionare la griglia
                   padding: const EdgeInsets.symmetric(horizontal: 45),
-
                   itemCount: 12,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
@@ -121,19 +139,17 @@ class AdultSettingsScreen extends StatelessWidget {
                     childAspectRatio: 1,
                   ),
                   itemBuilder: (context, index) {
-                    // Dimensione UNICA per tutti i pulsanti della griglia
                     const double gridBtnSize = 62.0;
 
+                    // Calcoliamo un ID univoco per la griglia partendo da 2
+                    final int currentSlotId = index + 2;
 
                     final List<String> activeRoles = [
-                      'assets/icons/wolf.png',       // Ruolo per la casella 0
-                      'assets/icons/witch.png',      // Ruolo per la casella 1 (esempio)
-                      'assets/icons/seer.png',       // Ruolo per la casella 2 (esempio)
+                      'assets/icons/wolf.png',
+                      'assets/icons/witch.png',
+                      'assets/icons/seer.png',
                     ];
 
-                    // LOGICA:
-                    // Se l'indice attuale (index) è inferiore al numero di ruoli nella lista,
-                    // prendiamo l'icona corrispondente. Altrimenti lasciamo null (vuoto).
                     final String? asset = index < activeRoles.length
                         ? activeRoles[index]
                         : null;
@@ -142,7 +158,8 @@ class AdultSettingsScreen extends StatelessWidget {
                       child: RoleButton(
                         size: gridBtnSize,
                         iconAsset: asset,
-                        onTap: () => debugPrint("Grid item $index clicked"),
+                        isSelected: _selectedSlotId == currentSlotId,
+                        onTap: () => _handleSelection(currentSlotId),
                       ),
                     );
                   },
@@ -150,12 +167,11 @@ class AdultSettingsScreen extends StatelessWidget {
 
                 const SizedBox(height: 40),
 
-                // --- FOOTER BUTTONS (Invariato) ---
+                // --- FOOTER BUTTONS ---
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
-                      // 1. Genera i dati di prova (8 giocatori)
                       final players = List.generate(
                         8,
                             (i) => PlayerAvatarModel(
@@ -164,7 +180,6 @@ class AdultSettingsScreen extends StatelessWidget {
                         ),
                       );
 
-                      // 2. Naviga alla LobbyScreen passando i giocatori
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -179,7 +194,9 @@ class AdultSettingsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
-                    child: const Text('create lobby', style: TextStyle(fontSize: 16, color: Color(0xFFDCC8A0))),
+                    child: const Text('create lobby',
+                        style:
+                        TextStyle(fontSize: 16, color: Color(0xFFDCC8A0))),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -208,28 +225,51 @@ class AdultSettingsScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------
-// NUOVO WIDGET UNIFICATO: RoleButton
-// Sostituisce sia MoonRoleIcon che EmptyRoleCircle
+// WIDGET ROLE BUTTON (Versione Pulita con DecorationImage)
 // ---------------------------------------------------------
 
 class RoleButton extends StatelessWidget {
   final double size;
-  final String? iconAsset; // Se null, disegna il cerchio vuoto
-  final VoidCallback? onTap; // Funzione al click
+  final String? iconAsset;
+  final VoidCallback? onTap;
+  final bool isSelected;
 
   const RoleButton({
     super.key,
     required this.size,
     this.iconAsset,
     this.onTap,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // --- CONFIGURAZIONE STILI ---
-    const borderColor = Color(0xFF5D4D33); // Marrone/Bronzo scuro
-    const emptyFillColor = Color(0xFFDCC8A0); // Beige scuro per slot vuoti
-    const double borderWidth = 1.7;
+    // 1. CONFIGURAZIONE STILI
+    final borderColor = isSelected
+        ? const Color(0xFF003943) // Colore SELEZIONATO
+        : const Color(0xFF5D4D33); // Colore NORMALE
+
+    final double borderWidth = isSelected ? 4.0 : 1.0;
+    const emptyFillColor = Color(0xFFDCC8A0);
+
+    // 2. CONFIGURAZIONE DECORAZIONE
+    // Usa l'immagine ritagliata come sfondo
+    final decoration = BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: borderColor,
+        width: borderWidth,
+      ),
+      // Immagine di sfondo
+      image: iconAsset != null
+          ? const DecorationImage(
+        image: AssetImage('assets/images/moon2.png'),
+        fit: BoxFit.cover,
+      )
+          : null,
+      // Colore di riempimento se non c'è immagine
+      color: iconAsset == null ? emptyFillColor : null,
+    );
 
     return SizedBox(
       width: size,
@@ -238,63 +278,30 @@ class RoleButton extends StatelessWidget {
         alignment: Alignment.center,
         children: [
 
-          // 1. SFONDO (Luna o Colore Piatto)
-          if (iconAsset != null) ...[
-            // --- CASO PIENO (Luna) ---
-            // Usiamo Transform.scale per ingrandire appena l'immagine
-            // e farla finire sotto il bordo (evita spazi bianchi)
-            Transform.scale(
-              scale: 1.25,
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/moon.png',
-                  width: size,
-                  height: size,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            // Icona del personaggio sopra la luna
-            Image.asset(
-              iconAsset!,
-              width: size * 0.55, // L'icona è circa il 55% del cerchio
-              height: size * 0.55,
-              fit: BoxFit.contain,
-            ),
-          ] else ...[
-            // --- CASO VUOTO (Colore) ---
-            Container(
-              width: size,
-              height: size,
-              decoration: const BoxDecoration(
-                color: emptyFillColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-
-          // 2. BORDO (Sempre presente e sopra allo sfondo)
+          // LIVELLO 1: Cerchio Sfondo + Bordo
           Container(
             width: size,
             height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: borderColor,
-                width: borderWidth,
-              ),
-            ),
+            decoration: decoration,
           ),
 
-          // 3. INTERAZIONE (Effetto Click)
-          // Un Material trasparente con InkWell per l'effetto "onda" al tocco
+          // LIVELLO 2: Icona Personaggio
+          if (iconAsset != null)
+            Image.asset(
+              iconAsset!,
+              width: size * 0.55,
+              height: size * 0.55,
+              fit: BoxFit.contain,
+            ),
+
+          // LIVELLO 3: Effetto Click
           Material(
             color: Colors.transparent,
             shape: const CircleBorder(),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              onTap: onTap ?? () {}, // Gestisce il tap
-              splashColor: Colors.white24, // Colore dell'effetto click
+              onTap: onTap ?? () {},
+              splashColor: Colors.white24,
               child: SizedBox(
                 width: size,
                 height: size,
