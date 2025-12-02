@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from .models import *
 from .utils import kill_player
 
@@ -34,7 +36,7 @@ class NoActionHandler(BaseActionHandler):
     def perform_action(self, acting_player, target_player, game):
         return
     
-
+#TODO: forse meglio spostare la logica in una funzione resolve_night e usare questa solo per settare wolf_target
 class WolfActionHandler(BaseActionHandler):
     """
     Every night Wolves choose one player to kill.
@@ -151,7 +153,12 @@ class JailerActionHandler(BaseActionHandler):
         game.jailer_target = target_player
         target_player.protected = True
         
-        #TODO: senda la notifica
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"game_{game.id}_{target_player.id}",
+            {"type": "player.arrested", "message": "Jailer arrested you", "game_id": game.id}
+        )
+
         return "Player in jail"
     
     def valid_target(self, acting_player, game):

@@ -4,13 +4,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import *
+#from .models import *
 from .utils import *
 from .narrator import *
 #from .serializers import GameSerializer, JoinSerializer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateGameView(APIView):
 
     def post(self, request):
@@ -30,12 +33,12 @@ class CreateGameView(APIView):
         game.save()
     
         player = Player.objects.create(
-            game_id = game.id,
+            game = game,
             nickname = nick
         )
         player.save()
 
-        #TODO: differenza tra admin e non controllata sul client
+        #TODO: differenza tra admin e non va controllata sul client
         return Response({"status": "Lobby created", "game_id": game.id, "player_id": player.id}, 
                         status=status.HTTP_201_CREATED)
 
@@ -57,7 +60,7 @@ class JoinGameView(APIView):
         game = get_object_or_404(queryset, password=passw)
 
         player = Player.objects.get_or_create(
-            nickname=nick, game_id=game.id
+            nickname=nick, game=game
         )
 
         return Response({"game_id": game.id, "player_id": player.id, "is_admin": False}, 

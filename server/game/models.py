@@ -29,20 +29,20 @@ class Game(models.Model):
     # FSM helper fields
     fsm = GameStateMachine
     state = models.CharField(default="lobby")
-    current_turn_role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL)
+    current_turn_role = models.ForeignKey("Role", null=True, blank=True, on_delete=models.SET_NULL, related_name="current_turn_role")
 
     # Role choices
-    wolf_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
-    courtesan_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
-    hunter_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
-    jailer_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
-    guard_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    wolf_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="wolf_target")
+    courtesan_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="courtesan_target")
+    hunter_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="hunter_target")
+    jailer_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="jailer_target")
+    guard_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="guard_target")
     
     # Target of the daily lynching
-    lynch_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL)
+    lynch_target = models.ForeignKey("Player", null=True, blank=True, on_delete=models.SET_NULL, related_name="lynch_target")
 
     
-    REQUIRED_FIELDS = [password]
+    REQUIRED_FIELDS = ["password"]
 
     def get_active_players(self):
         """
@@ -112,16 +112,16 @@ class Player(models.Model):
         ("ghost", "Ghost"), # fake role for dead players
     }
     
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="players")
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="players")
     nickname = models.CharField(max_length=20)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     is_dead = models.BooleanField(default=False)
     protected = models.BooleanField(default=False)
 
     # Queried by the medium to check the role of the player when he was alive
-    role_name = models.CharField(max_length=20, default=None) 
+    role_name = models.CharField(max_length=20, default=None, null=True) 
 
-    REQUIRED_FIELDS = [game_id, nickname]
+    REQUIRED_FIELDS = ["game", "nickname"]
 
 class Poll(models.Model):
 
@@ -141,21 +141,21 @@ class Poll(models.Model):
         ("all", "All"),
     }
 
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="polls")
     duration = models.PositiveIntegerField(default=30)
     role = models.CharField(max_length=10, choices=ROLES_CHOICES, default="none")
 
-    REQUIRED_FIELDS = [game_id, duration, role]
+    REQUIRED_FIELDS = ["game", "duration", "role"]
 
 class Vote(models.Model):
     # poll_id is unique, in any case I can check if the game is correct from the poll instance
-    poll_id = models.ForeignKey(Poll, on_delete=models.CASCADE)
-    voter = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="voter")
-    target = models.ForeignKey(Player, on_delete=models.DO_NOTHING, related_name="target")
+    poll = models.ForeignKey("Poll", on_delete=models.CASCADE)
+    voter = models.ForeignKey("Player", on_delete=models.DO_NOTHING, related_name="voter")
+    target = models.ForeignKey("Player", on_delete=models.DO_NOTHING, related_name="target")
 
     class Meta:
-        unique_together = ("poll_id", "voter") # One vote per poll
+        unique_together = ("poll", "voter") # One vote per poll
 
-    REQUIRED_FIELDS = [poll_id, voter, target]
+    REQUIRED_FIELDS = ["poll", "voter", "target"]
 
 

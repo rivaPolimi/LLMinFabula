@@ -15,10 +15,19 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.player_id = self.scope["url_route"]["kwargs"]["player_id"]
 
+        # Check if game exists
+        try:
+            self.game = await database_sync_to_async(Game.objects.get)(
+                id=self.game_id
+            )
+        except Game.DoesNotExist:
+            await self.close()
+            return
+
         # Check if player exists and is in game
         try:
             self.player = await database_sync_to_async(Player.objects.get)(
-                id=self.player_id, game_id=self.game_id
+                id=self.player_id, game=self.game
             )
         except Player.DoesNotExist:
             await self.close()
@@ -53,7 +62,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def game_started(self, event):
         # Join role based channel
-        self.group_role = f"game_{self.game_id}_{self.player.role}"
+        self.group_role = f"game_{self.game_id}_{self.player.role.name}"
         await self.channel_layer.group_add(self.group_role, self.channel_name)
 
         # Send acknowledgement to players (TODO: needed? can't i just send everything with the story?)
@@ -86,9 +95,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "text": "Not allowed",
             })
         
-        finished = record_vote(self.game_id, poll.id, self.player_id, content.get("target"))
+        poll_finished = record_vote(poll, self.player_id, content.get("target"))
 
-        if finished:
+        if poll_finished:
             if poll.role == "all":
                 #TODO: gestire lynch (su FSM)
 
@@ -96,18 +105,17 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 # send all player the vote result
                 self.channel_layer.group_send(
                     f"game_{self.game_id}_all",
-                    {"type": "vote_result", "target": get_result(self.game_id, poll.id)}
+                    {"type": "vote_result", "target": get_result(poll)}
                 )
             else:
                 #TODO: si può mettere nella macchina a stati?
-                # get target
-                target = get_result(self.game_ended, poll.id)
+                # get target. TODO: capire cosa ritorna se id o player
+                target = get_result(poll)
                 targeted_player = Player.objects.get(id = target)
 
                 # call action handler
-                game = Game.objects.get(id = self.game_id)
-                handler = game.get_action_handler(poll.role)
-                outcome = handler.perform_action(self.player, targeted_player, game)
+                handler = self.game.get_action_handler(poll.role)
+                outcome = handler.perform_action(self.player, targeted_player, self.game)
 
                 # Send outcome
                 self.channel_layer.group_send(
@@ -117,7 +125,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
             
         else:
-            tally = tally_votes(self.game_id, poll.id)
+            tally = tally_votes(poll)
         
             # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
             self.channel_layer.group_send(
@@ -125,9 +133,15 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 {"type": "tally", "tally": tally}
             )
 
+    async def player_arrested(self, event):
+        self.send_json({
+            "type": "arrested_notification",
+            "message": event["message"],
+        })
+
     async def player_eliminated(self, event):
         # Remove player from the role channel
-        await self.channel_layer.group_discard(self.group_role, self.channel_layer)
+        await self.channel_layer.group_discard(self.group_role, self.channel_name)
         self.group_role = ""
         
         self.send_json({

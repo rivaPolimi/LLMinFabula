@@ -9,7 +9,7 @@ from .models import *
 
     
 def get_players(game):
-    players = Player.objects.filter(game_id=game.id)
+    players = Player.objects.filter(game=game)
 
     #TODO: check if empty and rise exception
 
@@ -65,7 +65,7 @@ def handle_win(game, winners):
     Send all the players a message with the outcome of the game
     """
 
-    players = Player.objects.filter(game_id = game.id)
+    players = Player.objects.filter(game=game)
     channel_layer = get_channel_layer()
     for player in players:
         if player in winners:
@@ -78,12 +78,12 @@ def handle_win(game, winners):
                 f"game_{game.id}_{player.id}",
                 {"type": "game.ended", "outcome": "lost",},
             )
-    clear_game(game.id)
+    clear_game(game)
 
-def clear_game(game_id):
+def clear_game(game):
     """
     Removes the game instance from the DB
     """
     #TODO: se i poll li cancello appena finiti non serve cancellarli qui se no devo cancellarli qui
-    Player.objects.filter(game_id=game_id).delete()
-    Game.objects.filter(id = game_id).delete()
+    Player.objects.filter(game=game).delete()
+    Game.objects.filter(id=game.id).delete()
