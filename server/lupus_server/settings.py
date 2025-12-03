@@ -91,10 +91,12 @@ CHANNEL_LAYERS = {
 # CORS
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
+    "https://llminfabula.onrender.com",
 ]
-CORS_ALLOW_FILE_SCHEMES = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
 
 # CSRF
 
