@@ -37,6 +37,7 @@ class NoActionHandler(BaseActionHandler):
         return
     
 #TODO: forse meglio spostare la logica in una funzione resolve_night e usare questa solo per settare wolf_target
+#TODO: cambiare wolf.perform_action() e creare resolve_night()
 class WolfActionHandler(BaseActionHandler):
     """
     Every night Wolves choose one player to kill.

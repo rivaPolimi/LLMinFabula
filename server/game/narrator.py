@@ -1,19 +1,19 @@
-import json
 import os
-import random
-import openai
 from django.shortcuts import get_object_or_404
 from .models import *
 from .utils import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from openai import OpenAI
 
-openai.api_key = os.getenv("AZURE_OPENAI_KEY")
-openai.azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-openai.api_type = "azure"
-openai.api_version = "2023-05-15"
+endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+deployment_name = os.environ.get("AZURE_DEPLOYMENT_NAME")
+api_key = os.environ.get("AZURE_OPENAI_KEY")
 
-deployment_name = "LLMinFabula"
+client = OpenAI(
+    base_url=endpoint,
+    api_key=api_key
+)
 
 # Generate introduction for the game based on the setting provided by the user
 def gen_introduction(game_id, setting):
@@ -32,7 +32,8 @@ def gen_introduction(game_id, setting):
         "role": "user",
         "content": "Please write an introduction for this lupus in fabula game."
     })
-    response = openai.chat.completions.create(
+    response = client.chat.completions.create(
+        model=deployment_name,
         messages=conversation
     )
 

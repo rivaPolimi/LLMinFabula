@@ -4,3 +4,7 @@ Django==5.2.9
 django_viewflow==2.2.14
 djangorestframework==3.16.1
 openai==2.8.1
+
+daphne
+channels-redis
+psycopg2-binary

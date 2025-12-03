@@ -1,8 +1,6 @@
 from viewflow.fsm import Transition, State
 from .utils import *
 
-#TODO: togliere dopo che hai implementato fsm
-
 class States:
     LOBBY = "lobby"
     FIRST_NIGHT_WOLF = "first_night_wolf"

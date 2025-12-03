@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: lupus-server
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: |
+      daphne -b 0.0.0.0 -p $PORT lupus_server.asgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: lupus_server.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lupus-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: lupus-redis
+          property: connectionString
+
+databases:
+  - name: lupus-postgres
+    plan: free
+
+services:
+  - type: redis
+    name: lupus-redis
+    plan: free
