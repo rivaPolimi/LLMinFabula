@@ -6,19 +6,21 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from openai import OpenAI
 
-endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-deployment_name = os.environ.get("AZURE_DEPLOYMENT_NAME")
-api_key = os.environ.get("AZURE_OPENAI_KEY")
+def get_deployment_name():
+    return os.environ.get("AZURE_DEPLOYMENT_NAME")
 
-client = OpenAI(
-    base_url=endpoint,
-    api_key=api_key
-)
+def get_openai_client():
+    return OpenAI(
+        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.environ.get("AZURE_OPENAI_KEY")
+    )
 
 # Generate introduction for the game based on the setting provided by the user
 def gen_introduction(game_id, setting):
     #TODO: call LLM API to generate story
     #TODO: GESTIRE BAMBINI
+
+    client = get_openai_client()
 
     # Set the background prompt for the LLM. TODO: forse setting va messo nei prompt, c'è rischio che si confonda con le varie partite
     conversation = [{
@@ -33,7 +35,7 @@ def gen_introduction(game_id, setting):
         "content": "Please write an introduction for this lupus in fabula game."
     })
     response = client.chat.completions.create(
-        model=deployment_name,
+        model=get_deployment_name(),
         messages=conversation
     )
 
