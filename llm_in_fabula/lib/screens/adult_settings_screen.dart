@@ -1,5 +1,4 @@
 
-
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
@@ -19,6 +18,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   // 1: Secondo ruolo primario (dx)
   // 2+: Ruoli nella griglia
   int _selectedSlotId = -1;
+  int _numberOfWolves = 1;
 
   void _handleSelection(int id) {
     setState(() {
@@ -92,7 +92,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 const Center(
                   child: Text(
                     'Primary roles',
-                    style: TextStyle(color: Colors.black87, fontSize: 16),
+                    style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -118,12 +118,12 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 25),
 
                 // --- SECONDARY ROLES GRID ---
                 const Text(
                   'Choose secondary roles',
-                  style: TextStyle(color: Colors.black87, fontSize: 14),
+                  style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
@@ -163,6 +163,82 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                       ),
                     );
                   },
+                ),
+
+                const SizedBox(height: 30),
+
+                // --- WOLF COUNTER ---
+                Column(
+                  children: [
+                    Text(
+                      'Number Of Wolves: $_numberOfWolves',
+                      style: const TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 160,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF003943),
+                       /* gradient: const LinearGradient(
+                          colors: [Color(0xFFFFC107), Color(0xFFFF9800)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),*/
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                onTap: () {
+                                  if (_numberOfWolves > 1) {
+                                    setState(() {
+                                      _numberOfWolves--;
+                                    });
+                                  }
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.remove, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 1.5,
+                            color: Colors.white70,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                                onTap: () {
+                                  setState(() {
+                                    _numberOfWolves++;
+                                  });
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.add, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 40),
