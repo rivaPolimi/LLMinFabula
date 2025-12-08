@@ -1,8 +1,4 @@
 
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'adult_settings_screen.dart';
@@ -17,16 +13,35 @@ class HostSetupScreen extends StatefulWidget {
 class _HostSetupScreenState extends State<HostSetupScreen> {
   int _players = 8;
 
-  // Indice del ruolo selezionato (-1 = nessuno)
-  int _selectedRoleIndex = -1;
+  // Indice del ruolo selezionato (inizializzato a 0 per mostrare il primo)
+  int _selectedRoleIndex = 0;
+
+  final PageController _pageController = PageController(viewportFraction: 0.6);
 
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
+
+  // Lista dei ruoli disponibili
+  final List<String> _roles = [
+    'assets/icons/babyWolf.png',
+    'assets/icons/wolf.png',
+    'assets/icons/vampire.png',
+    'assets/icons/zombie.png',
+  ];
+
+  // Lista dei nomi dei ruoli (corrispondente a _roles)
+  final List<String> _roleNames = [
+    'Children',
+    'Classic',
+    'Vampire',
+    'Zombie',
+  ];
 
   @override
   void dispose() {
     _passwordController.dispose();
     _nicknameController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -35,241 +50,257 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFC9B486),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFFC9B486),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'HOST',
-                      style: TextStyle(
-                        color: Color(0xFF003943),
-                        letterSpacing: 2,
-                        fontSize: 14,
-                      ),
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFC9B486),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+                const Center(
+                  child: Text(
+                    'HOST',
+                    style: TextStyle(
+                      color: Color(0xFF003943),
+                      letterSpacing: 2,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 14),
 
-                  const Text(
-                    'Insert the NUMBER OF PLAYERS',
-                    style: TextStyle(color: Color(0xFF003943), fontSize: 12),
+                const Text(
+                  'Insert the NUMBER OF PLAYERS',
+                  style: TextStyle(color: Color(0xFF003943), fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+
+                // DROPDOWN
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCC8A0),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 8),
-
-                  // DROPDOWN
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCC8A0),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: _players,
-                        isExpanded: true,
-                        dropdownColor: const Color(0xFFDCC8A0),
-                        items: [6, 7, 8, 9, 10, 11, 12, 16, 20]
-                            .map(
-                              (n) => DropdownMenuItem(
-                            value: n,
-                            child: Text(
-                              '$n',
-                              style: const TextStyle(color: Colors.black87),
-                            ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: _players,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFFDCC8A0),
+                      items: [6, 7, 8, 9, 10, 11, 12, 16, 20]
+                          .map(
+                            (n) => DropdownMenuItem(
+                          value: n,
+                          child: Text(
+                            '$n',
+                            style: const TextStyle(color: Colors.black87),
                           ),
-                        )
-                            .toList(),
-                        onChanged: (v) {
-                          if (v != null) {
-                            setState(() => _players = v);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Select the SETTING for the game',
-                    style: TextStyle(color: Color(0xFF003943), fontSize: 12),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // GRIGLIA RUOLI
-                  SizedBox(
-                    height: 200,
-                    child: GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: 1.65,
-                      children: [
-                        _buildSelectableRole(0, 'assets/icons/babyWolf.png'),
-                        _buildSelectableRole(1, 'assets/icons/wolf.png'),
-                        _buildSelectableRole(2, 'assets/icons/vampire.png'),
-                        _buildSelectableRole(3, 'assets/icons/zombie.png'),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // NICKNAME
-                  const Text(
-                    'Choose your NICKNAME',
-                    style: TextStyle(color: Color(0xFF003943), fontSize: 12),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _nicknameController,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      filled: true,
-                      fillColor: Color(0xFFDCC8A0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // PASSWORD
-                  const Text(
-                    'Create a PASSWORD',
-                    style: TextStyle(color: Color(0xFF003943), fontSize: 12),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _passwordController,
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                            filled: true,
-                            fillColor: Color(0xFFDCC8A0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          obscureText: true,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: 'Copy password',
-                        onPressed: () {
-                          final text = _passwordController.text;
-                          if (text.isNotEmpty) {
-                            Clipboard.setData(ClipboardData(text: text));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Password copied to clipboard'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.copy, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // BOTTONE "next"
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AdultSettingsScreen(),
-                          ),
-                        );
+                      )
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _players = v);
+                        }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF003943),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: const Text(
-                        'next',
-                        style: TextStyle(color: Color(0xFFDCC8A0)),
-                      ),
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 12),
+                const SizedBox(height: 18),
+                const Text(
+                  'Select the SETTING for the game',
+                  style: TextStyle(color: Color(0xFF003943), fontSize: 18),
+                ),
+                const SizedBox(height: 3),
 
-                  // BOTTONE "back"
-                  SizedBox(
-                    height: 48,
-                    child: OutlinedButton(
+                // LISTA RUOLI ORIZZONTALE (PageView)
+                SizedBox(
+                  height: 250,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _roles.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _selectedRoleIndex = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final isSelected = _selectedRoleIndex == index;
+                      // Scale animation for selected item effect
+                      return AnimatedScale(
+                        scale: isSelected ? 1.0 : 0.8,
+                        duration: const Duration(milliseconds: 300),
+                        child: Center(
+                          child: RoleButton(
+                            size: 200,
+                            iconAsset: _roles[index],
+                            isSelected: isSelected,
+                            onTap: () {
+                              _pageController.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                // NOME DEL RUOLO SELEZIONATO
+                Center(
+                  child: Text(
+                    _roleNames[_selectedRoleIndex],
+                    style: const TextStyle(
+                      color: Color(0xFF003943),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // NICKNAME
+                const Text(
+                  'Choose your NICKNAME',
+                  style: TextStyle(color: Color(0xFF003943), fontSize: 16),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _nicknameController,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    filled: true,
+                    fillColor: Color(0xFFDCC8A0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // PASSWORD
+                const Text(
+                  'Create a PASSWORD',
+                  style: TextStyle(color: Color(0xFF003943), fontSize: 16),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _passwordController,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          filled: true,
+                          fillColor: Color(0xFFDCC8A0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        obscureText: true,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      tooltip: 'Copy password',
                       onPressed: () {
-                        Navigator.pop(context);
+                        final text = _passwordController.text;
+                        if (text.isNotEmpty) {
+                          Clipboard.setData(ClipboardData(text: text));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Password copied to clipboard'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        }
                       },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFFDCC8A0),
-                        foregroundColor: const Color(0xFF003943),
-                        side: const BorderSide(color: Color(0xFF003943)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                      icon: const Icon(Icons.copy, color: Colors.black87),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // BOTTONE "next"
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdultSettingsScreen(),
                         ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF003943),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      child: const Text('back'),
+                    ),
+                    child: const Text(
+                      'next',
+                      style: TextStyle(color: Color(0xFFDCC8A0), fontSize: 20),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // BOTTONE "back"
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDCC8A0),
+                      foregroundColor: const Color(0xFF003943),
+                      side: const BorderSide(color: Color(0xFF003943)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    child: const Text('back', style: TextStyle(color: Color(0xFF003943), fontSize: 20)),
+
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ),
       ),
     );
   }
-
-  Widget _buildSelectableRole(int index, String asset) {
-    return Center(
-      child: RoleButton(
-        size: 90,
-        iconAsset: asset,
-        isSelected: _selectedRoleIndex == index,
-        onTap: () {
-          setState(() {
-            _selectedRoleIndex = index;
-          });
-        },
-      ),
-    );
-  }
 }
 
 // ---------------------------------------------------------
-// WIDGET ROLE BUTTON PERFETTO (Usa DecorationImage)
+// WIDGET ROLE BUTTON PERFETTO
 // ---------------------------------------------------------
 
 class RoleButton extends StatelessWidget {
@@ -299,13 +330,12 @@ class RoleButton extends StatelessWidget {
     // 2. CONFIGURAZIONE DECORAZIONE (Qui avviene la magia)
     final decoration = BoxDecoration(
       shape: BoxShape.circle,
-      // Il bordo viene disegnato esattamente sul perimetro
+
       border: Border.all(
         color: borderColor,
         width: borderWidth,
       ),
-      // SE C'È L'ASSET: Imposta l'immagine della luna come sfondo del cerchio.
-      // BoxFit.cover assicura che riempia tutto lo spazio senza lasciare buchi.
+
       image: iconAsset != null
           ? const DecorationImage(
         image: AssetImage('assets/images/moon2.png'),

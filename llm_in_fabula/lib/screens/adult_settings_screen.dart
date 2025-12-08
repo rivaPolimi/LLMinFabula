@@ -1,5 +1,4 @@
 
-
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
@@ -13,16 +12,19 @@ class AdultSettingsScreen extends StatefulWidget {
 }
 
 class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
-  // Variabile per tracciare quale slot è selezionato.
-  // -1: Nessuno
-  // 0: Primo ruolo primario (sx)
-  // 1: Secondo ruolo primario (dx)
-  // 2+: Ruoli nella griglia
-  int _selectedSlotId = -1;
+  // Set per tracciare gli indici dei ruoli secondari selezionati (multi-selezione)
+  final Set<int> _selectedSecondaryIndices = {};
+  
+  int _numberOfWolves = 1;
+  int _numberOfVillagers = 1;
 
-  void _handleSelection(int id) {
+  void _toggleSecondarySelection(int index) {
     setState(() {
-      _selectedSlotId = id;
+      if (_selectedSecondaryIndices.contains(index)) {
+        _selectedSecondaryIndices.remove(index);
+      } else {
+        _selectedSecondaryIndices.add(index);
+      }
     });
   }
 
@@ -37,7 +39,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- HEADER (Invariato) ---
+                // --- HEADER  ---
                 SizedBox(
                   height: 40,
                   child: Stack(
@@ -49,7 +51,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                           style: TextStyle(
                             color: Colors.black54,
                             letterSpacing: 2,
-                            fontSize: 14,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -92,38 +95,81 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 const Center(
                   child: Text(
                     'Primary roles',
-                    style: TextStyle(color: Colors.black87, fontSize: 16),
+                    style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Ruolo Primario 1 (ID: 0)
-                    RoleButton(
-                      size: 80,
-                      iconAsset: 'assets/icons/wolf.png',
-                      isSelected: _selectedSlotId == 0,
-                      onTap: () => _handleSelection(0),
+                    // Ruolo Primario 1 (ID: 0) - WOLVES
+                    Column(
+                      children: [
+                        const RoleButton(
+                          size: 80,
+                          iconAsset: 'assets/icons/wolf.png',
+                          isSelected: false,
+                          onTap: null, // Non selezionabile
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 60,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4B8B9A),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$_numberOfWolves',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                     const SizedBox(width: 24),
-                    // Ruolo Primario 2 (ID: 1)
-                    RoleButton(
-                      size: 80,
-                      iconAsset: 'assets/icons/wolf.png',
-                      isSelected: _selectedSlotId == 1,
-                      onTap: () => _handleSelection(1),
+                    // Ruolo Primario 2 (ID: 1) - VILLAGERS
+                    Column(
+                      children: [
+                        const RoleButton(
+                          size: 80,
+                          iconAsset: 'assets/icons/Villager.png',
+                          isSelected: false,
+                          onTap: null, // Non selezionabile
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 60,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4B8B9A),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$_numberOfVillagers',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 25),
 
                 // --- SECONDARY ROLES GRID ---
                 const Text(
                   'Choose secondary roles',
-                  style: TextStyle(color: Colors.black87, fontSize: 14),
+                  style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
@@ -139,15 +185,14 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     childAspectRatio: 1,
                   ),
                   itemBuilder: (context, index) {
-                    const double gridBtnSize = 62.0;
-
-                    // Calcoliamo un ID univoco per la griglia partendo da 2
-                    final int currentSlotId = index + 2;
+                    const double gridBtnSize = 90.0;
 
                     final List<String> activeRoles = [
-                      'assets/icons/wolf.png',
-                      'assets/icons/witch.png',
-                      'assets/icons/seer.png',
+                      'assets/icons/Seer.png',
+                      'assets/icons/Courtesan.png',
+                      //'assets/icons/Courtesan.png',
+                      'assets/icons/MadMan.png',
+                      //'assets/icons/seer.png',
                     ];
 
                     final String? asset = index < activeRoles.length
@@ -158,11 +203,154 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                       child: RoleButton(
                         size: gridBtnSize,
                         iconAsset: asset,
-                        isSelected: _selectedSlotId == currentSlotId,
-                        onTap: () => _handleSelection(currentSlotId),
+                        isSelected: _selectedSecondaryIndices.contains(index),
+                        // Se non c'è asset, onTap è null e quindi non è selezionabile
+                        onTap: asset != null ? () => _toggleSecondarySelection(index) : null,
                       ),
                     );
                   },
+                ),
+
+                const SizedBox(height: 30),
+
+                // --- WOLF COUNTER ---
+                Column(
+                  children: [
+                    Text(
+                      'Number Of Wolves: $_numberOfWolves',
+                      style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 160,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF003943),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black/*.withOpacity(0.1)*/,
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                onTap: () {
+                                  if (_numberOfWolves > 1) {
+                                    setState(() {
+                                      _numberOfWolves--;
+                                    });
+                                  }
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.remove, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 1.5,
+                            color: Colors.white70,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                                onTap: () {
+                                  setState(() {
+                                    _numberOfWolves++;
+                                  });
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.add, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // --- VILLAGER COUNTER ---
+                Column(
+                  children: [
+                    Text(
+                      'Number Of Villagers: $_numberOfVillagers',
+                      style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 160,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF003943),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black/*.withOpacity(0.1)*/,
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                onTap: () {
+                                  if (_numberOfVillagers > 1) {
+                                    setState(() {
+                                      _numberOfVillagers--;
+                                    });
+                                  }
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.remove, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 1.5,
+                            color: Colors.white70,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                                onTap: () {
+                                  setState(() {
+                                    _numberOfVillagers++;
+                                  });
+                                },
+                                child: const Center(
+                                  child: Icon(Icons.add, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 40),
@@ -289,8 +477,8 @@ class RoleButton extends StatelessWidget {
           if (iconAsset != null)
             Image.asset(
               iconAsset!,
-              width: size * 0.55,
-              height: size * 0.55,
+              width: size * 0.75,
+              height: size * 0.75,
               fit: BoxFit.contain,
             ),
 
@@ -300,7 +488,8 @@ class RoleButton extends StatelessWidget {
             shape: const CircleBorder(),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              onTap: onTap ?? () {},
+
+              onTap: onTap,
               splashColor: Colors.white24,
               child: SizedBox(
                 width: size,
