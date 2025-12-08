@@ -39,7 +39,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- HEADER (Invariato) ---
+                // --- HEADER  ---
                 SizedBox(
                   height: 40,
                   child: Stack(
@@ -51,7 +51,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                           style: TextStyle(
                             color: Colors.black54,
                             letterSpacing: 2,
-                            fontSize: 14,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -486,7 +487,7 @@ class RoleButton extends StatelessWidget {
             shape: const CircleBorder(),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              // Usa onTap direttamente così se è null l'InkWell è disabilitato (no ripple)
+
               onTap: onTap,
               splashColor: Colors.white24,
               child: SizedBox(

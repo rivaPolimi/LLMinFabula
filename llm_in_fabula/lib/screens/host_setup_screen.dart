@@ -31,8 +31,8 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
   // Lista dei nomi dei ruoli (corrispondente a _roles)
   final List<String> _roleNames = [
-    'Baby Wolf',
-    'Wolf',
+    'Children',
+    'Classic',
     'Vampire',
     'Zombie',
   ];
@@ -300,7 +300,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 }
 
 // ---------------------------------------------------------
-// WIDGET ROLE BUTTON PERFETTO (Usa DecorationImage)
+// WIDGET ROLE BUTTON PERFETTO
 // ---------------------------------------------------------
 
 class RoleButton extends StatelessWidget {
@@ -330,13 +330,12 @@ class RoleButton extends StatelessWidget {
     // 2. CONFIGURAZIONE DECORAZIONE (Qui avviene la magia)
     final decoration = BoxDecoration(
       shape: BoxShape.circle,
-      // Il bordo viene disegnato esattamente sul perimetro
+
       border: Border.all(
         color: borderColor,
         width: borderWidth,
       ),
-      // SE C'È L'ASSET: Imposta l'immagine della luna come sfondo del cerchio.
-      // BoxFit.cover assicura che riempia tutto lo spazio senza lasciare buchi.
+
       image: iconAsset != null
           ? const DecorationImage(
         image: AssetImage('assets/images/moon2.png'),
