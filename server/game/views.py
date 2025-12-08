@@ -4,12 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-#from .models import *
-from .utils import *
-from .narrator import *
-#from .serializers import GameSerializer, JoinSerializer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from .notifications import notify_game_started
+from .engine import GameEngine
+from .models import Game, Player, Role
+from .narrator import gen_introduction
+from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
@@ -97,15 +96,10 @@ class StartGameView(APIView):
             player.save(update_fields=["role"])
 
         # Broadcast that game started
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f"game_{game_id}_all",
-            {"type": "game.started", "message": "Game started", "game_id": game.id}
-        )
+        notify_game_started(game.id)
 
         # Generates introduction
         gen_introduction(game_id, game.setting)
-        game.fsm.first_night(game)
-        game.save()
+        GameEngine.start_game(game)      
 
         return Response({"detail": "Game started"})

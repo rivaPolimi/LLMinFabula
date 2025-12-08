@@ -1,5 +1,5 @@
 from collections import Counter
-from .models import Poll, Vote, Player
+from .models import Poll, Vote, Player, Game
 
 
 def create_poll(game, duration=30, role="all"):
@@ -12,6 +12,7 @@ def create_poll(game, duration=30, role="all"):
         duration = duration,
         role = role
     )
+    poll.save()
 
     return poll
 
@@ -44,7 +45,7 @@ def tally_votes(poll):
     
     return tally
 
-def get_result(poll):
+def get_result(poll: Poll):
     """
     Return the result of the poll
     """
@@ -53,13 +54,13 @@ def get_result(poll):
     winner = max(tally, key=tally.get) if tally else None
     return winner
 
-def check_everybody_voted(game, poll):
+def check_everybody_voted(game: Game, poll: Poll):
     votes = Vote.objects.filter(poll=poll)
     num_players = 0
     if poll.role == "all":
         num_players = Player.objects.filter(game = game, is_dead = False)
     else:
-        targeted_players = Player.objects.filter(game = game, role__name = poll.role, is_dead = False)
+        targeted_players = Player.objects.filter(game = game, role__name = poll.role.name, is_dead = False)
         num_players = len(list(targeted_players))
 
     # Signal that the poll is completed if everybody voted

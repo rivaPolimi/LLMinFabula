@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .models import *
+from .models import Player, Role
 from .utils import kill_player
 
 class BaseActionHandler:
@@ -47,26 +47,6 @@ class WolfActionHandler(BaseActionHandler):
         if target_player not in self.valid_target(acting_player, game):
             return "No one was killed, you did not choose a valid target"
         
-        # Target does not die if he is protected
-        if target_player.protected:
-            return "No one was killed, your target was protected"
-
-        # If courtesan is killed also her protected dies
-        if target_player.role.name == "courtesan":
-            protected_player = game.courtesan_target
-            game.courtesan_target = None
-            if not protected_player.role == "wolf":
-                kill_player(protected_player)
-
-        # If hunter is killed also his protected dies
-        elif target_player.role.name == "hunter":
-            aimed_player = game.hunter_target
-            game.hunter_target = None
-            kill_player(game, aimed_player)
-
-        kill_player(game, target_player)
-
-        return "Player killed"
 
 
     def valid_target(self, acting_player, game):

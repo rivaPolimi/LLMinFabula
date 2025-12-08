@@ -6,6 +6,7 @@ from .fsm import GameStateMachine
 class Role(models.Model):
     name = models.CharField(max_length=50)
     order = models.PositiveIntegerField()
+    play_first_night = models.BooleanField(default=True)
     action_class = models.CharField(max_length=255, null=True, blank=True)
 
 
@@ -25,9 +26,10 @@ class Game(models.Model):
                     default="wolf")
     password = models.CharField(max_length=20)
     available_roles = models.JSONField()
+    night_counter = models.IntegerField(default=0)
     
     # FSM helper fields
-    fsm = GameStateMachine
+    fsm = GameStateMachine()
     state = models.CharField(default="lobby")
     current_turn_role = models.ForeignKey("Role", null=True, blank=True, on_delete=models.SET_NULL, related_name="current_turn_role")
 
@@ -56,9 +58,23 @@ class Game(models.Model):
         Return all the roles that have at least one living player.
         """
 
-        roles = (
-            self.players.filter(game_id = self.id, is_dead = False).values_list("role", flat=True).distinct()
-        )
+        #TODO: cambia la query e sistemala
+        roles = ()
+        if self.night_counter <= 1:
+            roles = (
+                self.players
+                    .filter(game_id = self.id, is_dead = False)
+                    .exclude(role__play_first_night = False)
+                    .values_list("role", flat=True)
+                    .distinct()
+            )
+        else:
+            roles = (
+                self.players
+                    .filter(game_id = self.id, is_dead = False)
+                    .values_list("role", flat=True)
+                    .distinct()
+            )
         return Role.objects.filter(id__in = roles).order_by("order")
 
     def next_active_role(self):

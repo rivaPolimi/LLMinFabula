@@ -5,7 +5,8 @@ from django.contrib.auth.models import AnonymousUser # TODO: need for authentica
 from django.shortcuts import get_object_or_404
 from .models import Player, Game
 from .poll import *
-from collections import Counter
+from .notifications import notify_updated_votes
+from .engine import GameEngine
 from django.conf import settings
 from channels.db import database_sync_to_async
 
@@ -99,39 +100,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         if poll_finished:
             if poll.role == "all":
-                #TODO: gestire lynch (su FSM)
-
-
-                # send all player the vote result
-                self.channel_layer.group_send(
-                    f"game_{self.game_id}_all",
-                    {"type": "vote_result", "target": get_result(poll)}
-                )
+                GameEngine.end_discussion(self.game, poll)
             else:
-                #TODO: si può mettere nella macchina a stati?
-                # get target. TODO: capire cosa ritorna se id o player
-                target = get_result(poll)
-                targeted_player = Player.objects.get(id = target)
-
-                # call action handler
-                handler = self.game.get_action_handler(poll.role)
-                outcome = handler.perform_action(self.player, targeted_player, self.game)
-
-                # Send outcome
-                self.channel_layer.group_send(
-                    f"game_{self.game_id}_{poll.role}",
-                    {"type": "action_result", "target": target, "outcome": outcome}
-                )
-
-            
+                GameEngine.role_action(self.game, self.player, poll)
         else:
             tally = tally_votes(poll)
-        
-            # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
-            self.channel_layer.group_send(
-                f"game_{self.game_id}_{poll.role}",
-                {"type": "tally", "tally": tally}
-            )
+            notify_updated_votes(self.game, poll, tally)
 
     async def player_arrested(self, event):
         self.send_json({
@@ -155,5 +129,31 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "outcome": event["outcome"],
         })
 
+    async def action_outcome(self, event):
+        self.send_json({
+            "type": "action_outcome",
+            "target_id": event["target_id"],
+            "target_name": event["target_name"],
+            "outcome": event["outcome"],
+        })
         
+    async def poll_begin(self, event):
+        self.send_json({
+            "type": "poll_begin",
+            "poll_id": event["poll_id"],
+            "duration": event["duration"],
+        })
+
+    async def start_extra_time(self, event):
+        self.send_json({
+            "type": "start_extra_time",
+            "duration": event["duration"],
+        })
+
+    async def send_tally(self, event):
+        self.send_json({
+            "type": "tally",
+            "poll_id": event["poll_id"],
+            "tally": event["tally"],
+        })
 

@@ -27,7 +27,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["llminfabula.onrender.com"]
 
-
 external_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if external_host:
     ALLOWED_HOSTS.append(external_host)
