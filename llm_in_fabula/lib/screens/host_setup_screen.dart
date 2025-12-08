@@ -263,7 +263,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                     ),
                     child: const Text(
                       'next',
-                      style: TextStyle(color: Color(0xFFDCC8A0)),
+                      style: TextStyle(color: Color(0xFFDCC8A0), fontSize: 20),
                     ),
                   ),
                 ),
@@ -285,7 +285,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
-                    child: const Text('back'),
+                    child: const Text('back', style: TextStyle(color: Color(0xFF003943), fontSize: 20)),
 
                   ),
                 ),

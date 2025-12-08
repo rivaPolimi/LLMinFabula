@@ -190,7 +190,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     final List<String> activeRoles = [
                       'assets/icons/Seer.png',
                       'assets/icons/Courtesan.png',
-                      'assets/icons/Courtesan.png',
+                      //'assets/icons/Courtesan.png',
+                      'assets/icons/MadMan.png',
                       //'assets/icons/seer.png',
                     ];
 
