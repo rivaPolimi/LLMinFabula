@@ -13,7 +13,7 @@ class Role(models.Model):
 class Setting(models.Model):
     name = models.CharField(max_length=50)
     alternative_role_names = models.JSONField()
-    initial_prompt = models.CharField(max_length=200) #TODO: prompt da passare ogni volta all'LLM per ricordargli il setting
+    initial_prompt = models.CharField(max_length=1000) #TODO: prompt da passare ogni volta all'LLM per ricordargli il setting
 
 class Game(models.Model):
 
