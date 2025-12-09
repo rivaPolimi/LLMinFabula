@@ -4,7 +4,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser # TODO: need for authentication?
 from django.shortcuts import get_object_or_404
 from .models import Player, Game
-from .poll import *
+from .services.poll import *
 from .notifications import notify_updated_votes
 from .engine import GameEngine
 from django.conf import settings
@@ -99,10 +99,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         poll_finished = record_vote(poll, self.player_id, content.get("target"))
 
         if poll_finished:
-            if poll.role == "all":
-                GameEngine.end_discussion(self.game, poll)
-            else:
-                GameEngine.role_action(self.game, self.player, poll)
+            end_poll_by_id(poll.id, player=self.player)
         else:
             tally = tally_votes(poll)
             notify_updated_votes(self.game, poll, tally)

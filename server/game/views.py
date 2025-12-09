@@ -6,8 +6,8 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .notifications import notify_game_started
 from .engine import GameEngine
-from .models import Game, Player, Role
-from .narrator import gen_introduction
+from .models import Game, Player, Role, Setting
+from .narrator import Narrator
 from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -23,9 +23,11 @@ class CreateGameView(APIView):
         roles_available = lobby_configurations.get("roles_available")
         nick = lobby_configurations.get("nickname")
     
+        setting = get_object_or_404(Setting, name=set)
+
         game = Game.objects.create(
             max_players = num,
-            setting = set,
+            setting = setting,
             password = passw,
             available_roles = roles_available,
         )
@@ -99,7 +101,7 @@ class StartGameView(APIView):
         notify_game_started(game.id)
 
         # Generates introduction
-        gen_introduction(game_id, game.setting)
+        Narrator.gen_introduction(game_id, game.setting)
         GameEngine.start_game(game)      
 
         return Response({"detail": "Game started"})

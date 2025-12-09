@@ -5,7 +5,19 @@ from asgiref.sync import async_to_sync
 
 #TODO: cercare nel codice i vari messaggi mandati e trasformarli in notifiche
 
-def notify_action_outcome(game_id: int, target: Player, role: str,outcome: str):
+def notify_narrator_story(game_id: int, role: str, phase: str, text: str):
+    channel_layer = get_channel_layer()
+    
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_{role}",
+        {
+            "type": "tell.story",
+            "phase": phase,
+            "text": text,
+        }
+    )
+
+def notify_action_outcome(game_id: int, target: Player, role: str, outcome: str):
     channel_layer = get_channel_layer()
 
     async_to_sync(channel_layer.group_send)(
@@ -52,6 +64,14 @@ def notify_player_eliminated(game_id: int, player_id: int):
         async_to_sync(channel_layer.group_send)(
         f"game_{game_id}_{player_id}",
         {"type": "player.eliminated", "message": "You've been killed",},
+    )
+        
+def notify_player_in_jail(game_id: int, player_id: int):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_{player_id}",
+        {"type": "player.arrested", "message": "Jailer arrested you", "game_id": game_id}
     )
         
 def notify_game_started(game_id: int):

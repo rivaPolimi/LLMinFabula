@@ -85,7 +85,7 @@ def handle_win(game, winners):
     """
 
     players = Player.objects.filter(game=game)
-    channel_layer = get_channel_layer()
+
     for player in players:
         if player in winners:
             notify_game_end(game.id, player.id, "win")

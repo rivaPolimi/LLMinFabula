@@ -1,9 +1,10 @@
 
 from django.db import transaction
 from .models import Game, Player, Poll
-from .poll import get_result
-from .utils import resolve_night
+from .services.poll import get_result, start_poll_timer, create_poll
+from .utils import resolve_night, kill_player, check_win, handle_win
 from .notifications import *
+from .narrator import Narrator
 
 class GameEngine:
     """
@@ -31,6 +32,9 @@ class GameEngine:
         NIGHT -> (ROLE_ACTION or DAY)
         """
 
+        game.night_counter += 1
+        game.save()
+
         next_role = game.next_active_role()
 
         if not next_role:
@@ -44,8 +48,12 @@ class GameEngine:
         game.fsm.start_role_action()
         game.save()
         
-        from .poll import create_poll
+        # Generate the message for the role
+        Narrator.gen_role_action_message(game, game.setting, next_role.name)
+
         poll = create_poll(game, role=next_role.name)
+        start_poll_timer(poll)
+
         notify_poll_begin(game, poll)
 
     @staticmethod
@@ -59,12 +67,13 @@ class GameEngine:
         # get target
         target = get_result(poll)
 
-        # call action handler
-        handler = game.get_action_handler(poll.role.name)
-        outcome = handler.perform_action(player, target, game)
-
-        # send outcome to clients
-        notify_action_outcome(game.id, target, poll.role.name, outcome)
+        if target and player:
+            # call action handler
+            handler = game.get_action_handler(poll.role.name)
+            outcome = handler.perform_action(player, target, game)
+    
+            # send outcome to clients
+            notify_action_outcome(game.id, target, poll.role.name, outcome)
 
         # transition to NIGHT state
         game.fsm.end_action(game)
@@ -81,12 +90,23 @@ class GameEngine:
         NIGHT -> DAY
         """
 
-        resolve_night(game)
+        # Computes all the night actions
+        killed_players = resolve_night(game)
+        name_killed_players = [killed_player.nickname for killed_player in killed_players]
 
-        #TODO: call narrator, generate story and send it to players
+        # Narrator generates the report for the night
+        Narrator.gen_night_report(game, game.setting, name_killed_players)
+
+        # Check if anybody won
+        end, winners = check_win(game)
+        
+        if end:
+            return GameEngine.end_game(game, winners)
 
         game.fsm.finish_night(game)
         game.save()
+
+        return GameEngine.start_discussion(game)
 
     @staticmethod
     @transaction.atomic
@@ -97,11 +117,8 @@ class GameEngine:
         """
 
         # Create poll for discussion
-        from .poll import create_poll
         poll = create_poll(game, duration=300)
-
-        #TODO: set timer
-
+        start_poll_timer(poll)
 
         notify_poll_begin(game, poll)
 
@@ -109,20 +126,19 @@ class GameEngine:
         game.fsm.start_discussion()
         game.save()
 
-
-    #TODO: CHE FACCIO COL TIMER?
-
     @staticmethod
     @transaction.atomic
-    def start_extra_vote(game: Game):
+    def start_extra_vote(game: Game, poll: Poll):
         """
         If players did not vote before the timer expires start an extra voting time.
         DISCUSSION -> EXTRA_VOTE
         """
 
         # If timer expired spur players to vote
-        #TODO: timer expired. Extra_duration needed to set the new timer
         extra_duration = 30
+        poll.duration = extra_duration
+        start_poll_timer(poll)
+        poll.save()
 
         # Notify extra time
         notify_start_extra_time(game, extra_duration)
@@ -138,9 +154,8 @@ class GameEngine:
         Close the discussion poll.
         (DISCUSSION or EXTRA_VOTE) -> LYNCH
         """
-        #TODO: probabilmente return lynch_player(game)
 
-        # Set lynch target
+        # Set lynch target #TODO: handla pareggio
         lynch = get_result(poll)
         game.lynch_target = lynch
         game.save()
@@ -158,15 +173,46 @@ class GameEngine:
         Lynch the target and check if anyone won.
         LYNCH -> NIGHT
         """
-        # TODO: check lynch_target = null; potrebbero esserci pareggi nelle votazioni
 
-        pass
+        if not game.lynch_target:
+            Narrator.gen_lynch_story(game, game.setting, "nobody", False)
+        else:
+            kill_player(game, game.lynch_target)
+            Narrator.gen_lynch_story(game, game.setting, game.lynch_target.nickname, True)
+
+        end, winners = check_win(game)
+        if end:
+            return GameEngine.end_game(game, winners)
+        else:
+            game.fsm.lynch_player()
+            game.save()
+            return GameEngine.handle_night(game)
+
 
     @staticmethod
     @transaction.atomic
-    def end_game(game: Game):
+    def end_game(game: Game, winners: list[Player]):
         """
         Send the winners to the clients and end the game.
         (DAY or LYNCH) -> END_GAME
         """
-        pass
+
+        winners_name = [winner.nickname for winner in winners]
+
+        reason = ""
+        if winners[0].role.name == "wolf":
+            reason = "All villagers are eliminated"
+        elif winners[0].role.name == "madman":
+            reason = "The madman has been successfully lynched"
+        else:
+            reason = "Villagers killed all wolves"
+
+        # Send winners to clients
+        handle_win(game, winners)
+
+        # Tell the story with the narrator
+        Narrator.gen_story_end(game, game.setting, winners_name, reason)
+
+        # Handle transition
+        game.fsm.end_game()
+        game.save()
