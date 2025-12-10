@@ -18,7 +18,7 @@ class Setting(models.Model):
 class Game(models.Model):
 
     SETTING_CHOICES = {
-        ("child", "Child"),
+        ("children", "Children"),
         ("wolf", "Wolf"),
         ("vampire", "Vampire"),
         ("zombie", "Zombie"),
