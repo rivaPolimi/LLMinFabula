@@ -30,7 +30,7 @@ def seed_data(apps, schema_editor):
     # Settings
     default_settings = [
         {
-            "name": "child",
+            "name": "children",
             "alternative_role_names": {
                 "villager": "villager", 
                 "madman": "madman", 
