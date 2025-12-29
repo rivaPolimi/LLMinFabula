@@ -63,8 +63,8 @@ class JoinGameView(APIView):
         player = Player.objects.get_or_create(
             nickname=nick, game=game
         )
-
-        return Response({"game_id": game.id, "player_id": player.id, "is_admin": False}, 
+        #TODO: come tengo aggiornata la lista di players nella lobby?
+        return Response({"game_id": game.id, "player_id": player.id, "players": game.get_active_players()}, 
                         status=status.HTTP_200_OK)
     
 class StartGameView(APIView):
@@ -104,4 +104,4 @@ class StartGameView(APIView):
         Narrator.gen_introduction(game_id, game.setting)
         GameEngine.start_game(game)      
 
-        return Response({"detail": "Game started"})
+        return Response({"detail": "Game started"}, status=status.HTTP_200_OK)
