@@ -54,7 +54,7 @@ class JoinGameView(APIView):
         # Search a not full lobby which matches password or raises 404_NOT_FOUND error
         queryset = (
             Game.objects
-                .annotate(player_count=Count('player'))
+                .annotate(player_count=Count('players'))
                 .filter(max_players__gt=F('player_count'))
                 .values('id', 'password')
         )
