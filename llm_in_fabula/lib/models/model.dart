@@ -1,5 +1,3 @@
-enum Phase {lobby, inGame}
-
 class Player {
   final int id;
   final String nickname;
@@ -32,7 +30,6 @@ class Player {
 class Game {
   final int id;
   final List<Player> players;
-  Phase gamePhase = Phase.lobby;
 
   Game({required this.id, required this.players});
 
@@ -41,23 +38,11 @@ class Game {
   }
 
   void addPlayer(Player player){
-    if (gamePhase != Phase.lobby){
-      throw Exception('Game already started');
-    }
-    else if(players.contains(player)){
+    if(players.contains(player)){
       throw Exception('Player already in game');
     }
     else{
       players.add(player);
-    }
-  }
-
-  void startGame(Phase nextPhase){
-    if(nextPhase != gamePhase){
-      gamePhase = nextPhase;
-    }
-    else {
-      throw Exception('Game already in this phase');
     }
   }
 

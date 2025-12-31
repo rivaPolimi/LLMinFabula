@@ -1,10 +1,17 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'adult_settings_screen.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 
 class HostSetupScreen extends StatefulWidget {
-  const HostSetupScreen({super.key});
+  final void Function({
+    required int numPlayers,
+    required String settingName,
+    required String nickname,
+    required String password,
+  }) onNext;
+  
+  const HostSetupScreen({required this.onNext, super.key});
 
   @override
   State<HostSetupScreen> createState() => _HostSetupScreenState();
@@ -67,16 +74,11 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
   void onNextPressed(){
     if (_formKey.currentState!.validate()) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AdultSettingsScreen(
-            settingName: _settingNames[_selectedSettingIndex], 
-            numPlayers: _players, 
-            nickname: _nicknameController.text,
-            password: _passwordController.text,
-          ),
-        ),
+      widget.onNext(
+        settingName: _settingNames[_selectedSettingIndex], 
+        numPlayers: _players, 
+        nickname: _nicknameController.text,
+        password: _passwordController.text,
       );
     }
   }
@@ -318,7 +320,8 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                     height: 48,
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        final gameState = context.read<GameState>();
+                        gameState.goToJoinOrCreate();
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: const Color(0xFFDCC8A0),

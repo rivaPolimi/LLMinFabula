@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
-import 'narrator_intro_screen.dart';
 
 // 5) Lobby
 class LobbyScreen extends StatelessWidget {
@@ -26,12 +25,7 @@ class LobbyScreen extends StatelessWidget {
                   label: 'start the game',
                   activatingCondition: gameState.player!.isAdmin,
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const NarratorIntroScreen(),
-                      ),
-                    );
+                    //TODO: implementare start game
                   },
                 ),
               ],

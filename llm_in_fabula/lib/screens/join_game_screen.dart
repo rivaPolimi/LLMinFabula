@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
-import 'lobby_screen.dart';
 import 'package:provider/provider.dart';
 
 class JoinGameScreen extends StatefulWidget{
@@ -172,7 +171,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
                         if (!_formKey.currentState!.validate()) return;
 
                         final gameState = context.read<GameState>();
-                        final navigator = Navigator.of(context);
+                        //TODO: rimuovi final navigator = Navigator.of(context);
                         final messenger = ScaffoldMessenger.of(context);
 
                         setState(() {
@@ -192,11 +191,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
 
                           _hideLoadingDialog(context);
 
-                          navigator.push(
-                            MaterialPageRoute(
-                              builder: (_) => LobbyScreen(),
-                            ),
-                          );
+                          gameState.goToGamePhase();
                         } catch (e, stackTrace) {
                           //TODO: provvisorio, togliere e gestire meglio eccezioni
                           debugPrint('Create game error: $e');

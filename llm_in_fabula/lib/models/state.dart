@@ -3,9 +3,16 @@ import 'package:llm_in_fabula/services/websocket_service.dart';
 import 'model.dart';
 import 'package:llm_in_fabula/services/narrator_service.dart';
 
+enum GamePhase {lobby, introduction, roleDiscovery,}
+enum AppFlow {title, joinOrCreate, join, create, inGame,}
+
 class GameState extends ChangeNotifier{
   Game? _game;
   Player? _player;
+
+  GamePhase phase = GamePhase.lobby;
+  AppFlow flow = AppFlow.title;
+
 
   final WebsocketService _ws = WebsocketService();
 
@@ -16,6 +23,32 @@ class GameState extends ChangeNotifier{
     _ws.stream.listen(_handleWsEvent);
   }
 
+  //Manage the transitions till the lobby
+  void goToJoinOrCreate(){
+    flow = AppFlow.joinOrCreate;
+    notifyListeners();
+  }
+
+  void goToJoin(){
+    flow = AppFlow.join;
+    notifyListeners();
+  }
+
+  void goToCreate(){
+    flow = AppFlow.create;
+    notifyListeners();
+  }
+
+  void goToGamePhase(){
+    flow = AppFlow.inGame;
+    notifyListeners();
+  }
+
+  //Manage game transitions
+
+  
+
+  //Manage HTTP requests
   Future<void> createGameAndSetSession(int numPlayers, String settingName, String nickname, String password, Map<String, int> roles) async{
     final session = await createGame(
       numPlayers,
@@ -40,6 +73,7 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 
+  //Manage websocket
   void _openWebSocket(){
     if(game == null || player == null) return;
 
@@ -65,6 +99,7 @@ class GameState extends ChangeNotifier{
     }
   }
 
+  //Manage websocket events
   void _onPlayerJoined(int playerId, String nickname, bool isDead){
     //Check that the received player is not already registered in the game state
     for(final p in game!.players){

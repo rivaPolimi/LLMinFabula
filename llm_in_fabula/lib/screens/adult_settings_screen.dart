@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
-import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +11,8 @@ class RoleDefinition{
 }
 
 class AdultSettingsScreen extends StatefulWidget {
+  final VoidCallback onBack;
+
   final int numPlayers;
   final String settingName;
   final String nickname;
@@ -21,8 +22,9 @@ class AdultSettingsScreen extends StatefulWidget {
     required this.numPlayers, 
     required this.settingName, 
     required this.nickname, 
-    required this.password, 
-    super.key
+    required this.password,
+    required this.onBack,
+    super.key,
   });
 
   @override
@@ -423,7 +425,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                       ? null
                       : () async {
                         final gameState = context.read<GameState>();
-                        final navigator = Navigator.of(context);
+                        // TODO: rimuovi final navigator = Navigator.of(context);
                         final messenger = ScaffoldMessenger.of(context);
 
                         setState(() {
@@ -446,11 +448,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
                           _hideLoadingDialog(context);
 
-                          navigator.push(
-                            MaterialPageRoute(
-                              builder: (_) => LobbyScreen(),
-                            ),
-                          );
+                          gameState.goToGamePhase();
                         } catch (e, stackTrace) {
                           //TODO: provvisorio, togliere e gestire meglio eccezioni
                           debugPrint('Create game error: $e');
@@ -487,7 +485,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 SizedBox(
                   height: 48,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => widget.onBack(),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0),
                       foregroundColor: const Color(0xFF003943),

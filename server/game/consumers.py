@@ -1,13 +1,7 @@
-import json
-# import aioredis
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser # TODO: need for authentication?
-from django.shortcuts import get_object_or_404
 from .models import Player, Game
 from .services.poll import *
 from .notifications import notify_updated_votes, notify_new_player_joined
-from .engine import GameEngine
-from django.conf import settings
 from channels.db import database_sync_to_async
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -78,14 +72,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_add(self.group_role, self.channel_name)
 
         # Send acknowledgement to players (TODO: needed? can't i just send everything with the story?)
-        self.send_json({
+        await self.send_json({
             "type": "start_ack",
             "message": event["message"],
             "game_id": event["game_id"]
         })
 
     async def tell_story(self, event):
-        self.send_json({
+        await self.send_json({
             "type": event["phase"],
             "text": event["text"],
         })
@@ -96,13 +90,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 id=content.get("poll_id")
             )
         except Poll.DoesNotExist:
-            self.send_json({
+            await self.send_json({
                 "type": "Vote error",
                 "text": "Poll not found, vote not registered",
             })
 
         if not self.player.role.name == poll.role:
-            self.send_json({
+            await self.send_json({
                 "type": "Vote error",
                 "text": "Not allowed",
             })
@@ -116,7 +110,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             await notify_updated_votes(self.game, poll, tally)
 
     async def player_arrested(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "arrested_notification",
             "message": event["message"],
         })
@@ -126,19 +120,19 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.group_role, self.channel_name)
         self.group_role = ""
         
-        self.send_json({
+        await self.send_json({
             "type": "death",
             "message": event["message"],
         })
 
     async def game_ended(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "game_ended",
             "outcome": event["outcome"],
         })
 
     async def action_outcome(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "action_outcome",
             "target_id": event["target_id"],
             "target_name": event["target_name"],
@@ -146,20 +140,20 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         })
         
     async def poll_begin(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "poll_begin",
             "poll_id": event["poll_id"],
             "duration": event["duration"],
         })
 
     async def start_extra_time(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "start_extra_time",
             "duration": event["duration"],
         })
 
     async def send_tally(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "tally",
             "poll_id": event["poll_id"],
             "tally": event["tally"],

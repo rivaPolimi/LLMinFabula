@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/routers/app_router.dart';
 import 'package:provider/provider.dart';
-import 'screens/play_screen.dart';
 import 'models/state.dart';
 
 void main() {
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
         useMaterial3: true,
       ),
-      home: const PlayScreen(),
+      home: const AppRouter(),
     );
   }
 }
