@@ -45,6 +45,7 @@ class GameState extends ChangeNotifier{
 
     final url = 'wss://llminfabula.onrender.com/ws/game/${game!.id}/${player!.id}/';
     _ws.openWebSocketConnection(url);
+    debugPrint("Connection opened");
   }
 
   void sendMessage(Map<String, dynamic> data){
@@ -56,6 +57,7 @@ class GameState extends ChangeNotifier{
   }
 
   void _handleWsEvent(Map<String, dynamic> event){
+    debugPrint("Handling event");
     switch (event['type']) {
       case 'player_joined':
         _onPlayerJoined(event['player_id'], event['nickname'], event['is_dead']);

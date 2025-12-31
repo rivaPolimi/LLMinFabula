@@ -65,7 +65,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def new_player_joined(self, event):
         if(event["player_id"] != self.player_id):
-            self.send_json({
+            await self.send_json({
                 "type": "player_joined",
                 "player_id": event["player_id"],
                 "nickname": event["nickname"],

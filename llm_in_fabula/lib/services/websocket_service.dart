@@ -18,6 +18,7 @@ class WebsocketService {
   void openWebSocketConnection(String url){
     if(_channel != null) return; //Prevent double connection
 
+    debugPrint("Connecting to socket");
     _channel = WebSocketChannel.connect(Uri.parse(url));
 
     _channel!.stream.listen(
@@ -39,11 +40,13 @@ class WebsocketService {
   void send(dynamic data){
     if (_channel == null) return;
 
+    debugPrint("Sending message to WS");
     _channel!.sink.add(jsonEncode(data));
   }
 
   void _handleMessage(dynamic message){
     final decoded = jsonDecode(message) as Map<String, dynamic>;
+    debugPrint("Received message from socket");
     _controller.add(decoded);
     //TODO: non riaggiungere più volte lo stesso player
   }
