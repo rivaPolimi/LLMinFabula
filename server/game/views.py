@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db.models import Count, F
 from .notifications import notify_game_started
 from .engine import GameEngine
 from .models import Game, Player, Role, Setting
@@ -51,12 +52,11 @@ class JoinGameView(APIView):
         passw = join_configuration.get("password")
 
         # Search a not full lobby which matches password or raises 404_NOT_FOUND error
-        queryset = Game.objects.raw(
-            'SELECT g.id, g.password ' \
-            'FROM Game as g ' \
-            'WHERE g.id and g.max_players > (SELECT count(*)' \
-            'FROM Player as p' \
-            'WHERE p.game_id = g.id)'
+        queryset = (
+            Game.objects
+                .annotate(player_count=Count('player'))
+                .filter(max_players__gt=F('player_count'))
+                .values('id', 'password')
         )
         game = get_object_or_404(queryset, password=passw)
 
