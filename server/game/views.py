@@ -59,11 +59,11 @@ class JoinGameView(APIView):
         )
         game = get_object_or_404(queryset, password=passw)
 
-        player = Player.objects.get_or_create(
+        player = Player.objects.create(
             nickname=nick, game=game
         )
         #TODO: come tengo aggiornata la lista di players nella lobby?
-        return Response({"game_id": game.id, "player_id": player.id, "players": list(game.get_active_players().values('id', 'nickname', 'isDead'))},
+        return Response({"game_id": game.id, "player_id": player.id, "players": list(game.get_active_players().values('id', 'nickname', 'is_dead'))},
                         status=status.HTTP_200_OK)
     
 class StartGameView(APIView):
