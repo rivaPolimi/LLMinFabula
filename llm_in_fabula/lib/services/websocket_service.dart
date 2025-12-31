@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -9,6 +10,8 @@ class WebsocketService {
   WebsocketService._internal();
 
   WebSocketChannel? _channel;
+  final _controller = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get stream => _controller.stream;
 
   bool get isConnected => _channel != null;
 
@@ -40,8 +43,14 @@ class WebsocketService {
   }
 
   void _handleMessage(dynamic message){
-    final decoded = jsonDecode(message);
-    //TODO: gestisci messaggio
+    final decoded = jsonDecode(message) as Map<String, dynamic>;
+    _controller.add(decoded);
+    //TODO: non riaggiungere più volte lo stesso player
+  }
+
+  void dispose(){
+    _controller.close();
+    close();
   }
 
   void close(){

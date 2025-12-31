@@ -4,13 +4,21 @@ class Player {
   final int id;
   final String nickname;
   final bool isAdmin;
-  final bool isDead = false;
+  bool isDead = false;
   //TODO: serve ruolo?
 
-  const Player({required this.id, required this.nickname, required this.isAdmin});
+  Player({required this.id, required this.nickname, this.isAdmin = false, this.isDead = false});
 
   int getId(){
     return id;
+  }
+
+  bool getIsDead(){
+    return isDead;
+  }
+
+  void setIsDead(bool value){
+    isDead = value;
   }
 
   factory Player.fromJson(Map<String, dynamic> json) {

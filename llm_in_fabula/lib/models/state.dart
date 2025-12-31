@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/services/websocket_service.dart';
 import 'model.dart';
 import 'package:llm_in_fabula/services/narrator_service.dart';
 
@@ -6,8 +7,14 @@ class GameState extends ChangeNotifier{
   Game? _game;
   Player? _player;
 
+  final WebsocketService _ws = WebsocketService();
+
   Game? get game => _game;
   Player? get player => _player;
+
+  GameState(){
+    _ws.stream.listen(_handleWsEvent);
+  }
 
   Future<void> createGameAndSetSession(int numPlayers, String settingName, String nickname, String password, Map<String, int> roles) async{
     final session = await createGame(
@@ -20,6 +27,7 @@ class GameState extends ChangeNotifier{
     
     _game = session.game;
     _player = session.player;
+    _openWebSocket();
     notifyListeners();
   }
 
@@ -28,6 +36,44 @@ class GameState extends ChangeNotifier{
 
     _game = session.game;
     _player = session.player;
+    _openWebSocket();
     notifyListeners();
   }
+
+  void _openWebSocket(){
+    if(game == null || player == null) return;
+
+    final url = 'wss://llminfabula.onrender.com/ws/game/${game!.id}/${player!.id}/';
+    _ws.openWebSocketConnection(url);
+  }
+
+  void sendMessage(Map<String, dynamic> data){
+    _ws.send(data);
+  }
+
+  void disconnect() {
+    _ws.close();
+  }
+
+  void _handleWsEvent(Map<String, dynamic> event){
+    switch (event['type']) {
+      case 'player_joined':
+        _onPlayerJoined(event['player_id'], event['nickname'], event['is_dead']);
+        break;
+    }
+  }
+
+  void _onPlayerJoined(int playerId, String nickname, bool isDead){
+    //Check that the received player is not already registered in the game state
+    for(final p in game!.players){
+      if(p.id == playerId) return;
+    }
+
+    var player = Player(id: playerId, nickname: nickname, isDead: isDead);
+    game!.players.add(player);
+
+    notifyListeners();
+  }
+
+
 }

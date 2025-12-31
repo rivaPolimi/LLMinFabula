@@ -38,8 +38,9 @@ class GradientPage extends StatelessWidget {
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
+  final bool activatingCondition;
 
-  const PrimaryButton({super.key, required this.label, required this.onPressed});
+  const PrimaryButton({super.key, required this.label, required this.onPressed, this.activatingCondition = true});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,7 @@ class PrimaryButton extends StatelessWidget {
       width: 220,
       height: 48,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: activatingCondition ? onPressed : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFE4D2A6),
           foregroundColor: const Color(0xFF08313F),

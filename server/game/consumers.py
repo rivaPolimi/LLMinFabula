@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser # TODO: need for authentica
 from django.shortcuts import get_object_or_404
 from .models import Player, Game
 from .services.poll import *
-from .notifications import notify_updated_votes
+from .notifications import notify_updated_votes, notify_new_player_joined
 from .engine import GameEngine
 from django.conf import settings
 from channels.db import database_sync_to_async
@@ -44,6 +44,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
+        notify_new_player_joined(self.game_id, self.player)
+
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.group_all, self.channel_name)
 
@@ -60,6 +62,15 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         if msg_type == "vote":
             self.handle_vote(self, content)
+
+    async def new_player_joined(self, event):
+        if(event["player_id"] != self.player_id):
+            self.send_json({
+                "type": "player_joined",
+                "player_id": event["player_id"],
+                "nickname": event["nickname"],
+                "is_dead": event["is_dead"],
+            })
 
     async def game_started(self, event):
         # Join role based channel

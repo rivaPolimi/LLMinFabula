@@ -194,7 +194,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
 
                           navigator.push(
                             MaterialPageRoute(
-                              builder: (_) => LobbyScreen(players: gameState.game!.players),
+                              builder: (_) => LobbyScreen(),
                             ),
                           );
                         } catch (e, stackTrace) {

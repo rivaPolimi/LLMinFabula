@@ -448,7 +448,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
                           navigator.push(
                             MaterialPageRoute(
-                              builder: (_) => LobbyScreen(players: gameState.game!.players),
+                              builder: (_) => LobbyScreen(),
                             ),
                           );
                         } catch (e, stackTrace) {

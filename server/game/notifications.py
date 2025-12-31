@@ -89,3 +89,11 @@ def notify_game_end(game_id: int, player_id: int, outcome: str):
         f"game_{game_id}_{player_id}",
         {"type": "game.ended", "outcome": outcome,},
     )
+
+def notify_new_player_joined(game_id: int, player: Player):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_all",
+        {"type": "new.player.joined", "player_id": player.id, "nickname": player.nickname, "is_dead": player.is_dead,},
+    )
