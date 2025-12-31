@@ -44,7 +44,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
-        notify_new_player_joined(self.game_id, self.player)
+        await notify_new_player_joined(self.game_id, self.player)
 
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.group_all, self.channel_name)
@@ -113,7 +113,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             end_poll_by_id(poll.id, player=self.player)
         else:
             tally = tally_votes(poll)
-            notify_updated_votes(self.game, poll, tally)
+            await notify_updated_votes(self.game, poll, tally)
 
     async def player_arrested(self, event):
         self.send_json({

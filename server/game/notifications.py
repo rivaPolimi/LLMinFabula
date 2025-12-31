@@ -41,11 +41,11 @@ def notify_poll_begin(game: Game, poll: Poll):
         {"type": "poll.begin", "poll_id": poll.id, "duration": poll.duration}
     )
 
-def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):
+async def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):
     # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
     channel_layer = get_channel_layer()
 
-    async_to_sync(channel_layer.group_send)(
+    channel_layer.group_send(
         f"game_{game_id}_{poll.role.name}",
         {"type": "send.tally", "poll_id": poll.id, "tally": tally}
     )
@@ -90,10 +90,10 @@ def notify_game_end(game_id: int, player_id: int, outcome: str):
         {"type": "game.ended", "outcome": outcome,},
     )
 
-def notify_new_player_joined(game_id: int, player: Player):
+async def notify_new_player_joined(game_id: int, player: Player):
     channel_layer = get_channel_layer()
 
-    async_to_sync(channel_layer.group_send)(
+    await channel_layer.group_send(
         f"game_{game_id}_all",
         {"type": "new.player.joined", "player_id": player.id, "nickname": player.nickname, "is_dead": player.is_dead,},
     )
