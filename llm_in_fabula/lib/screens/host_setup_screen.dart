@@ -14,7 +14,12 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
   int _players = 8;
 
   // Indice del ruolo selezionato (inizializzato a 0 per mostrare il primo)
-  int _selectedRoleIndex = 0;
+  int _selectedSettingIndex = 0;
+
+  //Form key necessaria per validare l'input dell'utente
+  final _formKey = GlobalKey<FormState>();
+
+  bool _isFormFilled = false;
 
   final PageController _pageController = PageController(viewportFraction: 0.6);
 
@@ -30,12 +35,20 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
   ];
 
   // Lista dei nomi dei ruoli (corrispondente a _roles)
-  final List<String> _roleNames = [
+  final List<String> _settingNames = [
     'Children',
     'Classic',
     'Vampire',
     'Zombie',
   ];
+
+  void _checkFormFilled(){
+    setState(() {
+      _isFormFilled =
+        _nicknameController.text.trim().isNotEmpty &&
+        _passwordController.text.isNotEmpty;
+    });
+  }
 
   @override
   void dispose() {
@@ -43,6 +56,29 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
     _nicknameController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    _nicknameController.addListener(_checkFormFilled);
+    _passwordController.addListener(_checkFormFilled);
+  }
+
+  void onNextPressed(){
+    if (_formKey.currentState!.validate()) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdultSettingsScreen(
+            settingName: _settingNames[_selectedSettingIndex], 
+            numPlayers: _players, 
+            nickname: _nicknameController.text,
+            password: _passwordController.text,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -59,239 +95,247 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
               color: const Color(0xFFC9B486),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                const Center(
-                  child: Text(
-                    'HOST',
-                    style: TextStyle(
-                      color: Color(0xFF003943),
-                      letterSpacing: 2,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                const Text(
-                  'Insert the NUMBER OF PLAYERS',
-                  style: TextStyle(color: Color(0xFF003943), fontSize: 18),
-                ),
-                const SizedBox(height: 8),
-
-                // DROPDOWN
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCC8A0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<int>(
-                      value: _players,
-                      isExpanded: true,
-                      dropdownColor: const Color(0xFFDCC8A0),
-                      items: [6, 7, 8, 9, 10, 11, 12, 16, 20]
-                          .map(
-                            (n) => DropdownMenuItem(
-                          value: n,
-                          child: Text(
-                            '$n',
-                            style: const TextStyle(color: Colors.black87),
-                          ),
-                        ),
-                      )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null) {
-                          setState(() => _players = v);
-                        }
-                      },
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-                const Text(
-                  'Select the SETTING for the game',
-                  style: TextStyle(color: Color(0xFF003943), fontSize: 18),
-                ),
-                const SizedBox(height: 3),
-
-                // LISTA RUOLI ORIZZONTALE (PageView)
-                SizedBox(
-                  height: 250,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _roles.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _selectedRoleIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final isSelected = _selectedRoleIndex == index;
-                      // Scale animation for selected item effect
-                      return AnimatedScale(
-                        scale: isSelected ? 1.0 : 0.8,
-                        duration: const Duration(milliseconds: 300),
-                        child: Center(
-                          child: RoleButton(
-                            size: 200,
-                            iconAsset: _roles[index],
-                            isSelected: isSelected,
-                            onTap: () {
-                              _pageController.animateToPage(
-                                index,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                
-                // NOME DEL RUOLO SELEZIONATO
-                Center(
-                  child: Text(
-                    _roleNames[_selectedRoleIndex],
-                    style: const TextStyle(
-                      color: Color(0xFF003943),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // NICKNAME
-                const Text(
-                  'Choose your NICKNAME',
-                  style: TextStyle(color: Color(0xFF003943), fontSize: 16),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _nicknameController,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    filled: true,
-                    fillColor: Color(0xFFDCC8A0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // PASSWORD
-                const Text(
-                  'Create a PASSWORD',
-                  style: TextStyle(color: Color(0xFF003943), fontSize: 16),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          filled: true,
-                          fillColor: Color(0xFFDCC8A0),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        obscureText: true,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 20),
+                  const Center(
+                    child: Text(
+                      'HOST',
+                      style: TextStyle(
+                        color: Color(0xFF003943),
+                        letterSpacing: 2,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'Copy password',
-                      onPressed: () {
-                        final text = _passwordController.text;
-                        if (text.isNotEmpty) {
-                          Clipboard.setData(ClipboardData(text: text));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Password copied to clipboard'),
-                              duration: Duration(seconds: 1),
+                  ),
+                  const SizedBox(height: 14),
+
+                  const Text(
+                    'Insert the NUMBER OF PLAYERS',
+                    style: TextStyle(color: Color(0xFF003943), fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // DROPDOWN
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCC8A0),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: _players,
+                        isExpanded: true,
+                        dropdownColor: const Color(0xFFDCC8A0),
+                        items: [6, 7, 8, 9, 10, 11, 12, 16, 20]
+                            .map(
+                              (n) => DropdownMenuItem(
+                            value: n,
+                            child: Text(
+                              '$n',
+                              style: const TextStyle(color: Colors.black87),
                             ),
-                          );
-                        }
+                          ),
+                        )
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) {
+                            setState(() => _players = v);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Select the SETTING for the game',
+                    style: TextStyle(color: Color(0xFF003943), fontSize: 18),
+                  ),
+                  const SizedBox(height: 3),
+
+                  // LISTA RUOLI ORIZZONTALE (PageView)
+                  SizedBox(
+                    height: 250,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _roles.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _selectedSettingIndex = index;
+                        });
                       },
-                      icon: const Icon(Icons.copy, color: Colors.black87),
+                      itemBuilder: (context, index) {
+                        final isSelected = _selectedSettingIndex == index;
+                        // Scale animation for selected item effect
+                        return AnimatedScale(
+                          scale: isSelected ? 1.0 : 0.8,
+                          duration: const Duration(milliseconds: 300),
+                          child: Center(
+                            child: RoleButton(
+                              size: 200,
+                              iconAsset: _roles[index],
+                              isSelected: isSelected,
+                              onTap: () {
+                                _pageController.animateToPage(
+                                  index,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
+                  ),
 
-                const SizedBox(height: 32),
+                  // NOME DEL RUOLO SELEZIONATO
+                  Center(
+                    child: Text(
+                      _settingNames[_selectedSettingIndex],
+                      style: const TextStyle(
+                        color: Color(0xFF003943),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
 
-                // BOTTONE "next"
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AdultSettingsScreen(),
+                  const SizedBox(height: 24),
+
+                  // NICKNAME
+                  const Text(
+                    'Choose your NICKNAME',
+                    style: TextStyle(color: Color(0xFF003943), fontSize: 16),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _nicknameController,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      filled: true,
+                      fillColor: Color(0xFFDCC8A0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if(value == null || value.trim().isEmpty){
+                        return 'Nickname is required';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // PASSWORD
+                  const Text(
+                    'Create a PASSWORD',
+                    style: TextStyle(color: Color(0xFF003943), fontSize: 16),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            filled: true,
+                            fillColor: Color(0xFFDCC8A0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          obscureText: true,
+                          validator: (value) {
+                            if(value == null || value.trim().isEmpty){
+                              return 'Password is required';
+                            }
+                            return null;
+                          },
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF003943),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: 'Copy password',
+                        onPressed: () {
+                          final text = _passwordController.text;
+                          if (text.isNotEmpty) {
+                            Clipboard.setData(ClipboardData(text: text));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Password copied to clipboard'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.copy, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // BOTTONE "next"
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _isFormFilled ? onNextPressed : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF003943),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text(
+                        'next',
+                        style: TextStyle(color: Color(0xFFDCC8A0), fontSize: 20),
                       ),
                     ),
-                    child: const Text(
-                      'next',
-                      style: TextStyle(color: Color(0xFFDCC8A0), fontSize: 20),
-                    ),
                   ),
-                ),
 
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                // BOTTONE "back"
-                SizedBox(
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: const Color(0xFFDCC8A0),
-                      foregroundColor: const Color(0xFF003943),
-                      side: const BorderSide(color: Color(0xFF003943)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                  // BOTTONE "back"
+                  SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDCC8A0),
+                        foregroundColor: const Color(0xFF003943),
+                        side: const BorderSide(color: Color(0xFF003943)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
                       ),
-                    ),
-                    child: const Text('back', style: TextStyle(color: Color(0xFF003943), fontSize: 20)),
+                      child: const Text('back', style: TextStyle(color: Color(0xFF003943), fontSize: 20)),
 
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            )
           ),
         ),
       ),

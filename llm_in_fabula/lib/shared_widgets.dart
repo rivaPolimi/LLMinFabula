@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/model.dart';
 
 // WIDGET RIUSABILI
 
@@ -61,17 +62,8 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-// Modello molto semplice per il giocatore
-// per ora a livello di emulazione non succede niente (vistoche non c'è modo per morire), però è gia pronto per cambiare aspetto nella griglia...
-class PlayerAvatarModel {
-  final String name;
-  final bool isAlive;
-
-  PlayerAvatarModel({required this.name, this.isAlive = true});
-}
-
 class PlayerGrid extends StatelessWidget {
-  final List<PlayerAvatarModel> players;
+  final List<Player> players;
 
   const PlayerGrid({super.key, required this.players});
 
@@ -88,17 +80,17 @@ class PlayerGrid extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: p.isAlive
+              backgroundColor: !p.isDead
                   ? const Color(0xFF0B3F53) //COLORE SFONDO ICONA GIOCATORE IN BASE SE VIVO/MORTO
                   : Colors.grey.shade700,
               child: Icon(
-                p.isAlive ? Icons.person : Icons.close,  //icona giocatore è una X se morto, altrimenti personaggino (prese da icone base flutter)
+                !p.isDead ? Icons.person : Icons.close,  //icona giocatore è una X se morto, altrimenti personaggino (prese da icone base flutter)
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              p.name,
+              p.nickname,
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ],

@@ -1,0 +1,51 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
+
+class WebsocketService {
+  static final WebsocketService _instance = WebsocketService._internal();
+  factory WebsocketService() => _instance;
+  WebsocketService._internal();
+
+  WebSocketChannel? _channel;
+
+  bool get isConnected => _channel != null;
+
+  void openWebSocketConnection(String url){
+    if(_channel != null) return; //Prevent double connection
+
+    _channel = WebSocketChannel.connect(Uri.parse(url));
+
+    _channel!.stream.listen(
+      (message) {
+        debugPrint('WS received message: $message');
+        _handleMessage(message);
+      },
+      onError: (error) {
+        debugPrint('WS error: $error');
+        close();
+      },
+      onDone: () {
+        debugPrint('WS closed');
+        close();
+      },
+    );
+  }
+
+  void send(dynamic data){
+    if (_channel == null) return;
+
+    _channel!.sink.add(jsonEncode(data));
+  }
+
+  void _handleMessage(dynamic message){
+    final decoded = jsonDecode(message);
+    //TODO: gestisci messaggio
+  }
+
+  void close(){
+    _channel?.sink.close(status.goingAway);
+    _channel = null;
+  }
+}

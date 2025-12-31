@@ -4,6 +4,7 @@ class Player {
   final int id;
   final String nickname;
   final bool isAdmin;
+  final bool isDead = false;
   //TODO: serve ruolo?
 
   const Player({required this.id, required this.nickname, required this.isAdmin});

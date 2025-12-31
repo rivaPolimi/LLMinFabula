@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/screens/join_game_screen.dart';
 import '../shared_widgets.dart';
 import 'host_setup_screen.dart';
 
@@ -46,7 +47,10 @@ class CreateJoinScreen extends StatelessWidget {
                 ),
                 child: const Text('join a lobby'),
                 onPressed: () {
-
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const JoinGameScreen()),
+                  );
                 },
               ),
             ),

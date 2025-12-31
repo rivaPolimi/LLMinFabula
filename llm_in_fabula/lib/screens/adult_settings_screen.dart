@@ -1,22 +1,70 @@
-
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
-import '../shared_widgets.dart';
+import 'package:provider/provider.dart';
+
+class RoleDefinition{
+  final String name;
+  final String asset;
+
+  const RoleDefinition({required this.name, required this.asset});
+}
 
 class AdultSettingsScreen extends StatefulWidget {
-  const AdultSettingsScreen({super.key});
+  final int numPlayers;
+  final String settingName;
+  final String nickname;
+  final String password;
+
+  const AdultSettingsScreen({
+    required this.numPlayers, 
+    required this.settingName, 
+    required this.nickname, 
+    required this.password, 
+    super.key
+  });
 
   @override
   State<AdultSettingsScreen> createState() => _AdultSettingsScreenState();
 }
 
 class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
+  
+  bool _isLoading = false;
+
+  final List<RoleDefinition> secondaryRoles = [
+    RoleDefinition(name: 'seer', asset: 'assets/icons/Seer.png'),
+    RoleDefinition(name: 'courtesan', asset: 'assets/icons/Courtesan.png'),
+    RoleDefinition(name: 'madman', asset: 'assets/icons/MadMan.png'),
+    RoleDefinition(name: 'medium', asset: ''),
+    RoleDefinition(name: 'hunter', asset: ''),
+    RoleDefinition(name: 'guard', asset: ''),
+    RoleDefinition(name: 'jailer', asset: ''),
+    RoleDefinition(name: 'copycat', asset: ''),
+  ];
+  
   // Set per tracciare gli indici dei ruoli secondari selezionati (multi-selezione)
   final Set<int> _selectedSecondaryIndices = {};
   
   int _numberOfWolves = 1;
   int _numberOfVillagers = 1;
+
+  Map<String ,int> buildRoleMap(){
+    final Map<String, int> roleMap = {};
+
+    roleMap['wolf'] = _numberOfWolves;
+    roleMap['villager'] = _numberOfVillagers;
+
+    for(final i in _selectedSecondaryIndices){
+      if(i < _selectedSecondaryIndices.length){
+        final roleName = secondaryRoles[i].name;
+        roleMap[roleName] = 1;
+      }
+    }
+
+    return roleMap;
+  }
 
   void _toggleSecondarySelection(int index) {
     setState(() {
@@ -26,6 +74,20 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
         _selectedSecondaryIndices.add(index);
       }
     });
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, 
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  void _hideLoadingDialog(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pop();
   }
 
   @override
@@ -190,9 +252,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     final List<String> activeRoles = [
                       'assets/icons/Seer.png',
                       'assets/icons/Courtesan.png',
-                      //'assets/icons/Courtesan.png',
                       'assets/icons/MadMan.png',
-                      //'assets/icons/seer.png',
                     ];
 
                     final String? asset = index < activeRoles.length
@@ -359,22 +419,58 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      final players = List.generate(
-                        8,
-                            (i) => PlayerAvatarModel(
-                          name: 'Player ${i + 1}',
-                          isAlive: true,
-                        ),
-                      );
+                    onPressed: _isLoading
+                      ? null
+                      : () async {
+                        final gameState = context.read<GameState>();
+                        final navigator = Navigator.of(context);
+                        final messenger = ScaffoldMessenger.of(context);
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LobbyScreen(players: players),
-                        ),
-                      );
-                    },
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        _showLoadingDialog(context);
+                        
+                        try {
+                          //Queries the server to create the game, then set game and player in the state
+                          await gameState.createGameAndSetSession(
+                            widget.numPlayers, 
+                            widget.settingName.toLowerCase(), 
+                            widget.nickname, 
+                            widget.password, 
+                            buildRoleMap()
+                          );
+
+                          if(!context.mounted) return;
+
+                          _hideLoadingDialog(context);
+
+                          navigator.push(
+                            MaterialPageRoute(
+                              builder: (_) => LobbyScreen(players: gameState.game!.players),
+                            ),
+                          );
+                        } catch (e, stackTrace) {
+                          //TODO: provvisorio, togliere e gestire meglio eccezioni
+                          debugPrint('Create game error: $e');
+                          debugPrintStack(stackTrace: stackTrace);
+
+                          if(!mounted) return;
+
+                          _hideLoadingDialog(context);
+
+                          messenger.showSnackBar(
+                            SnackBar(content: Text(e.toString())),
+                          );
+                        } finally {
+                          if(mounted) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+                        }
+                      },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF003943),
                       foregroundColor: Colors.white,
