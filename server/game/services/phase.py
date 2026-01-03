@@ -1,6 +1,5 @@
 from .redis import redis_client
 from ..models import Game
-from ..engine import GameEngine
 from channels.db import database_sync_to_async
 
 
@@ -19,6 +18,8 @@ def end_phase(key: str, game_id: int):
     if phase != key:
         return
     
+    from ..engine import GameEngine
+
     if key == "introduction":
         GameEngine.role_reveal(game)
     if key == "role_reveal":
