@@ -3,7 +3,14 @@ from .models import Game, Player, Poll
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-#TODO: cercare nel codice i vari messaggi mandati e trasformarli in notifiche
+def notify_phase_start(game_id: int, phase: str, duration: int):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_all",
+        {"type": "phase.start", "phase": phase, "duration": duration},
+    )
+
 
 def notify_narrator_story(game_id: int, role: str, phase: str, text: str):
     channel_layer = get_channel_layer()
@@ -31,6 +38,27 @@ def notify_lynch_outcome(game_id: int, target: Player):
     async_to_sync(channel_layer.group_send)(
         f"game_{game_id}_all",
         {"type": "lynch.result", "target_id": target.id, "target_name": target.nickname}
+    )
+
+def notify_night_victims(game_id: int, targets: list[Player]):
+    targets_id = [target.id for target in targets]
+    targets_name = [target.nickname for target in targets]
+    
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_all",
+        {"type": "night.victims", "victims_id": targets_id, "victims_name": targets_name,}
+    )
+
+def notify_lynch_victim(game_id: int, target: Player):
+    target_id = (target.id if target else None)
+    target_name = (target.nickname if target else "nobody")
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_all",
+        {"type": "lynch.victim", "victim_id": target_id, "victim_name": target_name,}
     )
 
 def notify_poll_begin(game: Game, poll: Poll):

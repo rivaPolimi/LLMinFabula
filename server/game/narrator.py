@@ -48,6 +48,34 @@ class Narrator:
         notify_narrator_story(game_id, "all", "introduction", introduction)
 
     @staticmethod
+    def gen_night_intro(game: Game, setting: Setting):
+        """
+        Generate introduction to night phase.
+        """
+
+        client = Narrator.get_openai_client()
+
+        conversation = [{
+            "role": "system",
+            "content": setting.initial_prompt,
+        }]
+
+        # Ask LLM to generate the message
+        conversation.append({
+            "role": "user",
+            "content": "Write an introduction to the night phase of the game",
+        })
+        response = client.chat.completions.create(
+            model=Narrator.get_deployment_name(),
+            messages=conversation
+        )
+
+        message = response.choices[0].message.content
+
+        # Broadcast story to all players
+        notify_narrator_story(game.id, "all", "night_intro", message)
+
+    @staticmethod
     def gen_role_action_message(game: Game, setting: Setting, role: str):
         """
         Generate the message that confirms the role turn.
@@ -75,7 +103,7 @@ class Narrator:
         message = response.choices[0].message.content
 
         # Broadcast story to all players
-        notify_narrator_story(game.id, role, role + "_phase", message)
+        notify_narrator_story(game.id, "all", role + "_phase", message)
 
     @staticmethod
     def gen_night_report(game: Game, setting: Setting, killed_players: list[str]):

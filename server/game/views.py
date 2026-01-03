@@ -99,8 +99,6 @@ class StartGameView(APIView):
         # Broadcast that game started
         notify_game_started(game.id)
 
-        # Generates introduction
-        Narrator.gen_introduction(game_id, game.setting)
         GameEngine.start_game(game)      
 
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)

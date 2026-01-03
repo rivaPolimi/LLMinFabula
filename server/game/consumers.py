@@ -1,6 +1,7 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .models import Player, Game
 from .services.poll import *
+from fsm import States
 from .notifications import notify_updated_votes, notify_new_player_joined
 from channels.db import database_sync_to_async
 
@@ -55,7 +56,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         msg_type = content.get("type")
 
         if msg_type == "vote":
-            self.handle_vote(self, content)
+            await self.handle_vote(self, content)
+
+        elif msg_type == "narration_finished":
+            await self.handle_narration_finished(content)
 
     async def new_player_joined(self, event):
         if(event["player_id"] != self.player_id):
@@ -71,11 +75,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         self.group_role = f"game_{self.game_id}_{self.player.role.name}"
         await self.channel_layer.group_add(self.group_role, self.channel_name)
 
-        # Send acknowledgement to players (TODO: needed? can't i just send everything with the story?)
+        setting = self.game.setting
+
+        # Send role to players
         await self.send_json({
-            "type": "start_ack",
-            "message": event["message"],
-            "game_id": event["game_id"]
+            "type": "role_ack",
+            "name": setting.alternative_role_names[self.player.role.name],
+            #"description": setting.alternative_role_descriptions[self.player.role.name], TODO: da sbloccare
+            "game_id": event["game_id"],
         })
 
     async def tell_story(self, event):
@@ -108,6 +115,20 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         else:
             tally = tally_votes(poll)
             await notify_updated_votes(self.game, poll, tally)
+
+    async def handle_narration_finished(self, content):
+        from engine import GameEngine
+        phase = content["phase"]
+        state = self.game.state
+        
+        if phase == States.INTRODUCTION and state == States.INTRODUCTION:
+            GameEngine.role_reveal(self.game)
+        elif phase == States.ROLE_REVEAL and state == States.ROLE_REVEAL:
+            GameEngine.night_intro(self.game)
+        elif phase == "night_intro" and state == States.NIGHT:
+            GameEngine.handle_night(self.game)
+        elif phase == States.NIGHT_REPORT and state == States.NIGHT_REPORT:
+            GameEngine.check_win_engine(self.game)
 
     async def player_arrested(self, event):
         await self.send_json({

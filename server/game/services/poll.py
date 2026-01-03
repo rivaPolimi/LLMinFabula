@@ -101,7 +101,7 @@ def end_poll_by_id(poll_id: int, player: Player = None):
     except Poll.DoesNotExist:
         return
     
-    if poll.game.state == "discussion":
+    if poll.game.state == "discussion" and not check_everybody_voted(poll.game, poll):
         return GameEngine.start_extra_vote(poll.game, poll)
     
     # If poll already finished do not count the vote
