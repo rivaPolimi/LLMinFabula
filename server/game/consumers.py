@@ -1,7 +1,7 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .models import Player, Game
 from .services.poll import *
-from fsm import States
+from .fsm import States
 from .notifications import notify_updated_votes, notify_new_player_joined
 from channels.db import database_sync_to_async
 

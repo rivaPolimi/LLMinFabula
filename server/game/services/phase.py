@@ -1,6 +1,6 @@
 from .redis import redis_client
-from models import Game
-from engine import GameEngine
+from ..models import Game
+from ..engine import GameEngine
 from channels.db import database_sync_to_async
 
 
