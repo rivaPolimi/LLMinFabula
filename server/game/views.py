@@ -82,7 +82,7 @@ class StartGameView(APIView):
 
         # assign roles
         role_pool = []
-        for name, limit in game.available_roles:
+        for name, limit in game.available_roles.items():
             role_pool.extend([name] * limit)
 
         players = list(players_in_lobby)
