@@ -2,7 +2,7 @@ import os
 from .models import *
 from .utils import *
 from .notifications import notify_narrator_story
-from openai import OpenAI
+from openai import AzureOpenAI
 
 class Narrator:
 
@@ -12,9 +12,10 @@ class Narrator:
 
     @staticmethod
     def get_openai_client():
-        return OpenAI(
-            base_url=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.environ.get("AZURE_OPENAI_KEY")
+        return AzureOpenAI(
+            azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.environ.get("AZURE_OPENAI_KEY"),
+            api_version=os.environ.get("AZURE_DEPLOYMENT_MODEL")
         )
 
     @staticmethod
