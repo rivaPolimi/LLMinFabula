@@ -52,6 +52,15 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   int _numberOfWolves = 1;
   int _numberOfVillagers = 1;
 
+  //TODO: controllare che non escano numeri di ruoli impossibili
+  @override
+  void initState() {
+    super.initState();
+    _numberOfWolves = widget.numPlayers ~/ 5;
+    _numberOfWolves = _numberOfWolves < 1 ? 1 : _numberOfWolves;
+    _numberOfVillagers = widget.numPlayers - _numberOfWolves;
+  }
+
   Map<String ,int> buildRoleMap(){
     final Map<String, int> roleMap = {};
 

@@ -79,15 +79,17 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         # Send role to players
         await self.send_json({
-            "type": "role_ack",
+            "type": "role_reveal",
+            "original_name": self.player.role.name,
             "name": setting.alternative_role_names[self.player.role.name],
-            #"description": setting.alternative_role_descriptions[self.player.role.name], TODO: da sbloccare
+            "description": '', #setting.alternative_role_descriptions[self.player.role.name], TODO: da sbloccare
             "game_id": event["game_id"],
         })
 
     async def tell_story(self, event):
         await self.send_json({
-            "type": event["phase"],
+            "type": "narrator",
+            "phase": event["phase"],
             "text": event["text"],
         })
 
@@ -178,5 +180,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "type": "tally",
             "poll_id": event["poll_id"],
             "tally": event["tally"],
+        })
+
+    async def phase_start(self, event):
+        await self.send_json({
+            "type": "game_phase",
+            "phase": event["phase"],
+            "started_at": event["started_at"],
+            "duration": event["duration"],
         })
 

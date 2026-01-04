@@ -1,14 +1,16 @@
 from collections import Counter
+from datetime import datetime, timezone
 from .models import Game, Player, Poll
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 def notify_phase_start(game_id: int, phase: str, duration: int):
     channel_layer = get_channel_layer()
+    started_at = datetime.now(timezone.utc).astimezone().isoformat()
 
     async_to_sync(channel_layer.group_send)(
         f"game_{game_id}_all",
-        {"type": "phase.start", "phase": phase, "duration": duration},
+        {"type": "phase.start", "phase": phase, "started_at": started_at, "duration": duration},
     )
 
 

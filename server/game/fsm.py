@@ -3,16 +3,15 @@ from viewflow.fsm import Transition, State
 class States:
     LOBBY = "lobby"
     INTRODUCTION = "introduction"
-    ROLE_REVEAL = "role_reveal"
-    DAY = "day"
+    ROLE_REVEAL = "roleReveal"
     DISCUSSION = "discussion"
-    EXTRA_VOTE = "extra_vote"
+    EXTRA_VOTE = "extraVote"
     LYNCH = "lynching"
-    NIGHT = "night"
-    NIGHT_REPORT = "night_report"
-    ROLE_ACTION = "role_action"
-    CHECK_WIN = "check_win"
-    END_GAME = "end_game"
+    NIGHT = "nightIntro"
+    NIGHT_REPORT = "nightReport"
+    ROLE_ACTION = "roleAction"
+    CHECK_WIN = "checkWin"
+    END_GAME = "endGame"
 
 class GameStateMachine:
 

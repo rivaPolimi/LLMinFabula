@@ -73,7 +73,7 @@ class Narrator:
         message = response.choices[0].message.content
 
         # Broadcast story to all players
-        notify_narrator_story(game.id, "all", "night_intro", message)
+        notify_narrator_story(game.id, "all", "nightIntro", message)
 
     @staticmethod
     def gen_role_action_message(game: Game, setting: Setting, role: str):
@@ -103,7 +103,7 @@ class Narrator:
         message = response.choices[0].message.content
 
         # Broadcast story to all players
-        notify_narrator_story(game.id, "all", role + "_phase", message)
+        notify_narrator_story(game.id, "all", "roleAction", message)
 
     @staticmethod
     def gen_night_report(game: Game, setting: Setting, killed_players: list[str]):
@@ -149,7 +149,7 @@ class Narrator:
         message = response.choices[0].message.content
 
         # Broadcast story to all players
-        notify_narrator_story(game.id, "all", "day", message)
+        notify_narrator_story(game.id, "all", "nightReport", message)
 
     @staticmethod
     def gen_lynch_story(game: Game, setting: Setting, voted_player: str, lynch_success: bool):
@@ -249,6 +249,6 @@ class Narrator:
         message = response.choices[0].message.content
 
         # Broadcast story to all players
-        notify_narrator_story(game.id, "all", "end", message)
+        notify_narrator_story(game.id, "all", "endGame", message)
 
         

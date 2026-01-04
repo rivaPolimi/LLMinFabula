@@ -46,8 +46,8 @@ class GameEngine:
         ROLE_DURATION = 15
 
         # Notify phase change
-        notify_phase_start(game.id, "role_reveal", ROLE_DURATION)
-        start_phase_timer(game.id, "role_reveal", ROLE_DURATION)
+        notify_phase_start(game.id, "roleReveal", ROLE_DURATION)
+        start_phase_timer(game.id, "roleReveal", ROLE_DURATION)
 
     @staticmethod
     @transaction.atomic
@@ -66,8 +66,8 @@ class GameEngine:
         # Generate intro
         Narrator.gen_night_intro(game, game.setting)
 
-        notify_phase_start(game.id, "night_intro", NIGHT_INTRO_DURATION)
-        start_phase_timer(game.id, "night_intro", NIGHT_INTRO_DURATION)
+        notify_phase_start(game.id, "nightIntro", NIGHT_INTRO_DURATION)
+        start_phase_timer(game.id, "nightIntro", NIGHT_INTRO_DURATION)
 
     @staticmethod
     @transaction.atomic
@@ -142,8 +142,8 @@ class GameEngine:
         
         notify_night_victims(game.id, killed_players)
         
-        notify_phase_start(game.id, "night_report", NIGHT_REPORT_DURATION)
-        start_phase_timer(game.id, "night_report", NIGHT_REPORT_DURATION)
+        notify_phase_start(game.id, "nightReport", NIGHT_REPORT_DURATION)
+        start_phase_timer(game.id, "nightReport", NIGHT_REPORT_DURATION)
 
     @staticmethod
     @transaction.atomic
@@ -161,9 +161,9 @@ class GameEngine:
         
         if end:
             return GameEngine.end_game(game, winners)
-        elif previous_phase == "night_report":
+        elif previous_phase == "nightReport":
             return GameEngine.start_discussion(game)
-        elif previous_phase == "lynch_outcome":
+        elif previous_phase == "lynchOutcome":
             return GameEngine.night_intro(game)
 
     @staticmethod
@@ -239,10 +239,10 @@ class GameEngine:
             kill_player(game, game.lynch_target)
             Narrator.gen_lynch_story(game, game.setting, game.lynch_target.nickname, True)
 
-        LYNCH_OUTCOME_DURATION = 30
+        LYNCH_DURATION = 30
         
-        notify_phase_start(game.id, "lynch_outcome", LYNCH_OUTCOME_DURATION)
-        start_phase_timer(game.id, "lynch_outcome", LYNCH_OUTCOME_DURATION)
+        notify_phase_start(game.id, "lynch", LYNCH_DURATION)
+        start_phase_timer(game.id, "lynch", LYNCH_DURATION)
 
     @staticmethod
     @transaction.atomic
@@ -267,7 +267,7 @@ class GameEngine:
 
         # Tell the story with the narrator
         Narrator.gen_story_end(game, game.setting, winners_name, reason)
-        notify_phase_start(game.id, "end_game", 0)
+        notify_phase_start(game.id, "endGame", 0)
 
         # Handle transition
         game.fsm.end_game()

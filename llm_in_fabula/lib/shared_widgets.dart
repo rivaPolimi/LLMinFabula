@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/model.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 
 // WIDGET RIUSABILI
 
@@ -97,6 +99,46 @@ class PlayerGrid extends StatelessWidget {
           ],
         );
       }).toList(),
+    );
+  }
+}
+
+// TIMER SUPERIORE DELLE SCHERMATE
+class TimerBar extends StatelessWidget {
+  const TimerBar({super.key});
+
+  String formatDuration(Duration d){
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GameState>(
+      builder: (_, state, _) {
+        if (state.duration == null) return const SizedBox.shrink(); //TODO: potrebbe tornare utile ma per ora boh
+
+        final remaining = state.remaining;
+        final total = Duration(seconds: state.duration);
+        final progress = 1 - (remaining.inSeconds / total.inSeconds);
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                formatDuration(remaining),
+                style: TextStyle(
+                  color: remaining.inSeconds < 5 ? Colors.red : Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            LinearProgressIndicator(value: progress),
+          ],
+        );
+      }
     );
   }
 }

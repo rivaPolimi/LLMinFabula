@@ -3,7 +3,8 @@ class Player {
   final String nickname;
   final bool isAdmin;
   bool isDead = false;
-  //TODO: serve ruolo?
+  late final String roleName;
+  late final String roleDescription;
 
   Player({required this.id, required this.nickname, this.isAdmin = false, this.isDead = false});
 

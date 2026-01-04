@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
 import 'package:llm_in_fabula/screens/role_screen.dart';
@@ -19,9 +20,41 @@ class GameRouter extends StatelessWidget {
         //TODO: forse dovrei passare l'introduzione qui
         return const NarratorIntroScreen();
 
-      case GamePhase.roleDiscovery:
+      case GamePhase.roleReveal:
         //TODO: come passo il ruolo?
         return const RoleScreen();
+
+      case GamePhase.discussion:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.extraVote:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.lynch:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.nightIntro:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.nightReport:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.roleAction:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.checkWin:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
+
+      case GamePhase.endGame:
+        //TODO: DA IMPLEMENTARE
+        return const CreateJoinScreen();
     }  
   }
 }

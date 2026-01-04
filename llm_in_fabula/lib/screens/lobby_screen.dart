@@ -23,9 +23,9 @@ class LobbyScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 PrimaryButton(
                   label: 'start the game',
-                  activatingCondition: gameState.player!.isAdmin,
+                  activatingCondition: gameState.player!.isAdmin && gameState.game!.players.length >= 4,
                   onPressed: () {
-                    //TODO: implementare start game
+                    gameState.startGameSession();
                   },
                 ),
               ],

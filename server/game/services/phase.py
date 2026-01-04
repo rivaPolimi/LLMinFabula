@@ -22,11 +22,11 @@ def end_phase(key: str, game_id: int):
 
     if key == "introduction":
         GameEngine.role_reveal(game)
-    if key == "role_reveal":
+    if key == "roleReveal":
         GameEngine.night_intro(game)
-    if key == "night_intro":
+    if key == "nightIntro":
         GameEngine.handle_night(game)
-    if key == "night_report":
-        GameEngine.check_win_engine(game, "night_report")
-    if key == "lynch_outcome":
-        GameEngine.check_win_engine(game, "lynch_outcome")
+    if key == "nightReport":
+        GameEngine.check_win_engine(game, "nightReport")
+    if key == "lynchOutcome":
+        GameEngine.check_win_engine(game, "lynchOutcome")
