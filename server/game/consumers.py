@@ -71,8 +71,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             })
 
     async def reload_db_state(self):
-        self.player = await database_sync_to_async(Player.objects.select_related("role").get)(id=self.player_id)
-        self.game = await database_sync_to_async(Game.objects.get)(id=self.game_id)
+        self.player = await database_sync_to_async(Player.objects.select_related("role", "game").get)(id=self.player_id)
+        self.game = await database_sync_to_async(Game.objects.select_related("setting").get)(id=self.game_id)
 
     async def game_started(self, event):
         await self.reload_db_state()
@@ -100,7 +100,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def handle_vote(self, content):
         try:
-            poll = await database_sync_to_async(Poll.objects.get)(
+            poll = await database_sync_to_async(Poll.objects.select_related("game").get)(
                 id=content.get("poll_id")
             )
         except Poll.DoesNotExist:
@@ -198,4 +198,3 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "started_at": event["started_at"],
             "duration": event["duration"],
         })
-
