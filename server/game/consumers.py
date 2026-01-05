@@ -70,7 +70,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "is_dead": event["is_dead"],
             })
 
+    async def reload_db_state(self):
+        self.player = await database_sync_to_async(Player.objects.select_related("role").get)(id=self.player_id)
+        self.game = await database_sync_to_async(Game.objects.get)(id=self.game_id)
+
     async def game_started(self, event):
+        await self.reload_db_state()
         # Join role based channel
         self.group_role = f"game_{self.game_id}_{self.player.role.name}"
         await self.channel_layer.group_add(self.group_role, self.channel_name)
@@ -104,6 +109,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "text": "Poll not found, vote not registered",
             })
 
+        await self.reload_db_state()
+
         if not self.player.role.name == poll.role:
             await self.send_json({
                 "type": "Vote error",
@@ -120,6 +127,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def handle_narration_finished(self, content):
         from engine import GameEngine
+        await self.reload_db_state()
+
         phase = content["phase"]
         state = self.game.state
         

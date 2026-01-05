@@ -94,7 +94,7 @@ class StartGameView(APIView):
             role = get_object_or_404(Role, name=role_name)
             player.role = role
             player.role_name = role_name
-            player.save(update_fields=["role"])
+            player.save()
 
         # Broadcast that game started
         notify_game_started(game.id)
