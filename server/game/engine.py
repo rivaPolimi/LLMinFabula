@@ -20,8 +20,7 @@ class GameEngine:
         LOBBY -> INTRODUCTION
         """
 
-        game.fsm.start_introduction()
-        game.save()
+        GameEngine._transition(game, game.fsm.start_introduction)
 
         # Generate introduction
         Narrator.gen_introduction(game.id, game.setting)
@@ -40,8 +39,7 @@ class GameEngine:
         INTRODUCTION -> ROLE_REVEAL
         """
 
-        game.fsm.start_role_reveal()
-        game.save()
+        GameEngine._transition(game, game.fsm.start_role_reveal)
 
         ROLE_DURATION = 15
 
@@ -58,8 +56,7 @@ class GameEngine:
         """
 
         game.night_counter += 1
-        game.fsm.begin_night()
-        game.save()
+        GameEngine._transition(game, game.fsm.begin_night)
 
         NIGHT_INTRO_DURATION = 15
 
@@ -87,8 +84,7 @@ class GameEngine:
         game.save()
 
         # Transition NIGHT -> ROLE_ACTION
-        game.fsm.start_role_action()
-        game.save()
+        GameEngine._transition(game, game.fsm.start_role_action)
         
         # Generate the message for the role
         Narrator.gen_role_action_message(game, game.setting, next_role.name)
@@ -117,8 +113,7 @@ class GameEngine:
             notify_action_outcome(game.id, target, poll.role.name, outcome)
 
         # transition to NIGHT state
-        game.fsm.end_action(game)
-        game.save()
+        GameEngine._transition(game, game.fsm.end_action)
 
         return GameEngine.handle_night(game)
 
@@ -153,8 +148,7 @@ class GameEngine:
         () -> CHECK_WIN
         """
 
-        game.fsm.check_win()
-        game.save()
+        GameEngine._transition(game, game.fsm.check_win)
 
         # Check if anybody won
         end, winners = check_win(game)
@@ -183,8 +177,7 @@ class GameEngine:
         notify_poll_begin(game, poll)
 
         # Handle transition
-        game.fsm.start_discussion()
-        game.save()
+        GameEngine._transition(game, game.fsm.start_discussion)
 
     @staticmethod
     @transaction.atomic
@@ -204,8 +197,7 @@ class GameEngine:
         notify_start_extra_time(game, extra_duration)
 
         # Handle transition
-        game.fsm.start_extra_vote()
-        game.save()
+        GameEngine._transition(game, game.fsm.start_extra_vote)
 
     @staticmethod
     @transaction.atomic
@@ -221,8 +213,7 @@ class GameEngine:
         game.save()
 
         # Handle transition
-        game.fsm.end_discussion()
-        game.save()
+        GameEngine._transition(game, game.fsm.end_discussion)
 
         return GameEngine.lynch_player(game)
 
@@ -270,5 +261,12 @@ class GameEngine:
         notify_phase_start(game.id, "endGame", 0)
 
         # Handle transition
-        game.fsm.end_game()
+        GameEngine._transition(game, game.fsm.end_game)
+
+    @staticmethod
+    @transaction.atomic
+    def _transition(game: Game, transition):
+        game.fsm.state = game.state
+        transition()
+        game.state = game.fsm.state
         game.save()
