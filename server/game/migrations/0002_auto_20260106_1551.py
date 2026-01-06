@@ -8,17 +8,17 @@ def seed_data(apps, schema_editor):
 
     # Roles
     default_roles = [
-        {"name": "villager", "order": 20, "play_first_night": False, "has_action": False},
-        {"name": "madman", "order": 20, "play_first_night": False, "has_action": False},
-        {"name": "ghost", "order": 20, "play_first_night": False, "has_action": False},
-        {"name": "copycat", "order": 1, "play_first_night": False, "has_action": True, "action_class": "CopycatActionHandler"},
-        {"name": "jailer", "order": 2, "play_first_night": True, "has_action": True, "action_class": "JailerActionHandler"},
-        {"name": "medium", "order": 3, "play_first_night": False, "has_action": True, "action_class": "MediumActionHandler"},
-        {"name": "seer", "order": 4, "play_first_night": True, "has_action": True, "action_class": "SeerActionHandler"},
-        {"name": "courtesan", "order": 5, "play_first_night": True, "has_action": True, "action_class": "CourtesanActionHandler"},
-        {"name": "hunter", "order": 6, "play_first_night": True, "has_action": True, "action_class": "HunterActionHandler"},
-        {"name": "guard", "order": 7, "play_first_night": True, "has_action": True, "action_class": "GuardActionHandler"},
-        {"name": "wolf", "order": 8, "play_first_night": True, "has_action": True, "action_class": "WolfActionHandler"},
+        {"name": "villager", "description": "", "order": 20, "play_first_night": False, "has_action": False},
+        {"name": "madman", "description": "", "order": 20, "play_first_night": False, "has_action": False},
+        {"name": "ghost", "description": "", "order": 20, "play_first_night": False, "has_action": False},
+        {"name": "copycat", "description": "", "order": 1, "play_first_night": False, "has_action": True, "action_class": "CopycatActionHandler"},
+        {"name": "jailer", "description": "", "order": 2, "play_first_night": True, "has_action": True, "action_class": "JailerActionHandler"},
+        {"name": "medium", "description": "", "order": 3, "play_first_night": False, "has_action": True, "action_class": "MediumActionHandler"},
+        {"name": "seer", "description": "", "order": 4, "play_first_night": True, "has_action": True, "action_class": "SeerActionHandler"},
+        {"name": "courtesan", "description": "", "order": 5, "play_first_night": True, "has_action": True, "action_class": "CourtesanActionHandler"},
+        {"name": "hunter", "description": "", "order": 6, "play_first_night": True, "has_action": True, "action_class": "HunterActionHandler"},
+        {"name": "guard", "description": "", "order": 7, "play_first_night": True, "has_action": True, "action_class": "GuardActionHandler"},
+        {"name": "wolf", "description": "", "order": 8, "play_first_night": True, "has_action": True, "action_class": "WolfActionHandler"},
     ]
 
     for role in default_roles:
