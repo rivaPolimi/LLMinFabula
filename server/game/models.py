@@ -1,10 +1,23 @@
 from django.db import models
 from django.utils.module_loading import import_string
-from .fsm import GameStateMachine
 
 #TODO: riempire il db con i vari ruoli e setting
+class States(models.TextChoices):
+    LOBBY = "lobby"
+    INTRODUCTION = "introduction"
+    ROLE_REVEAL = "roleReveal"
+    DISCUSSION = "discussion"
+    EXTRA_VOTE = "extraVote"
+    LYNCH = "lynching"
+    NIGHT = "nightIntro"
+    NIGHT_REPORT = "nightReport"
+    ROLE_ACTION = "roleAction"
+    CHECK_WIN = "checkWin"
+    END_GAME = "endGame"
+
 class Role(models.Model):
     name = models.CharField(max_length=50)
+    description = models.TextField(default=" ")
     order = models.PositiveIntegerField()
     play_first_night = models.BooleanField(default=True)
     has_action = models.BooleanField(default=False)
@@ -13,16 +26,9 @@ class Role(models.Model):
 class Setting(models.Model):
     name = models.CharField(max_length=50)
     alternative_role_names = models.JSONField()
-    initial_prompt = models.CharField(max_length=1000) #TODO: prompt da passare ogni volta all'LLM per ricordargli il setting
+    initial_prompt = models.TextField()
 
 class Game(models.Model):
-
-    SETTING_CHOICES = {
-        ("children", "Children"),
-        ("wolf", "Wolf"),
-        ("vampire", "Vampire"),
-        ("zombie", "Zombie"),
-    }
 
     max_players = models.IntegerField(default=5)
     setting = models.ForeignKey("Setting", null=True, on_delete=models.SET_NULL, related_name="setting")
@@ -31,8 +37,8 @@ class Game(models.Model):
     night_counter = models.IntegerField(default=0)
     
     # FSM helper fields
-    fsm = GameStateMachine()
-    state = models.CharField(default="lobby")
+    #fsm = GameStateMachine()
+    state = models.CharField(max_length=20, choices=States.choices, default=States.LOBBY)
     current_turn_role = models.ForeignKey("Role", null=True, blank=True, on_delete=models.SET_NULL, related_name="current_turn_role")
 
     # Role choices

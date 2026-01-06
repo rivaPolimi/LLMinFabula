@@ -266,7 +266,7 @@ class GameEngine:
     @staticmethod
     @transaction.atomic
     def _transition(game: Game, transition):
-        game.fsm.state = game.state
+        game.fsm._state = game.state
         transition()
         game.state = game.fsm.state
         game.save()

@@ -1,21 +1,9 @@
-from viewflow.fsm import Transition, State
-
-class States:
-    LOBBY = "lobby"
-    INTRODUCTION = "introduction"
-    ROLE_REVEAL = "roleReveal"
-    DISCUSSION = "discussion"
-    EXTRA_VOTE = "extraVote"
-    LYNCH = "lynching"
-    NIGHT = "nightIntro"
-    NIGHT_REPORT = "nightReport"
-    ROLE_ACTION = "roleAction"
-    CHECK_WIN = "checkWin"
-    END_GAME = "endGame"
+from viewflow import fsm
+from .models import Game, States
 
 class GameStateMachine:
 
-    state = State(States, default=States.LOBBY)
+    state = fsm.State(States, default=States.LOBBY)
 
     @state.transition(source=States.LOBBY, target=States.INTRODUCTION)
     def start_introduction(self):
