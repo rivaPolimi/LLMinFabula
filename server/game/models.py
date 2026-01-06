@@ -37,7 +37,6 @@ class Game(models.Model):
     night_counter = models.IntegerField(default=0)
     
     # FSM helper fields
-    #fsm = GameStateMachine()
     state = models.CharField(max_length=20, choices=States.choices, default=States.LOBBY)
     current_turn_role = models.ForeignKey("Role", null=True, blank=True, on_delete=models.SET_NULL, related_name="current_turn_role")
 

@@ -1,16 +1,30 @@
 
 from django.db import transaction
-from .models import Game, Player, Poll
+from .models import Game, Player, Poll, States
 from .services.poll import get_result, start_poll_timer, create_poll
 from .utils import resolve_night, kill_player, check_win, handle_win
 from .notifications import *
 from .narrator import Narrator
 from .services.phase import start_phase_timer
+from .fsm import GameStateMachine
 
 class GameEngine:
     """
     Centralized service layer to manage game flow and FSM transitions. 
     """
+
+    @staticmethod
+    def _get_fsm(game: Game) -> GameStateMachine:
+        """Return an FSM instance aligned with the game's current state."""
+        fsm = GameStateMachine()
+        current_state = game.state or States.LOBBY
+        # Normalize to States enum and seed via descriptor's set()
+        try:
+            normalized = States(current_state)
+        except Exception:
+            normalized = States.LOBBY
+        GameStateMachine.state.set(fsm, normalized)
+        return fsm
 
     @staticmethod
     @transaction.atomic
@@ -20,7 +34,7 @@ class GameEngine:
         LOBBY -> INTRODUCTION
         """
 
-        GameEngine._transition(game, game.fsm.start_introduction)
+        GameEngine._transition(game, "start_introduction")
 
         # Generate introduction
         Narrator.gen_introduction(game.id, game.setting)
@@ -39,7 +53,7 @@ class GameEngine:
         INTRODUCTION -> ROLE_REVEAL
         """
 
-        GameEngine._transition(game, game.fsm.start_role_reveal)
+        GameEngine._transition(game, "start_role_reveal")
 
         ROLE_DURATION = 15
 
@@ -56,7 +70,7 @@ class GameEngine:
         """
 
         game.night_counter += 1
-        GameEngine._transition(game, game.fsm.begin_night)
+        GameEngine._transition(game, "begin_night")
 
         NIGHT_INTRO_DURATION = 15
 
@@ -84,7 +98,7 @@ class GameEngine:
         game.save()
 
         # Transition NIGHT -> ROLE_ACTION
-        GameEngine._transition(game, game.fsm.start_role_action)
+        GameEngine._transition(game, "start_role_action")
         
         # Generate the message for the role
         Narrator.gen_role_action_message(game, game.setting, next_role.name)
@@ -113,7 +127,7 @@ class GameEngine:
             notify_action_outcome(game.id, target, poll.role.name, outcome)
 
         # transition to NIGHT state
-        GameEngine._transition(game, game.fsm.end_action)
+        GameEngine._transition(game, "end_action")
 
         return GameEngine.handle_night(game)
 
@@ -125,6 +139,8 @@ class GameEngine:
         Compute the outcome of the night and sends it to all players.
         NIGHT -> NIGHT_REPORT
         """
+
+        GameEngine._transition(game, "finish_night")
 
         # Computes all the night actions
         killed_players = resolve_night(game)
@@ -148,7 +164,7 @@ class GameEngine:
         () -> CHECK_WIN
         """
 
-        GameEngine._transition(game, game.fsm.check_win)
+        GameEngine._transition(game, "check_win")
 
         # Check if anybody won
         end, winners = check_win(game)
@@ -177,7 +193,7 @@ class GameEngine:
         notify_poll_begin(game, poll)
 
         # Handle transition
-        GameEngine._transition(game, game.fsm.start_discussion)
+        GameEngine._transition(game, "start_discussion")
 
     @staticmethod
     @transaction.atomic
@@ -197,7 +213,7 @@ class GameEngine:
         notify_start_extra_time(game, extra_duration)
 
         # Handle transition
-        GameEngine._transition(game, game.fsm.start_extra_vote)
+        GameEngine._transition(game, "start_extra_vote")
 
     @staticmethod
     @transaction.atomic
@@ -213,7 +229,7 @@ class GameEngine:
         game.save()
 
         # Handle transition
-        GameEngine._transition(game, game.fsm.end_discussion)
+        GameEngine._transition(game, "end_discussion")
 
         return GameEngine.lynch_player(game)
 
@@ -261,12 +277,14 @@ class GameEngine:
         notify_phase_start(game.id, "endGame", 0)
 
         # Handle transition
-        GameEngine._transition(game, game.fsm.end_game)
+        GameEngine._transition(game, "end_game")
 
     @staticmethod
     @transaction.atomic
-    def _transition(game: Game, transition):
-        game.fsm._state = game.state
+    def _transition(game: Game, transition_name: str):
+        fsm = GameEngine._get_fsm(game)
+        transition = getattr(fsm, transition_name)
         transition()
-        game.state = game.fsm.state
+        game.state = fsm.state
+        # Save the whole game object to persist any other in-flight changes (e.g., counters).
         game.save()
