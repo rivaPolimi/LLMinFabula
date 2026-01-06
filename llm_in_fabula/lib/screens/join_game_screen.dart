@@ -233,7 +233,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
                     height: 48,
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        context.read<GameState>().goToJoinOrCreate();
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: const Color(0xFFDCC8A0),

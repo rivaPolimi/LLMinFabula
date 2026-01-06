@@ -30,7 +30,7 @@ class GameState extends ChangeNotifier{
   Game? get game => _game;
   Player? get player => _player;
   Duration get remaining {
-    if(phaseStart == null || duration == null) return Duration.zero;
+    //if(phaseStart == null || duration == null) return Duration.zero;
 
     final elapsed = DateTime.now().difference(phaseStart);
     final remaining = Duration(seconds: duration) - elapsed;
@@ -121,11 +121,7 @@ class GameState extends ChangeNotifier{
   }
 
   void startGameSession() async {
-    final started = await startGame(game!, player!);
-
-    if(!started){
-      throw Exception('Error game not started');
-    }
+    await startGame(game!, player!);
   }
 
   //Manage websocket
@@ -142,6 +138,7 @@ class GameState extends ChangeNotifier{
   }
 
   void disconnect() {
+
     _ws.close();
   }
 
@@ -153,7 +150,8 @@ class GameState extends ChangeNotifier{
         break;
 
       case 'game_phase':
-        _onUpdatePhase(event['phase'], event['started_at'], event['duration']);
+        final startedAt = DateTime.parse(event['started_at']);
+        _onUpdatePhase(event['phase'], startedAt, event['duration']);
         break;
 
       case 'narrator':
@@ -180,6 +178,10 @@ class GameState extends ChangeNotifier{
   }
 
   void _onUpdatePhase(String phase, DateTime start, int duration){
+    debugPrint("🟢 Final rule of thumb");
+    debugPrint("Phase: $phase");
+    debugPrint("Start: $start");
+    debugPrint("Duration: $duration");
     this.phase = GamePhase.values.byName(phase);
     phaseStart = start;
     this.duration = duration;
@@ -189,6 +191,8 @@ class GameState extends ChangeNotifier{
   }
 
   void _onNarratorStoryReceived(String phase, String text){
+    debugPrint("NarratorPhase: $phase");
+    debugPrint("Story: $text");
     GamePhase narrationPhase = GamePhase.values.byName(phase);
 
     if (narrationPhase == this.phase) {
@@ -200,7 +204,10 @@ class GameState extends ChangeNotifier{
 
   //TODO: non sto usando game_id e original_name
   void _onRoleReveal(String roleName, String roleDescription){
+    debugPrint("Rolename: {$roleName}");
     player!.roleName = roleName;
     player!.roleDescription = roleDescription;
+
+    notifyListeners();
   }
 }

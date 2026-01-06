@@ -32,7 +32,7 @@ class WebsocketService {
       },
       onDone: () {
         debugPrint('WS closed');
-        close();
+        _channel=null;
       },
     );
   }
@@ -51,12 +51,13 @@ class WebsocketService {
     //TODO: non riaggiungere più volte lo stesso player
   }
 
-  void dispose(){
-    _controller.close();
-    close();
-  }
+  //void dispose(){
+  //  _controller.close();
+  //  close();
+  //}
 
   void close(){
+    debugPrintStack();
     _channel?.sink.close(status.goingAway);
     _channel = null;
   }

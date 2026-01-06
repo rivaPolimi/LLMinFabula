@@ -98,7 +98,7 @@ Future<bool> startGame(Game game, Player player) async{
       'player_id': player.id,
     }),
   );
-  
+  debugPrint(response.statusCode.toString());
   if (response.statusCode == 200) {
     return true;
   } else {

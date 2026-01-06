@@ -117,7 +117,7 @@ class TimerBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GameState>(
       builder: (_, state, _) {
-        if (state.duration == null) return const SizedBox.shrink(); //TODO: potrebbe tornare utile ma per ora boh
+        //if (state.duration == null) return const SizedBox.shrink(); //TODO: potrebbe tornare utile ma per ora boh
 
         final remaining = state.remaining;
         final total = Duration(seconds: state.duration);

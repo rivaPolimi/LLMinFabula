@@ -27,7 +27,7 @@ class _NarratorIntroScreenState extends State<NarratorIntroScreen>{
   Widget build(BuildContext context) {
     return Consumer<GameState>(
       builder: (_, state, _) {
-        final introduction = state.narratorText;
+        final introduction = state.narratorText ?? "";
         
         return GradientPage(
           child: Padding(
@@ -43,7 +43,7 @@ class _NarratorIntroScreenState extends State<NarratorIntroScreen>{
                     ),
                     child: SingleChildScrollView(
                       child: Text(
-                        introduction!,
+                        introduction,
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
