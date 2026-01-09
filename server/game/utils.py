@@ -4,8 +4,8 @@ Helper functions for game and lobby management
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from django.db.models import Q
 from .models import *
+from .notifications import notify_player_eliminated, notify_game_end
 
     
 def get_players(game):
@@ -15,28 +15,47 @@ def get_players(game):
 
     return players
 
-def send_poll(game, poll):
-    channel_layer = get_channel_layer()
+def resolve_night(game: Game):
+    """
+    Perform all the actions which involves targeting another player.
+    Returns the killed player(s) or None if nobody was killed.
+    """
+    target_player = game.wolf_target
+    killed_players = []
 
-    async_to_sync(channel_layer.group_send)(
-        f"game_{game.id}_{poll.role}",
-        {"type": "poll", "poll_id": poll.id, "duration": poll.duration}
-    )
-    pass
+    # Target does not die if he is protected
+    if target_player.protected:
+        return None
+
+    # If courtesan is killed also her protected dies
+    if target_player.role.name == "courtesan":
+        protected_player = game.courtesan_target
+        game.courtesan_target = None
+        if not protected_player.role == "wolf":
+            kill_player(protected_player)
+            killed_players.append(protected_player)
+
+    # If hunter is killed also his target dies
+    elif target_player.role.name == "hunter":
+        aimed_player = game.hunter_target
+        game.hunter_target = None
+        kill_player(game, aimed_player)
+        killed_players.append(aimed_player)
+
+    kill_player(game, target_player)
+
+    killed_players.append(target_player)
+
+    return killed_players
 
 def kill_player(game, player):
-    channel_layer = get_channel_layer()
-
     player.is_dead = True
     player.protected = False
     ghost = Role.objects.filter(name = "ghost")
     player.role = ghost
     player.save()
 
-    async_to_sync(channel_layer.group_send)(
-        f"game_{game.id}_{player.id}",
-        {"type": "player.eliminated", "message": "You've been killed",},
-    )
+    notify_player_eliminated(game.id, player.id)
 
 def check_win(game):
     """
@@ -66,18 +85,12 @@ def handle_win(game, winners):
     """
 
     players = Player.objects.filter(game=game)
-    channel_layer = get_channel_layer()
+
     for player in players:
         if player in winners:
-            async_to_sync(channel_layer.group_send)(
-                f"game_{game.id}_{player.id}",
-                {"type": "game.ended", "outcome": "win",},
-            )
+            notify_game_end(game.id, player.id, "win")
         else:
-            async_to_sync(channel_layer.group_send)(
-                f"game_{game.id}_{player.id}",
-                {"type": "game.ended", "outcome": "lost",},
-            )
+            notify_game_end(game.id, player.id, "lost")
     clear_game(game)
 
 def clear_game(game):

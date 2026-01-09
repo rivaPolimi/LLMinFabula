@@ -1,34 +1,43 @@
 from django.db import models
 from django.utils.module_loading import import_string
-from .fsm import GameStateMachine
 
-#TODO: riempire il db con i vari ruoli
+#TODO: riempire il db con i vari ruoli e setting
+class States(models.TextChoices):
+    LOBBY = "lobby"
+    INTRODUCTION = "introduction"
+    ROLE_REVEAL = "roleReveal"
+    DISCUSSION = "discussion"
+    EXTRA_VOTE = "extraVote"
+    LYNCH = "lynching"
+    NIGHT = "nightIntro"
+    NIGHT_REPORT = "nightReport"
+    ROLE_ACTION = "roleAction"
+    CHECK_WIN = "checkWin"
+    END_GAME = "endGame"
+
 class Role(models.Model):
     name = models.CharField(max_length=50)
+    description = models.TextField(default=" ")
     order = models.PositiveIntegerField()
+    play_first_night = models.BooleanField(default=True)
+    has_action = models.BooleanField(default=False)
     action_class = models.CharField(max_length=255, null=True, blank=True)
 
+class Setting(models.Model):
+    name = models.CharField(max_length=50)
+    alternative_role_names = models.JSONField()
+    initial_prompt = models.TextField()
 
 class Game(models.Model):
 
-    SETTING_CHOICES = {
-        ("child", "Child"),
-        ("wolf", "Wolf"),
-        ("vampire", "Vampire"),
-        ("zombie", "Zombie"),
-    }
-
     max_players = models.IntegerField(default=5)
-    setting = models.CharField(
-                    max_length=7,
-                    choices=SETTING_CHOICES,
-                    default="wolf")
+    setting = models.ForeignKey("Setting", null=True, on_delete=models.SET_NULL, related_name="setting")
     password = models.CharField(max_length=20)
     available_roles = models.JSONField()
+    night_counter = models.IntegerField(default=0)
     
     # FSM helper fields
-    fsm = GameStateMachine
-    state = models.CharField(default="lobby")
+    state = models.CharField(max_length=20, choices=States.choices, default=States.LOBBY)
     current_turn_role = models.ForeignKey("Role", null=True, blank=True, on_delete=models.SET_NULL, related_name="current_turn_role")
 
     # Role choices
@@ -56,9 +65,25 @@ class Game(models.Model):
         Return all the roles that have at least one living player.
         """
 
-        roles = (
-            self.players.filter(game_id = self.id, is_dead = False).values_list("role", flat=True).distinct()
-        )
+        #TODO: cambia la query e sistemala
+        roles = ()
+        if self.night_counter <= 1:
+            roles = (
+                self.players
+                    .filter(game_id = self.id, is_dead = False)
+                    .exclude(role__has_action=False)
+                    .exclude(role__play_first_night = False)
+                    .values_list("role", flat=True)
+                    .distinct()
+            )
+        else:
+            roles = (
+                self.players
+                    .filter(game_id = self.id, is_dead = False)
+                    .exclude(role__has_action=False)
+                    .values_list("role", flat=True)
+                    .distinct()
+            )
         return Role.objects.filter(id__in = roles).order_by("order")
 
     def next_active_role(self):
@@ -144,12 +169,23 @@ class Poll(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="polls")
     duration = models.PositiveIntegerField(default=30)
     role = models.CharField(max_length=10, choices=ROLES_CHOICES, default="none")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    expired = models.BooleanField(default=False)
 
     REQUIRED_FIELDS = ["game", "duration", "role"]
 
+    def get_voter(self):
+        voter = Vote.objects.filter(poll__id=id).first()
+        
+        if not voter:
+            return None
+        else:
+            return voter
+
 class Vote(models.Model):
     # poll_id is unique, in any case I can check if the game is correct from the poll instance
-    poll = models.ForeignKey("Poll", on_delete=models.CASCADE)
+    poll = models.ForeignKey("Poll", on_delete=models.CASCADE, related_name="votes")
     voter = models.ForeignKey("Player", on_delete=models.DO_NOTHING, related_name="voter")
     target = models.ForeignKey("Player", on_delete=models.DO_NOTHING, related_name="target")
 

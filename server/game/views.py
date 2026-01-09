@@ -4,12 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-#from .models import *
-from .utils import *
-from .narrator import *
-#from .serializers import GameSerializer, JoinSerializer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from django.db.models import Count, F
+from .notifications import notify_game_started
+from .engine import GameEngine
+from .models import Game, Player, Role, Setting
+from .narrator import Narrator
+from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
@@ -24,9 +24,11 @@ class CreateGameView(APIView):
         roles_available = lobby_configurations.get("roles_available")
         nick = lobby_configurations.get("nickname")
     
+        setting = get_object_or_404(Setting, name=set)
+
         game = Game.objects.create(
             max_players = num,
-            setting = set,
+            setting = setting,
             password = passw,
             available_roles = roles_available,
         )
@@ -50,20 +52,18 @@ class JoinGameView(APIView):
         passw = join_configuration.get("password")
 
         # Search a not full lobby which matches password or raises 404_NOT_FOUND error
-        queryset = Game.objects.raw(
-            'SELECT g.id, g.password ' \
-            'FROM Game as g ' \
-            'WHERE g.id and g.max_players > (SELECT count(*)' \
-            'FROM Player as p' \
-            'WHERE p.game_id = g.id)'
+        queryset = (
+            Game.objects
+                .annotate(player_count=Count('players'))
+                .filter(max_players__gt=F('player_count'))
         )
         game = get_object_or_404(queryset, password=passw)
 
-        player = Player.objects.get_or_create(
+        player = Player.objects.create(
             nickname=nick, game=game
         )
-
-        return Response({"game_id": game.id, "player_id": player.id, "is_admin": False}, 
+        #TODO: come tengo aggiornata la lista di players nella lobby?
+        return Response({"game_id": game.id, "player_id": player.id, "players": list(game.get_active_players().values('id', 'nickname', 'is_dead'))},
                         status=status.HTTP_200_OK)
     
 class StartGameView(APIView):
@@ -82,7 +82,7 @@ class StartGameView(APIView):
 
         # assign roles
         role_pool = []
-        for name, limit in game.available_roles:
+        for name, limit in game.available_roles.items():
             role_pool.extend([name] * limit)
 
         players = list(players_in_lobby)
@@ -94,18 +94,11 @@ class StartGameView(APIView):
             role = get_object_or_404(Role, name=role_name)
             player.role = role
             player.role_name = role_name
-            player.save(update_fields=["role"])
+            player.save()
 
         # Broadcast that game started
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f"game_{game_id}_all",
-            {"type": "game.started", "message": "Game started", "game_id": game.id}
-        )
+        notify_game_started(game.id)
 
-        # Generates introduction
-        gen_introduction(game_id, game.setting)
-        game.fsm.first_night(game)
-        game.save()
+        GameEngine.start_game(game)      
 
-        return Response({"detail": "Game started"})
+        return Response({"detail": "Game started"}, status=status.HTTP_200_OK)

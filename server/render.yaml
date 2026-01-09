@@ -1,36 +1,49 @@
-services:
-  - type: web
-    name: lupus-server
-    env: python
-    plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py collectstatic --noinput
-    startCommand: |
-      export DJANGO_SETTINGS_MODULE=lupus_server.settings
-      python manage.py migrate --noinput
-      daphne -b 0.0.0.0 -p $PORT lupus_server.asgi:application
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: lupus_server.settings
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: "False"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: lupus-postgres
-          property: connectionString
+# Exported from Render on 2025-12-08T23:19:03Z
+version: "1"
+projects:
+- name: LLMinFabula
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: LLMinFabula
+      runtime: python
+      repo: https://github.com/rivaPolimi/LLMinFabula
+      plan: free
+      envVars:
+      - key: RENDER_EXTERNAL_HOSTNAME
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        sync: false
       - key: REDIS_URL
         fromService:
-          name: lupus-redis
+          name: redis-in-fabula
+          type: keyvalue
           property: connectionString
-
-databases:
-  - name: lupus-postgres
-    plan: free
-
-services:
-  - type: redis
-    name: lupus-redis
-    plan: free
+      - key: AZURE_DEPLOYMENT_NAME
+        sync: false
+      - key: AZURE_OPENAI_ENDOPOINT
+        sync: false
+      - key: AZURE_OPENAI_KEY
+        sync: false
+      region: frankfurt
+      buildCommand: pip install -r requirements.txt
+      startCommand: export DJANGO_SETTINGS_MODULE=lupus_server.settings && python
+        manage.py migrate --noinput && daphne -b 0.0.0.0 -p $PORT lupus_server.asgi:application
+      autoDeployTrigger: "off"
+      buildFilter:
+        ignoredPaths:
+        - Documentation
+        - llm_in_fabula
+      rootDir: server
+    - type: worker
+      name: poll-worker
+      env: python
+      buildCommand: pip install -r requirements.txt
+      startCommand: python -m game.poll_timer_worker
+    - type: keyvalue
+      name: redis-in-fabula
+      plan: free
+      region: frankfurt
+      maxmemoryPolicy: allkeys-lru
+      ipAllowList: []

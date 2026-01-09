@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-//import '../shared_widgets.dart';
-import 'create_join_screen.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 
 // 1.5) PLAY SCREEN (schermata centrale 'play with friends')
 // tappando ovunque si va a CreateJoinScreen
@@ -11,10 +11,8 @@ class PlayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const CreateJoinScreen()),
-        );
+        final gameState = context.read<GameState>();
+        gameState.goToJoinOrCreate();
       },
       child: Container(
         decoration: BoxDecoration(

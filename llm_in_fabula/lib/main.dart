@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'screens/play_screen.dart';
+import 'package:llm_in_fabula/routers/app_router.dart';
+import 'package:provider/provider.dart';
+import 'models/state.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => GameState(),
+      child: const MyApp(),
+    )
+  );
 }
 
 
@@ -20,7 +27,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
         useMaterial3: true,
       ),
-      home: const PlayScreen(),
+      home: const AppRouter(),
     );
   }
 }

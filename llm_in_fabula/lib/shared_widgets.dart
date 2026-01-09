@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/model.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 
 // WIDGET RIUSABILI
 
@@ -37,8 +40,9 @@ class GradientPage extends StatelessWidget {
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
+  final bool activatingCondition;
 
-  const PrimaryButton({super.key, required this.label, required this.onPressed});
+  const PrimaryButton({super.key, required this.label, required this.onPressed, this.activatingCondition = true});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +50,7 @@ class PrimaryButton extends StatelessWidget {
       width: 220,
       height: 48,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: activatingCondition ? onPressed : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFE4D2A6),
           foregroundColor: const Color(0xFF08313F),
@@ -61,17 +65,8 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-// Modello molto semplice per il giocatore
-// per ora a livello di emulazione non succede niente (vistoche non c'è modo per morire), però è gia pronto per cambiare aspetto nella griglia...
-class PlayerAvatarModel {
-  final String name;
-  final bool isAlive;
-
-  PlayerAvatarModel({required this.name, this.isAlive = true});
-}
-
 class PlayerGrid extends StatelessWidget {
-  final List<PlayerAvatarModel> players;
+  final List<Player> players;
 
   const PlayerGrid({super.key, required this.players});
 
@@ -88,22 +83,62 @@ class PlayerGrid extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: p.isAlive
+              backgroundColor: !p.isDead
                   ? const Color(0xFF0B3F53) //COLORE SFONDO ICONA GIOCATORE IN BASE SE VIVO/MORTO
                   : Colors.grey.shade700,
               child: Icon(
-                p.isAlive ? Icons.person : Icons.close,  //icona giocatore è una X se morto, altrimenti personaggino (prese da icone base flutter)
+                !p.isDead ? Icons.person : Icons.close,  //icona giocatore è una X se morto, altrimenti personaggino (prese da icone base flutter)
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              p.name,
+              p.nickname,
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ],
         );
       }).toList(),
+    );
+  }
+}
+
+// TIMER SUPERIORE DELLE SCHERMATE
+class TimerBar extends StatelessWidget {
+  const TimerBar({super.key});
+
+  String formatDuration(Duration d){
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GameState>(
+      builder: (_, state, _) {
+        //if (state.duration == null) return const SizedBox.shrink(); //TODO: potrebbe tornare utile ma per ora boh
+
+        final remaining = state.remaining;
+        final total = Duration(seconds: state.duration);
+        final progress = 1 - (remaining.inSeconds / total.inSeconds);
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                formatDuration(remaining),
+                style: TextStyle(
+                  color: remaining.inSeconds < 5 ? Colors.red : Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            LinearProgressIndicator(value: progress),
+          ],
+        );
+      }
     );
   }
 }

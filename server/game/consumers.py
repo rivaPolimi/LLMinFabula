@@ -1,12 +1,8 @@
-import json
-# import aioredis
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser # TODO: need for authentication?
-from django.shortcuts import get_object_or_404
 from .models import Player, Game
-from .poll import *
-from collections import Counter
-from django.conf import settings
+from .services.poll import *
+from .fsm import States
+from .notifications import notify_updated_votes, notify_new_player_joined
 from channels.db import database_sync_to_async
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -43,6 +39,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
+        await notify_new_player_joined(self.game_id, self.player)
+
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.group_all, self.channel_name)
 
@@ -58,39 +56,63 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         msg_type = content.get("type")
 
         if msg_type == "vote":
-            self.handle_vote(self, content)
+            await self.handle_vote(self, content)
+
+        elif msg_type == "narration_finished":
+            await self.handle_narration_finished(content)
+
+    async def new_player_joined(self, event):
+        if(event["player_id"] != self.player_id):
+            await self.send_json({
+                "type": "player_joined",
+                "player_id": event["player_id"],
+                "nickname": event["nickname"],
+                "is_dead": event["is_dead"],
+            })
+
+    async def reload_db_state(self):
+        self.player = await database_sync_to_async(Player.objects.select_related("role", "game").get)(id=self.player_id)
+        self.game = await database_sync_to_async(Game.objects.select_related("setting").get)(id=self.game_id)
 
     async def game_started(self, event):
+        await self.reload_db_state()
         # Join role based channel
         self.group_role = f"game_{self.game_id}_{self.player.role.name}"
         await self.channel_layer.group_add(self.group_role, self.channel_name)
 
-        # Send acknowledgement to players (TODO: needed? can't i just send everything with the story?)
-        self.send_json({
-            "type": "start_ack",
-            "message": event["message"],
-            "game_id": event["game_id"]
+        setting = self.game.setting
+
+        # Send role to players
+        await self.send_json({
+            "type": "role_reveal",
+            "original_name": self.player.role.name,
+            "name": setting.alternative_role_names[self.player.role.name],
+            "description": '', #setting.alternative_role_descriptions[self.player.role.name], TODO: da sbloccare
+            "game_id": event["game_id"],
         })
 
     async def tell_story(self, event):
-        self.send_json({
-            "type": event["phase"],
+        await self.send_json({
+            "type": "narrator",
+            "phase": event["phase"],
             "text": event["text"],
         })
 
     async def handle_vote(self, content):
         try:
-            poll = await database_sync_to_async(Poll.objects.get)(
+            poll = await database_sync_to_async(Poll.objects.select_related("game").get)(
                 id=content.get("poll_id")
             )
         except Poll.DoesNotExist:
-            self.send_json({
+            await self.send_json({
                 "type": "Vote error",
                 "text": "Poll not found, vote not registered",
             })
 
+        await self.reload_db_state()
+
         if not self.player.role.name == poll.role:
-            self.send_json({
+            await self.send_json({
                 "type": "Vote error",
                 "text": "Not allowed",
             })
@@ -98,43 +120,29 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         poll_finished = record_vote(poll, self.player_id, content.get("target"))
 
         if poll_finished:
-            if poll.role == "all":
-                #TODO: gestire lynch (su FSM)
-
-
-                # send all player the vote result
-                self.channel_layer.group_send(
-                    f"game_{self.game_id}_all",
-                    {"type": "vote_result", "target": get_result(poll)}
-                )
-            else:
-                #TODO: si può mettere nella macchina a stati?
-                # get target. TODO: capire cosa ritorna se id o player
-                target = get_result(poll)
-                targeted_player = Player.objects.get(id = target)
-
-                # call action handler
-                handler = self.game.get_action_handler(poll.role)
-                outcome = handler.perform_action(self.player, targeted_player, self.game)
-
-                # Send outcome
-                self.channel_layer.group_send(
-                    f"game_{self.game_id}_{poll.role}",
-                    {"type": "action_result", "target": target, "outcome": outcome}
-                )
-
-            
+            end_poll_by_id(poll.id, player=self.player)
         else:
             tally = tally_votes(poll)
+            await notify_updated_votes(self.game, poll, tally)
+
+    async def handle_narration_finished(self, content):
+        from engine import GameEngine
+        await self.reload_db_state()
+
+        phase = content["phase"]
+        state = self.game.state
         
-            # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
-            self.channel_layer.group_send(
-                f"game_{self.game_id}_{poll.role}",
-                {"type": "tally", "tally": tally}
-            )
+        if phase == States.INTRODUCTION and state == States.INTRODUCTION:
+            GameEngine.role_reveal(self.game)
+        elif phase == States.ROLE_REVEAL and state == States.ROLE_REVEAL:
+            GameEngine.night_intro(self.game)
+        elif phase == "night_intro" and state == States.NIGHT:
+            GameEngine.handle_night(self.game)
+        elif phase == States.NIGHT_REPORT and state == States.NIGHT_REPORT:
+            GameEngine.check_win_engine(self.game)
 
     async def player_arrested(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "arrested_notification",
             "message": event["message"],
         })
@@ -144,16 +152,49 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.group_role, self.channel_name)
         self.group_role = ""
         
-        self.send_json({
+        await self.send_json({
             "type": "death",
             "message": event["message"],
         })
 
     async def game_ended(self, event):
-        self.send_json({
+        await self.send_json({
             "type": "game_ended",
             "outcome": event["outcome"],
         })
 
+    async def action_outcome(self, event):
+        await self.send_json({
+            "type": "action_outcome",
+            "target_id": event["target_id"],
+            "target_name": event["target_name"],
+            "outcome": event["outcome"],
+        })
         
+    async def poll_begin(self, event):
+        await self.send_json({
+            "type": "poll_begin",
+            "poll_id": event["poll_id"],
+            "duration": event["duration"],
+        })
 
+    async def start_extra_time(self, event):
+        await self.send_json({
+            "type": "start_extra_time",
+            "duration": event["duration"],
+        })
+
+    async def send_tally(self, event):
+        await self.send_json({
+            "type": "tally",
+            "poll_id": event["poll_id"],
+            "tally": event["tally"],
+        })
+
+    async def phase_start(self, event):
+        await self.send_json({
+            "type": "game_phase",
+            "phase": event["phase"],
+            "started_at": event["started_at"],
+            "duration": event["duration"],
+        })
