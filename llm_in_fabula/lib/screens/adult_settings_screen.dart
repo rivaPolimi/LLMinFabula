@@ -360,10 +360,24 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Lista dei nomi specifici
+                      final List<String> playerNames = [
+                        'Diego',
+                        'Alice',
+                        'Bob',
+                        'Charlie',
+                        'Eve',
+                        'Frank',
+                        'Grace',
+                        'Heidi'
+                      ];
+
+                      // Genera i player usando i nomi dalla lista
                       final players = List.generate(
                         8,
                             (i) => PlayerAvatarModel(
-                          name: 'Player ${i + 1}',
+                          // Se ci sono abbastanza nomi usa quelli, altrimenti fallback su "Player X"
+                          name: i < playerNames.length ? playerNames[i] : 'Player ${i + 1}',
                           isAlive: true,
                         ),
                       );
