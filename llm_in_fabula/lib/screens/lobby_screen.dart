@@ -4,8 +4,15 @@ import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
 import 'package:provider/provider.dart';
 
 // 5) Lobby
-class LobbyScreen extends StatelessWidget {
+class LobbyScreen extends StatefulWidget {
   const LobbyScreen({super.key});
+
+  @override
+  State<LobbyScreen> createState() => _LobbyScreenState();
+}
+
+class _LobbyScreenState extends State<LobbyScreen> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +33,29 @@ class LobbyScreen extends StatelessWidget {
             child: SafeArea(
               child: Column(
                 children: [
+                  // --- LOADING PAGE ---
+                  if (_isLoading)
+                    Container(
+                      color: Colors.black54,
+                      child: const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE4D2A6)),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Starting game...',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // --- HEADER BUTTON (Roles) ---
                   Align(
                     alignment: Alignment.centerRight,
@@ -124,7 +154,10 @@ class LobbyScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: gameState.player!.isAdmin &&
                                 gameState.game!.players.length >= 4
-                            ? () {
+                              ? () {
+                                setState(() {
+                                  _isLoading = true;
+                                });
                                 gameState.startGameSession();
                               }
                             : null,
@@ -132,7 +165,7 @@ class LobbyScreen extends StatelessWidget {
                           backgroundColor: const Color(0xFFDCC8A0), // Beige
                           foregroundColor: const Color(0xFF003943), // Dark Teal
                           disabledBackgroundColor:
-                              const Color(0xFFDCC8A0).withOpacity(0.5),
+                              const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),

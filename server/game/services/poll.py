@@ -1,6 +1,9 @@
+import logging
 from collections import Counter
 from .redis import redis_client
 from ..models import Poll, Vote, Player, Game
+
+logger = logging.getLogger("redis_events")
 
 POLL_EXTRA_TIME = 10
 
@@ -27,6 +30,7 @@ async def start_poll_timer(poll: Poll):
     duration = poll.duration + POLL_EXTRA_TIME
 
     key = f"poll:{poll.id}"
+    logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration)
     await redis_client.set(key, "1", ex=duration)
 
 def record_vote(poll, voter_id, target_id):
@@ -99,13 +103,16 @@ def end_poll_by_id(poll_id: int, player: Player = None):
     try:
         poll = Poll.objects.get(id=poll_id)
     except Poll.DoesNotExist:
+        logger.info("Poll expiry ignored: poll_id=%s not found", poll_id)
         return
     
     if poll.game.state == "discussion" and not check_everybody_voted(poll.game, poll):
+        logger.info("Poll extra time: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return GameEngine.start_extra_vote(poll.game, poll)
     
     # If poll already finished do not count the vote
     if poll.expired:
+        logger.info("Poll already expired: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return
 
     # Get a random voter to perform the action
@@ -116,8 +123,10 @@ def end_poll_by_id(poll_id: int, player: Player = None):
     poll.expired = True
 
     if poll.role == "all":
+        logger.info("Ending discussion poll: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return GameEngine.end_discussion(poll.game, poll)
     else:
+        logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", poll.game_id, poll.id, poll.role)
         return GameEngine.role_action(poll.game, player, poll)
 
 def clear_poll(poll):
