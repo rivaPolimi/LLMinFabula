@@ -2,22 +2,22 @@ import logging
 from .redis import redis_client
 from ..models import Game
 from channels.db import database_sync_to_async
+import time
 
 logger = logging.getLogger("redis_events")
 
-
-async def start_phase_timer(game_id, phase_name: str, duration: int):
+def start_phase_timer(game_id, phase_name: str, duration: int):
     """
     Starts asynchronous timer for phase to expire
     """
     
     key = f"phase:{phase_name}_{game_id}"
-    logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration)
-    await redis_client.execute_command(
-        "EXPIREAT",
-        key,
-        int(redis_client.time()[0]) + duration
-    )
+
+    # Set expiration in Redis
+    expiry_time = int(time.time()) + duration
+    redis_client.expireat(key, expiry_time)
+
+    logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration, extra={'game_id': game_id, 'phase': phase_name})
 
 def end_phase(key: str, game_id: int):
     game = database_sync_to_async(Game.objects.get(id=game_id))
