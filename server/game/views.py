@@ -105,56 +105,63 @@ class StartGameView(APIView):
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)
 
 
+import logging
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from .models import RedisEventLog
+
+logger = logging.getLogger('redis_events')
+
 def redis_logs_view(request):
-    """
-    Display Redis event logs with filtering and search.
-    """
-    logs = RedisEventLog.objects.all()
+    """View to display Redis event logs with filtering and search."""
     
-    # Filtering
-    level_filter = request.GET.get('level', '')
-    game_id_filter = request.GET.get('game_id', '')
-    phase_filter = request.GET.get('phase', '')
-    search_query = request.GET.get('search', '')
+    # Get all logs
+    logs = RedisEventLog.objects.all().order_by('-timestamp')
     
-    if level_filter:
-        logs = logs.filter(level=level_filter)
+    # Get unique values for filter dropdowns
+    levels = logs.values_list('level', flat=True).distinct().order_by('level')
+    phases = logs.values_list('phase', flat=True).distinct().exclude(phase__isnull=True).exclude(phase='')
     
-    if game_id_filter:
-        try:
-            logs = logs.filter(game_id=int(game_id_filter))
-        except ValueError:
-            pass
+    # Apply filters
+    current_filters = {}
     
-    if phase_filter:
-        logs = logs.filter(phase=phase_filter)
+    if request.GET.get('level'):
+        level = request.GET.get('level')
+        logs = logs.filter(level=level)
+        current_filters['level'] = level
     
-    if search_query:
-        logs = logs.filter(
-            Q(message__icontains=search_query) |
-            Q(logger_name__icontains=search_query)
-        )
+    if request.GET.get('game_id'):
+        game_id = request.GET.get('game_id')
+        logs = logs.filter(game_id=game_id)
+        current_filters['game_id'] = game_id
+    
+    if request.GET.get('phase'):
+        phase = request.GET.get('phase')
+        logs = logs.filter(phase=phase)
+        current_filters['phase'] = phase
+    
+    if request.GET.get('search'):
+        search = request.GET.get('search')
+        logs = logs.filter(message__icontains=search)
+        current_filters['search'] = search
+    
+    total_count = logs.count()
     
     # Pagination
-    paginator = Paginator(logs, 50)  # 50 logs per page
+    paginator = Paginator(logs, 50)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
-    # Get unique values for filters
-    levels = RedisEventLog.objects.values_list('level', flat=True).distinct()
-    phases = RedisEventLog.objects.exclude(phase__isnull=True).values_list('phase', flat=True).distinct()
+    # Debug logging
+    print(f"[DEBUG] Total logs in database: {RedisEventLog.objects.count()}")
+    print(f"[DEBUG] Filtered logs: {total_count}")
+    print(f"[DEBUG] Page object: {page_obj}")
+    logger.info(f"Redis logs view accessed - Total logs: {RedisEventLog.objects.count()}, Filtered: {total_count}")
     
-    context = {
+    return render(request, 'game/redis_logs.html', {
         'page_obj': page_obj,
+        'total_count': total_count,
         'levels': levels,
         'phases': phases,
-        'current_filters': {
-            'level': level_filter,
-            'game_id': game_id_filter,
-            'phase': phase_filter,
-            'search': search_query,
-        },
-        'total_count': logs.count(),
-    }
-    
-    return render(request, 'game/redis_logs.html', context)
+        'current_filters': current_filters,
+    })
