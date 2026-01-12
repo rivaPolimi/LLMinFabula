@@ -3,11 +3,12 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
-from django.db.models import Count, F
+from django.shortcuts import get_object_or_404, render
+from django.db.models import Count, F, Q
+from django.core.paginator import Paginator
 from .notifications import notify_game_started
 from .engine import GameEngine
-from .models import Game, Player, Role, Setting
+from .models import Game, Player, Role, Setting, RedisEventLog
 from .narrator import Narrator
 from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
@@ -102,3 +103,58 @@ class StartGameView(APIView):
         GameEngine.start_game(game)      
 
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)
+
+
+def redis_logs_view(request):
+    """
+    Display Redis event logs with filtering and search.
+    """
+    logs = RedisEventLog.objects.all()
+    
+    # Filtering
+    level_filter = request.GET.get('level', '')
+    game_id_filter = request.GET.get('game_id', '')
+    phase_filter = request.GET.get('phase', '')
+    search_query = request.GET.get('search', '')
+    
+    if level_filter:
+        logs = logs.filter(level=level_filter)
+    
+    if game_id_filter:
+        try:
+            logs = logs.filter(game_id=int(game_id_filter))
+        except ValueError:
+            pass
+    
+    if phase_filter:
+        logs = logs.filter(phase=phase_filter)
+    
+    if search_query:
+        logs = logs.filter(
+            Q(message__icontains=search_query) |
+            Q(logger_name__icontains=search_query)
+        )
+    
+    # Pagination
+    paginator = Paginator(logs, 50)  # 50 logs per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Get unique values for filters
+    levels = RedisEventLog.objects.values_list('level', flat=True).distinct()
+    phases = RedisEventLog.objects.exclude(phase__isnull=True).values_list('phase', flat=True).distinct()
+    
+    context = {
+        'page_obj': page_obj,
+        'levels': levels,
+        'phases': phases,
+        'current_filters': {
+            'level': level_filter,
+            'game_id': game_id_filter,
+            'phase': phase_filter,
+            'search': search_query,
+        },
+        'total_count': logs.count(),
+    }
+    
+    return render(request, 'game/redis_logs.html', context)

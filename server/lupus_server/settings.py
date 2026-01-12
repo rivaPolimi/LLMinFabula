@@ -174,11 +174,15 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'db_log': {
+            'level': 'INFO',
+            'class': 'game.logging_handlers.DatabaseLogHandler',
+        },
     },
     'loggers': {
         # Dedicated logger for Redis keyspace events and timers
         'redis_events': {
-            'handlers': ['console'],
+            'handlers': ['console', 'db_log'],
             'level': 'INFO',
             'propagate': False,
         },
