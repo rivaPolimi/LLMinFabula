@@ -3,14 +3,14 @@ import os
 import logging
 from game.services.poll import end_poll_by_id
 from game.services.phase import end_phase
+from django.conf import settings
 
-REDIS_URL = os.environ.get("REDIS_URL")
-
+REDIS_URL = getattr(settings, "REDIS_URL", "redis://localhost:6379/0")
 logger = logging.getLogger("redis_events")
 
-
 async def start_poll_listener():
-    redis_client = await redis.Redis.from_url(REDIS_URL, decode_responses=True)
+    
+    redis_client = await redis.Redis.from_url(REDIS_URL, decode_responses=True, socket_keepalive=True)
 
     # Enable expiration notifications (may be restricted on managed services)
     try:

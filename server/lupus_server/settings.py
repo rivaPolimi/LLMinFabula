@@ -11,10 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '../.env')
+load_dotenv(dotenv_path)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,7 +29,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["llminfabula.onrender.com"]
+ALLOWED_HOSTS = ["llminfabula.onrender.com", "127.0.0.1", "localhost"]
 
 external_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if external_host:
@@ -80,7 +84,7 @@ ASGI_APPLICATION = 'lupus_server.asgi.application'
 
 # Redis
 
-REDIS_URL = os.environ.get("REDIS_URL")
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
 CHANNEL_LAYERS = {
     "default": {
@@ -95,6 +99,7 @@ CHANNEL_LAYERS = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://llminfabula.onrender.com",
+    "https://127.0.0.1:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -106,6 +111,9 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
