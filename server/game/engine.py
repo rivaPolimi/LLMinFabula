@@ -36,14 +36,13 @@ class GameEngine:
 
         GameEngine._transition(game, "start_introduction")
 
+        # Generate introduction
+        Narrator.gen_introduction(game.id, game.setting)
+
         # Notify client
         INTRO_DURATION = 30 # Max duration of introduction screen
         notify_phase_start(game.id, "introduction", INTRO_DURATION)
-
         start_phase_timer(game.id, "introduction", INTRO_DURATION)
-
-        # Generate introduction
-        Narrator.gen_introduction(game.id, game.setting)
 
     @staticmethod
     @transaction.atomic

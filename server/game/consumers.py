@@ -136,7 +136,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             GameEngine.role_reveal(self.game)
         elif phase == States.ROLE_REVEAL and state == States.ROLE_REVEAL:
             GameEngine.night_intro(self.game)
-        elif phase == "night_intro" and state == States.NIGHT:
+        elif phase == States.NIGHT and state == States.NIGHT:
             GameEngine.handle_night(self.game)
         elif phase == States.NIGHT_REPORT and state == States.NIGHT_REPORT:
             GameEngine.check_win_engine(self.game)

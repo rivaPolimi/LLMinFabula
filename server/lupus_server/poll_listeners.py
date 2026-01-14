@@ -31,21 +31,19 @@ async def start_poll_listener():
         logger.info("Redis expired event received: key=%s", key)
 
         if key.startswith("poll:"):
-            poll_id = int(key.split(":")[1])
-            logger.info("Ending poll due to expiry: poll_id=%s", poll_id)
-            end_poll_by_id(poll_id)
             try:
-                pass
+                poll_id = int(key.split(":")[1])
+                logger.info("Ending poll due to expiry: poll_id=%s", poll_id)
+                await end_poll_by_id(poll_id)
             except Exception as e:
                 logger.exception("Error finishing poll: %s", e)
         
         elif key.startswith("phase:"):
-            subkey = key.split(":")[1]
-            phase_key = subkey.split("_")[0]
-            game_id = int(subkey.split("_"))[1]
-            logger.info("Ending phase due to expiry: game_id=%s phase=%s", game_id, phase_key)
-            end_phase(phase_key, game_id)
             try:
-                pass
+                subkey = key.split(":")[1]
+                phase_key = subkey.split("_")[0]
+                game_id = int(subkey.split("_"))[1]
+                logger.info("Ending phase due to expiry: game_id=%s phase=%s", game_id, phase_key)
+                await end_phase(phase_key, game_id)                
             except Exception as e:
                 logger.exception("Error finishing phase: %s", e)

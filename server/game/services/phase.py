@@ -1,6 +1,7 @@
 import logging
 from .redis import redis_client
 from ..models import Game
+from django.shortcuts import get_object_or_404
 from channels.db import database_sync_to_async
 import time
 
@@ -19,8 +20,8 @@ def start_phase_timer(game_id, phase_name: str, duration: int):
 
     logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration, extra={'game_id': game_id, 'phase': phase_name})
 
-def end_phase(key: str, game_id: int):
-    game = database_sync_to_async(Game.objects.get(id=game_id))
+async def end_phase(key: str, game_id: int):
+    game = await database_sync_to_async(get_object_or_404)(Game, id=game_id)
 
     phase = game.state
     if phase != key:

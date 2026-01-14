@@ -1,7 +1,9 @@
 import logging
 from collections import Counter
 from .redis import redis_client
-from ..models import Poll, Vote, Player, Game
+from ..models import Poll, Vote, Player, Game, States
+from channels.db import database_sync_to_async
+import time
 
 logger = logging.getLogger("redis_events")
 
@@ -21,7 +23,7 @@ def create_poll(game, duration=30, role="all"):
 
     return poll
 
-async def start_poll_timer(poll: Poll):
+def start_poll_timer(poll: Poll):
     """
     Start the asynchronous timer for the poll to expire
     """
@@ -31,9 +33,12 @@ async def start_poll_timer(poll: Poll):
 
     key = f"poll:{poll.id}"
     logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration)
-    await redis_client.set(key, "1", ex=duration)
 
-def record_vote(poll, voter_id, target_id):
+    # Set expiration in Redis
+    expiry_time = int(time.time()) + duration
+    redis_client.expireat(key, expiry_time)
+
+def record_vote(poll: Poll, voter_id: int, target_id: int):
     """
     Save vote in the database
     """
@@ -50,12 +55,12 @@ def record_vote(poll, voter_id, target_id):
     return check_everybody_voted(poll.game, poll)
 
 
-def tally_votes(poll):
+def tally_votes(poll: Poll):
     """
     Count votes for this poll
     """
 
-    votes = Vote.objects.filter(poll=poll)
+    votes = Vote.objects.select_related("voter", "target", "poll").filter(poll=poll)
     tally = Counter(v.target for v in votes)
     if not tally:
         return None
@@ -83,12 +88,12 @@ def get_result(poll: Poll):
     return top_players[0]
 
 def check_everybody_voted(game: Game, poll: Poll):
-    votes = Vote.objects.filter(poll=poll)
+    votes = Vote.objects.select_related("voter", "target", "poll").filter(poll=poll)
     num_players = 0
     if poll.role == "all":
-        num_players = Player.objects.filter(game = game, is_dead = False)
+        num_players = Player.objects.select_related("role").filter(game = game, is_dead = False).count()
     else:
-        targeted_players = Player.objects.filter(game = game, role__name = poll.role.name, is_dead = False)
+        targeted_players = Player.objects.select_related("role").filter(game = game, role__name = poll.role.name, is_dead = False)
         num_players = len(list(targeted_players))
 
     # Signal that the poll is completed if everybody voted
@@ -97,16 +102,16 @@ def check_everybody_voted(game: Game, poll: Poll):
     else:
         return False
     
-def end_poll_by_id(poll_id: int, player: Player = None):
+async def end_poll_by_id(poll_id: int, player: Player = None):
     from ..engine import GameEngine
     
     try:
-        poll = Poll.objects.get(id=poll_id)
+        poll = await database_sync_to_async(Poll.objects.select_related("game").get)(id=poll_id)
     except Poll.DoesNotExist:
         logger.info("Poll expiry ignored: poll_id=%s not found", poll_id)
         return
     
-    if poll.game.state == "discussion" and not check_everybody_voted(poll.game, poll):
+    if poll.game.state == States.DISCUSSION and not check_everybody_voted(poll.game, poll):
         logger.info("Poll extra time: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return GameEngine.start_extra_vote(poll.game, poll)
     
@@ -129,6 +134,6 @@ def end_poll_by_id(poll_id: int, player: Player = None):
         logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", poll.game_id, poll.id, poll.role)
         return GameEngine.role_action(poll.game, player, poll)
 
-def clear_poll(poll):
-    Vote.objects.filter(poll=poll).delete()
+def clear_poll(poll: Poll):
+    Vote.objects.select_related("poll").filter(poll=poll).delete()
     #TODO: also delete poll?
