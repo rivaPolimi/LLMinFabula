@@ -1,13 +1,44 @@
 import logging
 import asyncio
+import threading
 from collections import Counter
 from ..models import Poll, Vote, Player, Game, States
 from channels.db import database_sync_to_async
 from .timer_manager import schedule_timer
+from ..db_utils import retry_on_db_lock_async
 
 logger = logging.getLogger("redis_events")
 
 POLL_EXTRA_TIME = 10
+
+# Global reference to the background event loop
+_event_loop: asyncio.AbstractEventLoop | None = None
+_loop_lock = threading.Lock()
+
+
+def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
+    """Get the running event loop or create a background one."""
+    global _event_loop
+    
+    try:
+        # Try to get the currently running loop
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, use/create background loop
+        with _loop_lock:
+            if _event_loop is None or _event_loop.is_closed():
+                _event_loop = asyncio.new_event_loop()
+                
+                # Start running the loop in a background thread
+                def run_loop():
+                    asyncio.set_event_loop(_event_loop)
+                    _event_loop.run_forever()
+                
+                thread = threading.Thread(target=run_loop, daemon=True, name="asyncio-event-loop-poll")
+                thread.start()
+                logger.info("Started background asyncio event loop thread for polls")
+            
+            return _event_loop
 
 
 def create_poll(game, duration=30, role="all"):
@@ -36,15 +67,8 @@ def start_poll_timer(poll: Poll):
         await schedule_timer(key, duration, _on_poll_expire)
     
     try:
-        # Try to get the running event loop
-        try:
-            loop = asyncio.get_running_loop()
-            asyncio.create_task(schedule())
-        except RuntimeError:
-            # No running loop in current thread, try to get the main loop
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.create_task(schedule())
+        loop = _get_or_create_event_loop()
+        asyncio.run_coroutine_threadsafe(schedule(), loop)
     except Exception as e:
         logger.error("Error scheduling poll timer: %s", e)
         return
@@ -76,13 +100,20 @@ async def _on_poll_expire(key: str):
 
 async def end_poll(poll_id: int, game_id: int):
     """
-    Handle poll expiration and transition.
+    Handle poll expiration and transition with retry logic for database locks.
     """
     try:
-        poll = await database_sync_to_async(Poll.objects.get)(id=poll_id, game_id=game_id)
+        # Retry fetching poll if database is locked
+        def get_poll():
+            return Poll.objects.get(id=poll_id, game_id=game_id)
+        
+        poll = await retry_on_db_lock_async(get_poll)
         game = poll.game
     except Poll.DoesNotExist:
         logger.error("Poll not found: poll_id=%s game_id=%s", poll_id, game_id)
+        return
+    except Exception as e:
+        logger.exception("Error fetching poll: %s", e)
         return
     
     if poll.expired:
@@ -92,23 +123,29 @@ async def end_poll(poll_id: int, game_id: int):
     from ..engine import GameEngine
     
     # Check if we need extra voting time
-    everyone_voted = await database_sync_to_async(check_everybody_voted)(game, poll)
+    everyone_voted = await retry_on_db_lock_async(check_everybody_voted, game, poll)
     if game.state == "discussion" and not everyone_voted:
         logger.info("Poll extra time: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
-        await database_sync_to_async(GameEngine.start_extra_vote)(game, poll)
+        await retry_on_db_lock_async(GameEngine.start_extra_vote, game, poll)
         return
     
-    # Mark as expired and handle
-    poll.expired = True
-    await database_sync_to_async(poll.save)()
+    # Mark as expired and handle (with retry)
+    def mark_expired_and_transition():
+        poll.expired = True
+        poll.save()
+        
+        if poll.role == "all":
+            logger.info("Ending discussion poll: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
+            GameEngine.end_discussion(game, poll)
+        else:
+            logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", game_id, poll_id, poll.role, extra={'game_id': game_id, 'poll_id': poll_id})
+            player = poll.get_voter()
+            GameEngine.role_action(game, player, None, poll)
     
-    if poll.role == "all":
-        logger.info("Ending discussion poll: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
-        await database_sync_to_async(GameEngine.end_discussion)(game, poll)
-    else:
-        logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", game_id, poll_id, poll.role, extra={'game_id': game_id, 'poll_id': poll_id})
-        player = await database_sync_to_async(poll.get_voter)()
-        await database_sync_to_async(GameEngine.role_action)(game, player, None, poll)
+    try:
+        await retry_on_db_lock_async(mark_expired_and_transition)
+    except Exception as e:
+        logger.exception("Error ending poll: %s", e)
 
 
 def record_vote(poll: Poll, voter_id: int, target_id: int):

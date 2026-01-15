@@ -80,6 +80,10 @@ class GameState extends ChangeNotifier{
   //Manage game transitions
 
   //Manage TextToSpeech
+  void _configureTts() async{
+    tts.configureTts();
+  }
+
   void startTts(){
     if(narratorText == null) return;
 
@@ -96,6 +100,12 @@ class GameState extends ChangeNotifier{
     });
   }
 
+  void _stopTts(){
+    //Stops current tts instance if it is running
+    if(tts.state == TtsState.stopped) return;
+    tts.stopSpeaking();
+  }
+
   //Manage HTTP requests
   Future<void> createGameAndSetSession(int numPlayers, String settingName, String nickname, String password, Map<String, int> roles) async{
     final session = await createGame(
@@ -109,6 +119,7 @@ class GameState extends ChangeNotifier{
     _game = session.game;
     _player = session.player;
     _openWebSocket();
+    _configureTts();
     notifyListeners();
   }
 
@@ -118,6 +129,7 @@ class GameState extends ChangeNotifier{
     _game = session.game;
     _player = session.player;
     _openWebSocket();
+    _configureTts();
     notifyListeners();
   }
 
@@ -187,18 +199,17 @@ class GameState extends ChangeNotifier{
     phaseStart = start;
     this.duration = duration;
 
+    _stopTts();
     _startTicker();
     notifyListeners();
   }
 
   void _onNarratorStoryReceived(String phase, String text){
     debugPrint("NarratorPhase: $phase");
+    debugPrint("This phase: ${this.phase}");
     debugPrint("Story: $text");
-    GamePhase narrationPhase = GamePhase.values.byName(phase);
 
-    if (narrationPhase == this.phase) {
-      narratorText = text;
-    }
+    narratorText = text;
     
     notifyListeners();
   }

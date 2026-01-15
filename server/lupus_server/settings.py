@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["llminfabula.onrender.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["llminfabula.onrender.com", "127.0.0.1", "localhost", "192.168.69.151"]
 
 external_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if external_host:
@@ -107,6 +107,7 @@ else:
 CORS_ALLOWED_ORIGINS = [
     "https://llminfabula.onrender.com",
     "https://127.0.0.1:8000",
+    "http://192.168.69.151:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -119,8 +120,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

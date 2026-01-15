@@ -1,10 +1,41 @@
 import logging
 import asyncio
+import threading
 from ..models import Game
 from channels.db import database_sync_to_async
 from .timer_manager import schedule_timer
+from ..db_utils import retry_on_db_lock_async
 
 logger = logging.getLogger("redis_events")
+
+# Global reference to the background event loop
+_event_loop: asyncio.AbstractEventLoop | None = None
+_loop_lock = threading.Lock()
+
+
+def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
+    """Get the running event loop or create a background one."""
+    global _event_loop
+    
+    try:
+        # Try to get the currently running loop
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, use/create background loop
+        with _loop_lock:
+            if _event_loop is None or _event_loop.is_closed():
+                _event_loop = asyncio.new_event_loop()
+                
+                # Start running the loop in a background thread
+                def run_loop():
+                    asyncio.set_event_loop(_event_loop)
+                    _event_loop.run_forever()
+                
+                thread = threading.Thread(target=run_loop, daemon=True, name="asyncio-event-loop")
+                thread.start()
+                logger.info("Started background asyncio event loop thread")
+            
+            return _event_loop
 
 
 def start_phase_timer(game_id: int, phase_name: str, duration: int):
@@ -18,15 +49,8 @@ def start_phase_timer(game_id: int, phase_name: str, duration: int):
         await schedule_timer(key, duration, _on_phase_expire)
     
     try:
-        # Try to get the running event loop
-        try:
-            loop = asyncio.get_running_loop()
-            asyncio.create_task(schedule())
-        except RuntimeError:
-            # No running loop in current thread, try to get the main loop
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.create_task(schedule())
+        loop = _get_or_create_event_loop()
+        asyncio.run_coroutine_threadsafe(schedule(), loop)
     except Exception as e:
         logger.error("Error scheduling phase timer: %s", e)
         return
@@ -57,12 +81,19 @@ async def _on_phase_expire(key: str):
 
 async def end_phase(phase_name: str, game_id: int):
     """
-    Handle phase transition.
+    Handle phase transition with retry logic for database locks.
     """
     try:
-        game = await database_sync_to_async(Game.objects.get)(id=game_id)
+        # Retry fetching the game if database is locked
+        def get_game():
+            return Game.objects.get(id=game_id)
+        
+        game = await retry_on_db_lock_async(get_game)
     except Game.DoesNotExist:
         logger.error("Game not found: game_id=%s", game_id)
+        return
+    except Exception as e:
+        logger.exception("Error fetching game: %s", e)
         return
 
     # Verify we're in the right phase
@@ -84,6 +115,9 @@ async def end_phase(phase_name: str, game_id: int):
     handler = transitions.get(phase_name)
     if handler:
         logger.info("Executing phase transition: phase=%s (game_id=%s)", phase_name, game_id, extra={'game_id': game_id, 'phase': phase_name})
-        await database_sync_to_async(handler)(game)
+        try:
+            await retry_on_db_lock_async(handler, game)
+        except Exception as e:
+            logger.exception("Error executing phase handler: %s", e)
     else:
         logger.warning("No handler for phase: %s", phase_name)

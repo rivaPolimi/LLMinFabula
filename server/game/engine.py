@@ -40,7 +40,7 @@ class GameEngine:
         Narrator.gen_introduction(game.id, game.setting)
 
         # Notify client
-        INTRO_DURATION = 30 # Max duration of introduction screen
+        INTRO_DURATION = 120 # Max duration of introduction screen
         notify_phase_start(game.id, "introduction", INTRO_DURATION)
         start_phase_timer(game.id, "introduction", INTRO_DURATION)
 

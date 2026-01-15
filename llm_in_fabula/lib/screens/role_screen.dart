@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
@@ -9,8 +10,11 @@ class RoleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // per ora fisso, poi collegherai a ruoli reali dalla logica
-    return Consumer(
+    return Consumer<GameState>(
       builder: (_, state, _) {
+        final roleName = state.player!.roleName;
+        final roleDescription = state.player!.roleDescription;
+        final roleImage; //TODO: settare icona ruolo
 
         return GradientPage(
           child: Padding(
@@ -32,8 +36,8 @@ class RoleScreen extends StatelessWidget {
                       size: 72, color: const Color(0xFF08313F)),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'WOLF',
+                Text(
+                  roleName.toUpperCase(),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -41,13 +45,11 @@ class RoleScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Expanded(
+                Expanded(
                   child: SingleChildScrollView(
                     child: Text(
                       //TODO: mettere role description quando ci sarà
-                      'During the night, you secretly choose a victim together '
-                          'with the other wolves. During the day, pretend to be '
-                          'a normal villager and try to confuse the others.',
+                      roleDescription,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white70),
                     ),
