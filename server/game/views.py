@@ -156,7 +156,7 @@ def redis_logs_view(request):
     print(f"[DEBUG] Total logs in database: {RedisEventLog.objects.count()}")
     print(f"[DEBUG] Filtered logs: {total_count}")
     print(f"[DEBUG] Page object: {page_obj}")
-    logger.info(f"Redis logs view accessed - Total logs: {RedisEventLog.objects.count()}, Filtered: {total_count}")
+    #logger.info(f"Redis logs view accessed - Total logs: {RedisEventLog.objects.count()}, Filtered: {total_count}")
     
     return render(request, 'game/redis_logs.html', {
         'page_obj': page_obj,
