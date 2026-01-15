@@ -26,24 +26,28 @@ def create_poll(game, duration=30, role="all"):
 def start_poll_timer(poll: Poll):
     """
     Schedule a poll timer using asyncio.
+    Safe to call from sync or async contexts (including thread pools).
     """
     # Add some tolerance time to receive votes
     duration = poll.duration + POLL_EXTRA_TIME
     key = f"poll:{poll.id}_{poll.game_id}"
     
-    # Schedule the timer
     async def schedule():
         await schedule_timer(key, duration, _on_poll_expire)
     
-    # Run in a thread-safe way
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
+        # Try to get the running event loop
+        try:
+            loop = asyncio.get_running_loop()
             asyncio.create_task(schedule())
-        else:
-            loop.run_until_complete(schedule())
+        except RuntimeError:
+            # No running loop in current thread, try to get the main loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.create_task(schedule())
     except Exception as e:
         logger.error("Error scheduling poll timer: %s", e)
+        return
     
     logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration, extra={'game_id': poll.game_id, 'poll_id': poll.id})
 

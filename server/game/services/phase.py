@@ -10,22 +10,26 @@ logger = logging.getLogger("redis_events")
 def start_phase_timer(game_id: int, phase_name: str, duration: int):
     """
     Schedule a phase timer using asyncio.
+    Safe to call from sync or async contexts (including thread pools).
     """
     key = f"phase:{phase_name}_{game_id}"
     
-    # Schedule the timer
     async def schedule():
         await schedule_timer(key, duration, _on_phase_expire)
     
-    # Run in a thread-safe way
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
+        # Try to get the running event loop
+        try:
+            loop = asyncio.get_running_loop()
             asyncio.create_task(schedule())
-        else:
-            loop.run_until_complete(schedule())
+        except RuntimeError:
+            # No running loop in current thread, try to get the main loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.create_task(schedule())
     except Exception as e:
         logger.error("Error scheduling phase timer: %s", e)
+        return
     
     logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration, extra={'game_id': game_id, 'phase': phase_name})
 

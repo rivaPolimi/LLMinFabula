@@ -5,6 +5,7 @@ import 'package:llm_in_fabula/services/tts.dart';
 import 'package:llm_in_fabula/services/websocket_service.dart';
 import 'model.dart';
 import 'package:llm_in_fabula/services/http_request_handler.dart';
+import 'package:llm_in_fabula/constants.dart';
 
 enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightReport, roleAction, checkWin, endGame}
 enum AppFlow {title, joinOrCreate, join, create, inGame,}
@@ -128,7 +129,7 @@ class GameState extends ChangeNotifier{
   void _openWebSocket(){
     if(game == null || player == null) return;
 
-    final url = 'wss://llminfabula.onrender.com/ws/game/${game!.id}/${player!.id}/';
+    final url = '${getWsUrl()}/game/${game!.id}/${player!.id}/';
     _ws.openWebSocketConnection(url);
     debugPrint("Connection opened");
   }

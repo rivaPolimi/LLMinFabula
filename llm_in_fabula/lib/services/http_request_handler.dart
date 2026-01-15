@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:llm_in_fabula/models/model.dart';
 import 'package:llm_in_fabula/models/session.dart';
 import 'package:flutter/foundation.dart';
+import 'package:llm_in_fabula/constants.dart';
 
 //TODO: Remove debugPrint
 
@@ -17,7 +18,7 @@ Future<GameSession> createGame(int numPlayers, String settingName, String nickna
   })}');
 
   final response = await http.post(
-    Uri.parse('https://llminfabula.onrender.com/api/game/create_game/'),
+    Uri.parse('${getApiUrl()}/game/create_game/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -54,7 +55,7 @@ Future<GameSession> joinGame(String nickname, String password) async{
   })}');
   
   final response = await http.post(
-    Uri.parse('https://llminfabula.onrender.com/api/game/join_game/'),
+    Uri.parse('${getApiUrl()}/game/join_game/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -89,7 +90,7 @@ Future<GameSession> joinGame(String nickname, String password) async{
 
 Future<bool> startGame(Game game, Player player) async{
   final response = await http.post(
-    Uri.parse('https://llminfabula.onrender.com/api/game/start_game/'),
+    Uri.parse('${getApiUrl()}/game/start_game/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
