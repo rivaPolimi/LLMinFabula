@@ -1,47 +1,85 @@
 import logging
-from .redis import redis_client
+import asyncio
 from ..models import Game
-from django.shortcuts import get_object_or_404
 from channels.db import database_sync_to_async
-import time
+from .timer_manager import schedule_timer
 
 logger = logging.getLogger("redis_events")
 
-def start_phase_timer(game_id, phase_name: str, duration: int):
+
+def start_phase_timer(game_id: int, phase_name: str, duration: int):
     """
-    Starts asynchronous timer for phase to expire
+    Schedule a phase timer using asyncio.
     """
-    
     key = f"phase:{phase_name}_{game_id}"
-
-    # Set expiration in Redis
-    expiry_time = int(time.time()) + duration
-    redis_client.expireat(key, expiry_time)
-
+    
+    # Schedule the timer
+    async def schedule():
+        await schedule_timer(key, duration, _on_phase_expire)
+    
+    # Run in a thread-safe way
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.create_task(schedule())
+        else:
+            loop.run_until_complete(schedule())
+    except Exception as e:
+        logger.error("Error scheduling phase timer: %s", e)
+    
     logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration, extra={'game_id': game_id, 'phase': phase_name})
 
-async def end_phase(key: str, game_id: int):
-    game = await database_sync_to_async(get_object_or_404)(Game, id=game_id)
 
-    phase = game.state
-    if phase != key:
-        logger.info("Ignoring phase expiry: game_id=%s expected=%s actual=%s", game_id, key, phase)
+async def _on_phase_expire(key: str):
+    """
+    Called when a phase timer expires.
+    """
+    try:
+        # Parse key: phase:phaseName_gameId
+        parts = key.replace('phase:', '').rsplit('_', 1)
+        if len(parts) != 2:
+            logger.error("Invalid phase key format: %s", key)
+            return
+        
+        phase_name, game_id_str = parts
+        game_id = int(game_id_str)
+        
+        logger.info("Phase timer expired: game_id=%s phase=%s", game_id, phase_name, extra={'game_id': game_id, 'phase': phase_name})
+        
+        await end_phase(phase_name, game_id)
+    except Exception as e:
+        logger.exception("Error handling phase expiry for key %s: %s", key, e)
+
+
+async def end_phase(phase_name: str, game_id: int):
+    """
+    Handle phase transition.
+    """
+    try:
+        game = await database_sync_to_async(Game.objects.get)(id=game_id)
+    except Game.DoesNotExist:
+        logger.error("Game not found: game_id=%s", game_id)
+        return
+
+    # Verify we're in the right phase
+    if game.state != phase_name:
+        logger.info("Ignoring phase expiry: game_id=%s expected=%s actual=%s", game_id, phase_name, game.state)
         return
     
     from ..engine import GameEngine
-
-    if key == "introduction":
-        logger.info("Phase expired: introduction -> roleReveal (game_id=%s)", game_id)
-        GameEngine.role_reveal(game)
-    if key == "roleReveal":
-        logger.info("Phase expired: roleReveal -> nightIntro (game_id=%s)", game_id)
-        GameEngine.night_intro(game)
-    if key == "nightIntro":
-        logger.info("Phase expired: nightIntro -> handleNight (game_id=%s)", game_id)
-        GameEngine.handle_night(game)
-    if key == "nightReport":
-        logger.info("Phase expired: nightReport -> checkWin (game_id=%s)", game_id)
-        GameEngine.check_win_engine(game, "nightReport")
-    if key == "lynchOutcome":
-        logger.info("Phase expired: lynchOutcome -> checkWin (game_id=%s)", game_id)
-        GameEngine.check_win_engine(game, "lynchOutcome")
+    
+    # Map phase name to transition
+    transitions = {
+        "introduction": lambda g: GameEngine.role_reveal(g),
+        "roleReveal": lambda g: GameEngine.night_intro(g),
+        "nightIntro": lambda g: GameEngine.handle_night(g),
+        "nightReport": lambda g: GameEngine.check_win_engine(g, "nightReport"),
+        "lynchOutcome": lambda g: GameEngine.check_win_engine(g, "lynchOutcome"),
+    }
+    
+    handler = transitions.get(phase_name)
+    if handler:
+        logger.info("Executing phase transition: phase=%s (game_id=%s)", phase_name, game_id, extra={'game_id': game_id, 'phase': phase_name})
+        await database_sync_to_async(handler)(game)
+    else:
+        logger.warning("No handler for phase: %s", phase_name)

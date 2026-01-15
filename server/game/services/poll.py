@@ -1,42 +1,111 @@
 import logging
+import asyncio
 from collections import Counter
-from .redis import redis_client
 from ..models import Poll, Vote, Player, Game, States
 from channels.db import database_sync_to_async
-import time
+from .timer_manager import schedule_timer
 
 logger = logging.getLogger("redis_events")
 
 POLL_EXTRA_TIME = 10
 
+
 def create_poll(game, duration=30, role="all"):
     """
     Create a poll for players to vote
     """
-
     poll = Poll.objects.create(
-        game = game,
-        duration = duration,
-        role = role
+        game=game,
+        duration=duration,
+        role=role
     )
     poll.save()
-
     return poll
+
 
 def start_poll_timer(poll: Poll):
     """
-    Start the asynchronous timer for the poll to expire
+    Schedule a poll timer using asyncio.
     """
-
     # Add some tolerance time to receive votes
     duration = poll.duration + POLL_EXTRA_TIME
+    key = f"poll:{poll.id}_{poll.game_id}"
+    
+    # Schedule the timer
+    async def schedule():
+        await schedule_timer(key, duration, _on_poll_expire)
+    
+    # Run in a thread-safe way
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.create_task(schedule())
+        else:
+            loop.run_until_complete(schedule())
+    except Exception as e:
+        logger.error("Error scheduling poll timer: %s", e)
+    
+    logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration, extra={'game_id': poll.game_id, 'poll_id': poll.id})
 
-    key = f"poll:{poll.id}"
-    logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration)
 
-    # Set expiration in Redis
-    expiry_time = int(time.time()) + duration
-    redis_client.expireat(key, expiry_time)
+async def _on_poll_expire(key: str):
+    """
+    Called when a poll timer expires.
+    """
+    try:
+        # Parse key: poll:pollId_gameId
+        parts = key.replace('poll:', '').rsplit('_', 1)
+        if len(parts) != 2:
+            logger.error("Invalid poll key format: %s", key)
+            return
+        
+        poll_id_str, game_id_str = parts
+        poll_id = int(poll_id_str)
+        game_id = int(game_id_str)
+        
+        logger.info("Poll timer expired: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
+        
+        await end_poll(poll_id, game_id)
+    except Exception as e:
+        logger.exception("Error handling poll expiry for key %s: %s", key, e)
+
+
+async def end_poll(poll_id: int, game_id: int):
+    """
+    Handle poll expiration and transition.
+    """
+    try:
+        poll = await database_sync_to_async(Poll.objects.get)(id=poll_id, game_id=game_id)
+        game = poll.game
+    except Poll.DoesNotExist:
+        logger.error("Poll not found: poll_id=%s game_id=%s", poll_id, game_id)
+        return
+    
+    if poll.expired:
+        logger.info("Poll already expired: game_id=%s poll_id=%s", game_id, poll_id)
+        return
+    
+    from ..engine import GameEngine
+    
+    # Check if we need extra voting time
+    everyone_voted = await database_sync_to_async(check_everybody_voted)(game, poll)
+    if game.state == "discussion" and not everyone_voted:
+        logger.info("Poll extra time: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
+        await database_sync_to_async(GameEngine.start_extra_vote)(game, poll)
+        return
+    
+    # Mark as expired and handle
+    poll.expired = True
+    await database_sync_to_async(poll.save)()
+    
+    if poll.role == "all":
+        logger.info("Ending discussion poll: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
+        await database_sync_to_async(GameEngine.end_discussion)(game, poll)
+    else:
+        logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", game_id, poll_id, poll.role, extra={'game_id': game_id, 'poll_id': poll_id})
+        player = await database_sync_to_async(poll.get_voter)()
+        await database_sync_to_async(GameEngine.role_action)(game, player, None, poll)
+
 
 def record_vote(poll: Poll, voter_id: int, target_id: int):
     """
