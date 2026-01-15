@@ -82,6 +82,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'lupus_server.wsgi.application'
 ASGI_APPLICATION = 'lupus_server.asgi.application'
 
+# Channel Layers - Use Redis for production, InMemory for local development
+REDIS_URL = os.environ.get('REDIS_URL')
+if REDIS_URL:
+    # Production: Use Redis for multi-worker support
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [REDIS_URL],
+            },
+        },
+    }
+else:
+    # Development: Use in-memory channel layer (single worker only)
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
+
 # CORS
 
 CORS_ALLOWED_ORIGINS = [
