@@ -19,6 +19,7 @@ class GameState extends ChangeNotifier{
   GamePhase phase = GamePhase.lobby;
   late DateTime phaseStart;
   late int duration;
+  DateTime? _localPhaseStart; // Track when we received the phase locally
 
   Tts tts = Tts();
   String? narratorText;
@@ -31,9 +32,10 @@ class GameState extends ChangeNotifier{
   Game? get game => _game;
   Player? get player => _player;
   Duration get remaining {
-    //if(phaseStart == null || duration == null) return Duration.zero;
-
-    final elapsed = DateTime.now().difference(phaseStart);
+    // Use local time to calculate elapsed, avoiding clock skew issues
+    if (_localPhaseStart == null) return Duration(seconds: duration);
+    
+    final elapsed = DateTime.now().difference(_localPhaseStart!);
     final remaining = Duration(seconds: duration) - elapsed;
     return remaining.isNegative ? Duration.zero : remaining;
   }
@@ -94,9 +96,10 @@ class GameState extends ChangeNotifier{
   }
 
   void _onTtsCompleted(){
+    debugPrint("FINISHED TALKING");
     _ws.send({
       "type": "narration_finished",
-      "phase": phase,
+      "phase": phase.name,
     });
   }
 
@@ -142,8 +145,9 @@ class GameState extends ChangeNotifier{
     if(game == null || player == null) return;
 
     final url = '${getWsUrl()}/game/${game!.id}/${player!.id}/';
-    _ws.openWebSocketConnection(url);
-    debugPrint("Connection opened");
+    _ws.openWebSocketConnection(url).then((_) {
+      debugPrint("✅ WebSocket ready to send messages");
+    });
   }
 
   void sendMessage(Map<String, dynamic> data){
@@ -198,6 +202,7 @@ class GameState extends ChangeNotifier{
     this.phase = GamePhase.values.byName(phase);
     phaseStart = start;
     this.duration = duration;
+    _localPhaseStart = DateTime.now(); // Capture local time when phase starts
 
     _stopTts();
     _startTicker();

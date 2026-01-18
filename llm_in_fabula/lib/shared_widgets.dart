@@ -135,7 +135,10 @@ class TimerBar extends StatelessWidget {
                 ),
               ),
             ),
-            LinearProgressIndicator(value: progress),
+            LinearProgressIndicator(
+              value: progress,
+              color: remaining.inSeconds < 5 ? Colors.red : Colors.amber,
+            ),
           ],
         );
       }

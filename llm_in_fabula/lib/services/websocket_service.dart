@@ -15,11 +15,21 @@ class WebsocketService {
 
   bool get isConnected => _channel != null;
 
-  void openWebSocketConnection(String url){
+  Future<void> openWebSocketConnection(String url) async {
     if(_channel != null) return; //Prevent double connection
 
-    debugPrint("Connecting to socket");
+    debugPrint("Connecting to socket at: $url");
     _channel = WebSocketChannel.connect(Uri.parse(url));
+
+    // Ensure connection is established
+    try {
+      await _channel!.ready;
+      debugPrint("✅ WebSocket connected successfully");
+    } catch (e) {
+      debugPrint("❌ WebSocket connection failed: $e");
+      _channel = null;
+      return;
+    }
 
     _channel!.stream.listen(
       (message) {
@@ -32,32 +42,40 @@ class WebsocketService {
       },
       onDone: () {
         debugPrint('WS closed');
-        _channel=null;
+        _channel = null;
       },
     );
+
+    debugPrint("WebSocket stream listener attached");
   }
 
   void send(dynamic data){
-    if (_channel == null) return;
+    if (_channel == null) {
+      debugPrint("❌ Cannot send: WebSocket not connected");
+      return;
+    }
 
-    debugPrint("Sending message to WS");
-    _channel!.sink.add(jsonEncode(data));
+    try {
+      final jsonString = jsonEncode(data);
+      debugPrint("📤 Sending message to WS: $jsonString");
+      _channel!.sink.add(jsonString);
+    } catch (e) {
+      debugPrint("❌ Error sending message: $e");
+    }
   }
 
   void _handleMessage(dynamic message){
-    final decoded = jsonDecode(message) as Map<String, dynamic>;
-    debugPrint("Received message from socket");
-    _controller.add(decoded);
-    //TODO: non riaggiungere più volte lo stesso player
+    try {
+      final decoded = jsonDecode(message) as Map<String, dynamic>;
+      debugPrint("📥 Received and decoded message from socket");
+      _controller.add(decoded);
+    } catch (e) {
+      debugPrint("❌ Error decoding message: $e");
+    }
   }
 
-  //void dispose(){
-  //  _controller.close();
-  //  close();
-  //}
-
   void close(){
-    debugPrintStack();
+    debugPrint("Closing WebSocket connection");
     _channel?.sink.close(status.goingAway);
     _channel = null;
   }
