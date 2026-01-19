@@ -1,0 +1,184 @@
+{
+  "themes": [
+    {
+      "settingName": "children",
+      "roles": {
+        "villager": {
+            "name": "Villager",
+            "icon": "villager"
+        },
+        "madman": {
+            "name": "Madman",
+            "icon": "madman"
+        },
+        "copycat": {
+            "name": "Copycat",
+            "icon": "copycat"
+        },
+        "jailer": {
+            "name": "Jailer",
+            "icon": "jailer"
+        },
+        "medium": {
+            "name": "Medium",
+            "icon": "medium"
+        },
+        "seer": {
+            "name": "Seer",
+            "icon": "seer"
+        },
+        "courtesan": {
+            "name": "Courtesan",
+            "icon": "courtesan"
+        },
+        "hunter": {
+            "name": "Hunter",
+            "icon": "hunter"
+        },
+        "guard": {
+            "name": "Guard",
+            "icon": "guard"
+        },
+        "wolf": {
+            "name": "Wolf",
+            "icon": "wolf"
+        }
+      }
+    },
+    {
+      "settingName": "classic",
+      "roles": {
+        "villager": {
+            "name": "Villager",
+            "icon": "villager"
+        },
+        "madman": {
+            "name": "Madman",
+            "icon": "madman"
+        },
+        "copycat": {
+            "name": "Copycat",
+            "icon": "copycat"
+        },
+        "jailer": {
+            "name": "Jailer",
+            "icon": "jailer"
+        },
+        "medium": {
+            "name": "Medium",
+            "icon": "medium"
+        },
+        "seer": {
+            "name": "Seer",
+            "icon": "seer"
+        },
+        "courtesan": {
+            "name": "Courtesan",
+            "icon": "courtesan"
+        },
+        "hunter": {
+            "name": "Hunter",
+            "icon": "hunter"
+        },
+        "guard": {
+            "name": "Guard",
+            "icon": "guard"
+        },
+        "wolf": {
+            "name": "Wolf",
+            "icon": "wolf"
+        }
+      }
+    },
+    {
+      "settingName": "vampire",
+      "roles": {
+        "villager": {
+            "name": "Townsfolk",
+            "icon": "townsfolk"
+        },
+        "madman": {
+            "name": "Thrall",
+            "icon": "thrall"
+        },
+        "copycat": {
+            "name": "Bloody Mimic",
+            "icon": "bloody_mimic"
+        },
+        "jailer": {
+            "name": "Crypt Warden",
+            "icon": "crypt_warden"
+        },
+        "medium": {
+            "name": "Gravecaller",
+            "icon": "gravecaller"
+        },
+        "seer": {
+            "name": "Moonseer",
+            "icon": "moonseer"
+        },
+        "courtesan": {
+            "name": "Seductress",
+            "icon": "seductress"
+        },
+        "hunter": {
+            "name": "Nightstalker",
+            "icon": "nightstalker"
+        },
+        "guard": {
+            "name": "Holy Protector",
+            "icon": "holy_protector"
+        },
+        "wolf": {
+            "name": "Vampire",
+            "icon": "vampire"
+        }
+      }
+    },
+    {
+      "settingName": "zombie",
+      "roles": {
+        "villager": {
+            "name": "Survivor",
+            "icon": "survivor"
+        },
+        "madman": {
+            "name": "Contaminated",
+            "icon": "contaminated"
+        },
+        "copycat": {
+            "name": "Mimic",
+            "icon": "mimic"
+        },
+        "jailer": {
+            "name": "Barricade Warden",
+            "icon": "barricade_warden"
+        },
+        "medium": {
+            "name": "Spirit Listener",
+            "icon": "spirit_listener"
+        },
+        "seer": {
+            "name": "Tracker",
+            "icon": "tracker"
+        },
+        "courtesan": {
+            "name": "Distractor",
+            "icon": "distractor"
+        },
+        "hunter": {
+            "name": "Raider",
+            "icon": "raider"
+        },
+        "guard": {
+            "name": "Perimeter Guard",
+            "icon": "perimeter_guard"
+        },
+        "wolf": {
+            "name": "Zombie",
+            "icon": "zombie"
+        }
+      }
+    }
+  ]
+}

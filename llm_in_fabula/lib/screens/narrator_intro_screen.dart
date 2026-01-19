@@ -34,8 +34,6 @@ class _NarratorIntroScreenState extends State<NarratorIntroScreen>{
             padding: const EdgeInsets.all(24.0),
             child: Column(
               children: [
-                //TODO: di prova da togliere
-                TimerBar(),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(16),

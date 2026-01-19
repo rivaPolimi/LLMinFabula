@@ -51,15 +51,18 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         # Close connection
         self.close()
 
-    # Receive JSON from the client
     async def receive_json(self, content):
+        import logging
+        logger = logging.getLogger("redis_events")
+        logger.info("WebSocket message received: type=%s content=%s", content.get("type"), content)
+        
         msg_type = content.get("type")
 
         if msg_type == "vote":
-            await self.handle_vote(self, content)
-
+            await self.handle_vote(content)
+        
         elif msg_type == "narration_finished":
-            await self.handle_narration_finished(content)
+            await self.handle_phase_ack(content)
 
     async def new_player_joined(self, event):
         if(event["player_id"] != self.player_id):
@@ -125,21 +128,21 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             tally = tally_votes(poll)
             await notify_updated_votes(self.game, poll, tally)
 
-    async def handle_narration_finished(self, content):
-        from engine import GameEngine
-        await self.reload_db_state()
-
-        phase = content["phase"]
-        state = self.game.state
-        
-        if phase == States.INTRODUCTION and state == States.INTRODUCTION:
-            GameEngine.role_reveal(self.game)
-        elif phase == States.ROLE_REVEAL and state == States.ROLE_REVEAL:
-            GameEngine.night_intro(self.game)
-        elif phase == States.NIGHT and state == States.NIGHT:
-            GameEngine.handle_night(self.game)
-        elif phase == States.NIGHT_REPORT and state == States.NIGHT_REPORT:
-            GameEngine.check_win_engine(self.game)
+#    async def handle_narration_finished(self, content):
+#        from engine import GameEngine
+#        await self.reload_db_state()
+#
+#        phase = content["phase"]
+#        state = self.game.state
+#        
+#        if phase == States.INTRODUCTION and state == States.INTRODUCTION:
+#            GameEngine.role_reveal(self.game)
+#        elif phase == States.ROLE_REVEAL and state == States.ROLE_REVEAL:
+#            GameEngine.night_intro(self.game)
+#        elif phase == States.NIGHT and state == States.NIGHT:
+#            GameEngine.handle_night(self.game)
+#        elif phase == States.NIGHT_REPORT and state == States.NIGHT_REPORT:
+#            GameEngine.check_win_engine(self.game)
 
     async def player_arrested(self, event):
         await self.send_json({
@@ -198,3 +201,50 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "started_at": event["started_at"],
             "duration": event["duration"],
         })
+
+    async def handle_phase_ack(self, content):
+        """
+        Handle phase acknowledgment from client.
+        Cancel the server-side timer when client acknowledges it received the phase start.
+        """
+        import logging
+        from .services.timer_manager import cancel_timer
+        
+        logger = logging.getLogger("redis_events")
+
+        logger.info("Received phase ACK from client: game_id=%s content=%s", self.game_id, content, extra={'game_id': self.game_id})
+        
+        phase_name = content.get("phase")
+        
+        if not phase_name:
+            await self.send_json({
+                "type": "ack_error",
+                "error": "phase parameter required"
+            })
+            return
+        
+        # Build the timer key
+        key = f"phase:{phase_name}_{self.game_id}"
+        
+        # Cancel the timer
+        cancelled = cancel_timer(key)
+        
+        if cancelled:
+            logger.info(
+                "Phase timer cancelled by client ACK: game_id=%s phase=%s",
+                self.game_id, phase_name,
+                extra={'game_id': self.game_id, 'phase': phase_name}
+            )
+            await self.send_json({
+                "type": "ack_success",
+                "message": f"Timer cancelled for phase: {phase_name}"
+            })
+        else:
+            logger.warning(
+                "Failed to cancel phase timer: game_id=%s phase=%s",
+                self.game_id, phase_name
+            )
+            await self.send_json({
+                "type": "ack_warning",
+                "message": f"Timer not found for phase: {phase_name}"
+            })

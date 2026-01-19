@@ -214,6 +214,7 @@ def check_everybody_voted(game: Game, poll: Poll):
     
 async def end_poll_by_id(poll_id: int, player: Player = None):
     from ..engine import GameEngine
+    from .timer_manager import cancel_timer
     
     try:
         poll = await database_sync_to_async(Poll.objects.select_related("game").get)(id=poll_id)
@@ -230,19 +231,17 @@ async def end_poll_by_id(poll_id: int, player: Player = None):
         logger.info("Poll already expired: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return
 
-    # Get a random voter to perform the action
-    if not player:
-        player = poll.get_voter()
+    # Cancel the poll timer since everyone has voted
+    poll_key = f"poll:{poll.id}_{poll.game_id}"
+    timer_cancelled = cancel_timer(poll_key)
+    if timer_cancelled:
+        logger.info("Poll timer cancelled (everyone voted): game_id=%s poll_id=%s", poll.game_id, poll.id, extra={'game_id': poll.game_id, 'poll_id': poll.id})
+        # Callback will execute end_poll immediately
+        return
 
-    # End the poll
-    poll.expired = True
-
-    if poll.role == "all":
-        logger.info("Ending discussion poll: game_id=%s poll_id=%s", poll.game_id, poll.id)
-        return GameEngine.end_discussion(poll.game, poll)
-    else:
-        logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", poll.game_id, poll.id, poll.role)
-        return GameEngine.role_action(poll.game, player, poll)
+    # Fallback: if no timer existed, end now
+    logger.info("Poll timer not found; ending directly: game_id=%s poll_id=%s", poll.game_id, poll.id)
+    return await end_poll(poll.id, poll.game_id)
 
 def clear_poll(poll: Poll):
     Vote.objects.select_related("poll").filter(poll=poll).delete()

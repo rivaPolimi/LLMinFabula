@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
@@ -32,7 +33,7 @@ class RoleScreen extends StatelessWidget {
                   radius: 64,
                   backgroundColor: const Color(0xFFE4D2A6),
                   //TODO: bisogna mettere l'icona del ruolo giusto
-                  child: Icon(Icons.pets,
+                  child: ThemedRoleIcon(baseRole: state.player!.roleName,
                       size: 72, color: const Color(0xFF08313F)),
                 ),
                 const SizedBox(height: 16),

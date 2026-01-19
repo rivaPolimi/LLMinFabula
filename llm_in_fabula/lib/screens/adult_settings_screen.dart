@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/models/game_theme.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
 
 class RoleDefinition{
@@ -48,6 +50,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   
   // Set per tracciare gli indici dei ruoli secondari selezionati (multi-selezione)
   final Set<int> _selectedSecondaryIndices = {};
+  late GameTheme theme;
   
   int _numberOfWolves = 1;
   int _numberOfVillagers = 1;
@@ -56,6 +59,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    theme = GameThemes.getTheme(widget.settingName);
     _numberOfWolves = widget.numPlayers ~/ 5;
     _numberOfWolves = _numberOfWolves < 1 ? 1 : _numberOfWolves;
     _numberOfVillagers = widget.numPlayers - _numberOfWolves;
@@ -180,11 +184,12 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     // Ruolo Primario 1 (ID: 0) - WOLVES
                     Column(
                       children: [
-                        const RoleButton(
+                        RoleButton(
                           size: 80,
-                          iconAsset: 'assets/icons/wolf.png',
+                          roleKey: 'wolf',
                           isSelected: false,
                           onTap: null, // Non selezionabile
+                          theme: theme,
                         ),
                         const SizedBox(height: 8),
                         Container(
@@ -209,11 +214,12 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     // Ruolo Primario 2 (ID: 1) - VILLAGERS
                     Column(
                       children: [
-                        const RoleButton(
+                        RoleButton(
                           size: 80,
-                          iconAsset: 'assets/icons/Villager.png',
+                          roleKey: 'villager',
                           isSelected: false,
                           onTap: null, // Non selezionabile
+                          theme: theme,
                         ),
                         const SizedBox(height: 8),
                         Container(
@@ -250,7 +256,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 45),
-                  itemCount: 12,
+                  itemCount: 8,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
@@ -260,23 +266,22 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   itemBuilder: (context, index) {
                     const double gridBtnSize = 90.0;
 
-                    final List<String> activeRoles = [
-                      'assets/icons/Seer.png',
-                      'assets/icons/Courtesan.png',
-                      'assets/icons/MadMan.png',
-                    ];
+                    // Get roles from the selected theme setting
+                    final theme = GameThemes.getTheme(widget.settingName);
+                    final List<String> activeRoles = theme.roles.keys.toList();
 
-                    final String? asset = index < activeRoles.length
+                    final String? roleKey = index < activeRoles.length
                         ? activeRoles[index]
                         : null;
 
                     return Center(
                       child: RoleButton(
                         size: gridBtnSize,
-                        iconAsset: asset,
+                        roleKey: roleKey,
+                        theme: theme,
                         isSelected: _selectedSecondaryIndices.contains(index),
-                        // Se non c'è asset, onTap è null e quindi non è selezionabile
-                        onTap: asset != null ? () => _toggleSecondarySelection(index) : null,
+                        // Se non c'è ruolo, onTap è null e quindi non è selezionabile
+                        onTap: roleKey != null ? () => _toggleSecondarySelection(index) : null,
                       ),
                     );
                   },
@@ -288,7 +293,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 Column(
                   children: [
                     Text(
-                      'Number Of Wolves: $_numberOfWolves',
+                      'Number Of ${theme.getRoleName('wolf')}: $_numberOfWolves',
                       style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
@@ -359,7 +364,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 Column(
                   children: [
                     Text(
-                      'Number Of Villagers: $_numberOfVillagers',
+                      'Number Of ${theme.getRoleName('villager')}: $_numberOfVillagers',
                       style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
@@ -521,14 +526,16 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
 class RoleButton extends StatelessWidget {
   final double size;
-  final String? iconAsset;
+  final String? roleKey;
   final VoidCallback? onTap;
   final bool isSelected;
+  final GameTheme? theme;
 
   const RoleButton({
     super.key,
     required this.size,
-    this.iconAsset,
+    this.roleKey,
+    this.theme,
     this.onTap,
     this.isSelected = false,
   });
@@ -552,14 +559,14 @@ class RoleButton extends StatelessWidget {
         width: borderWidth,
       ),
       // Immagine di sfondo
-      image: iconAsset != null
+      image: roleKey != null
           ? const DecorationImage(
         image: AssetImage('assets/images/moon2.png'),
         fit: BoxFit.cover,
       )
           : null,
-      // Colore di riempimento se non c'è immagine
-      color: iconAsset == null ? emptyFillColor : null,
+      // Colore di riempimento se non c'è ruolo
+      color: roleKey == null ? emptyFillColor : null,
     );
 
     return SizedBox(
@@ -576,13 +583,12 @@ class RoleButton extends StatelessWidget {
             decoration: decoration,
           ),
 
-          // LIVELLO 2: Icona Personaggio
-          if (iconAsset != null)
-            Image.asset(
-              iconAsset!,
-              width: size * 0.75,
-              height: size * 0.75,
-              fit: BoxFit.contain,
+          // LIVELLO 2: Icona Personaggio (Themed)
+          if (roleKey != null)
+            ThemedRoleIcon(
+              baseRole: roleKey!,
+              size: size * 0.75,
+              themeOverride: theme,
             ),
 
           // LIVELLO 3: Effetto Click

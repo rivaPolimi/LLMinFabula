@@ -38,7 +38,7 @@ class GameRouter extends StatelessWidget {
 
       case GamePhase.nightIntro:
         //TODO: DA IMPLEMENTARE
-        return const CreateJoinScreen();
+        return const NarratorIntroScreen();
 
       case GamePhase.nightReport:
         //TODO: DA IMPLEMENTARE

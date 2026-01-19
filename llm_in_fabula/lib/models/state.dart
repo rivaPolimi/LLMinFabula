@@ -6,6 +6,7 @@ import 'package:llm_in_fabula/services/websocket_service.dart';
 import 'model.dart';
 import 'package:llm_in_fabula/services/http_request_handler.dart';
 import 'package:llm_in_fabula/constants.dart';
+import 'package:llm_in_fabula/models/game_theme.dart';
 
 enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightReport, roleAction, checkWin, endGame}
 enum AppFlow {title, joinOrCreate, join, create, inGame,}
@@ -31,6 +32,10 @@ class GameState extends ChangeNotifier{
   //Getters
   Game? get game => _game;
   Player? get player => _player;
+  
+  /// Get the current game theme based on setting
+  GameTheme get theme => GameThemes.getTheme(_game?.setting ?? 'medieval');
+  
   Duration get remaining {
     // Use local time to calculate elapsed, avoiding clock skew issues
     if (_localPhaseStart == null) return Duration(seconds: duration);
@@ -120,6 +125,7 @@ class GameState extends ChangeNotifier{
     );
     
     _game = session.game;
+    _game!.setting = settingName; // Store the setting
     _player = session.player;
     _openWebSocket();
     _configureTts();
@@ -200,7 +206,7 @@ class GameState extends ChangeNotifier{
     debugPrint("Start: $start");
     debugPrint("Duration: $duration");
     this.phase = GamePhase.values.byName(phase);
-    phaseStart = start;
+    phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
     this.duration = duration;
     _localPhaseStart = DateTime.now(); // Capture local time when phase starts
 

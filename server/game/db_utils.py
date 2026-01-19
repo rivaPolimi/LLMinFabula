@@ -69,7 +69,8 @@ async def retry_on_db_lock_async(func, *args, max_retries=MAX_RETRIES, **kwargs)
                 with transaction.atomic():
                     return func(*args, **kwargs)
             
-            return await sync_to_async(wrapped)()
+            # Use a non-thread-sensitive executor to avoid single-thread deadlocks
+            return await sync_to_async(wrapped, thread_sensitive=False)()
         except OperationalError as e:
             if "database is locked" in str(e):
                 last_exception = e

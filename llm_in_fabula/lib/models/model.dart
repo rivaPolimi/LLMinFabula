@@ -31,8 +31,9 @@ class Player {
 class Game {
   final int id;
   final List<Player> players;
+  String? setting; // e.g., 'medieval', 'space', etc.
 
-  Game({required this.id, required this.players});
+  Game({required this.id, required this.players, this.setting});
 
   int getId(){
     return id;

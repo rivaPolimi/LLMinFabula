@@ -13,6 +13,7 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   bool _isLoading = false;
+  bool _showRoles = false;
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +43,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           padding: const EdgeInsets.only(top: 16.0, right: 16.0),
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              //TODO: renderla una pagina sopra al lobby screen e basta => togli navigator
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const RoleTutorialsScreen(),
-                                ),
-                              );
+                              setState(() {
+                                _showRoles = true;
+                              });
                             },
                             icon: const Icon(Icons.menu, size: 16),
                             label: const Text('Roles'),
@@ -185,6 +182,49 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+            // --- ROLES OVERLAY ---
+            if (_showRoles)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showRoles = false;
+                  });
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.black54,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {}, // Prevent tap-through
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          maxWidth: 600,
+                          maxHeight: 700,
+                        ),
+                        margin: const EdgeInsets.all(20),
+                        child: Stack(
+                          children: [
+                            const RoleTutorialsScreen(),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: IconButton(
+                                icon: const Icon(Icons.close, color: Colors.white),
+                                onPressed: () {
+                                  setState(() {
+                                    _showRoles = false;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

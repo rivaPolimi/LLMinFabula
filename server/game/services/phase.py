@@ -2,7 +2,6 @@ import logging
 import asyncio
 import threading
 from ..models import Game
-from channels.db import database_sync_to_async
 from .timer_manager import schedule_timer
 from ..db_utils import retry_on_db_lock_async
 

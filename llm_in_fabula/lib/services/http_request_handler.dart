@@ -37,7 +37,7 @@ Future<GameSession> createGame(int numPlayers, String settingName, String nickna
   if(response.statusCode == 201){
     var decoded = jsonDecode(response.body) as Map<String, dynamic>;
     var player = Player(id: decoded['player_id'], nickname: nickname, isAdmin: true);
-    var game = Game(id: decoded['game_id'], players: List.empty(growable: true));
+    var game = Game(id: decoded['game_id'], players: List.empty(growable: true), setting: settingName);
     game.players.add(player);
     //openWebSocketConnection();
     return GameSession(game: game, player: player);
