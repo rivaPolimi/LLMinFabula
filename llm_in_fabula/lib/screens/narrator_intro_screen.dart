@@ -11,54 +11,68 @@ class NarratorIntroScreen extends StatefulWidget {
   State<NarratorIntroScreen> createState() => _NarratorIntroScreenState();
 }
 
-class _NarratorIntroScreenState extends State<NarratorIntroScreen>{
+class _NarratorIntroScreenState extends State<NarratorIntroScreen> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     //Delay to ensure context and provider are ready
-    WidgetsBinding.instance.addPostFrameCallback((_){
-      if(!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<GameState>().startTts();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GameState>(
-      builder: (_, state, _) {
-        final introduction = state.narratorText ?? "";
-        
-        return GradientPage(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        introduction,
-                        style: TextStyle(color: Colors.white),
+    return Consumer<GameState>(builder: (_, state, __) {
+      final introduction = state.narratorText ?? "";
+
+      return GradientPage(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  decoration: BoxDecoration(
+                      color: const Color(0xFFC2D1D9).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.8),
+                        width: 2,
+                      )),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      introduction,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF2E3B44),
+                        fontSize: 16,
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Qui in futuro metti l'immagine del narratore dal tuo assets
-                const Icon(Icons.menu_book, size: 72, color: Colors.white),
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'assets/illustrazioni/narratore.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
-
 }

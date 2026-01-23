@@ -68,6 +68,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/illustrazioni/
     - assets/themes.json
     - assets/icons.json
   fonts:
