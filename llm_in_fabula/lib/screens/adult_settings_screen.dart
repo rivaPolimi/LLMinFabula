@@ -4,6 +4,7 @@ import 'package:llm_in_fabula/models/game_theme.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
 import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:llm_in_fabula/models/model.dart';
 
 class RoleDefinition{
   final String name;
@@ -435,54 +436,110 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(
+                    // All'interno di adult_settings_screen.dart, nel pulsante "create lobby"
+
+                    // In adult_settings_screen.dart
+
+// ... (dentro il pulsante per creare la lobby)
+
                     onPressed: _isLoading
-                      ? null
-                      : () async {
-                        final gameState = context.read<GameState>();
-                        // TODO: rimuovi final navigator = Navigator.of(context);
-                        final messenger = ScaffoldMessenger.of(context);
+                        ? null
+                        : () async {
+                      final gameState = context.read<GameState>();
+                      // TODO: rimuovi final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
 
-                        setState(() {
-                          _isLoading = true;
-                        });
+                      setState(() {
+                        _isLoading = true;
+                      });
 
-                        _showLoadingDialog(context);
-                        
-                        try {
-                          //Queries the server to create the game, then set game and player in the state
-                          await gameState.createGameAndSetSession(
-                            widget.numPlayers, 
-                            widget.settingName.toLowerCase(), 
-                            widget.nickname, 
-                            widget.password, 
+                      _showLoadingDialog(context);
+
+                      try {
+                        //Queries the server to create the game, then set game and player in the state
+                        await gameState.createGameAndSetSession(
+                            widget.numPlayers,
+                            widget.settingName.toLowerCase(),
+                            widget.nickname,
+                            widget.password,
                             buildRoleMap()
-                          );
+                        );
 
-                          if(!context.mounted) return;
+                        if(!context.mounted) return;
 
-                          _hideLoadingDialog(context);
+                        _hideLoadingDialog(context);
 
-                          gameState.goToGamePhase();
-                        } catch (e, stackTrace) {
-                          //TODO: provvisorio, togliere e gestire meglio eccezioni
-                          debugPrint('Create game error: $e');
-                          debugPrintStack(stackTrace: stackTrace);
+                        gameState.goToGamePhase();
+                      } catch (e, stackTrace) {
+                        //TODO: provvisorio, togliere e gestire meglio eccezioni
+                        debugPrint('Create game error: $e');
+                        debugPrintStack(stackTrace: stackTrace);
 
-                          if(!mounted) return;
+                        if(!mounted) return;
 
-                          _hideLoadingDialog(context);
+                        _hideLoadingDialog(context);
 
-                          messenger.showSnackBar(
-                            SnackBar(content: Text(e.toString())),
-                          );
-                        } finally {
-                          if(mounted) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      } finally {
+                        if(mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
                         }
-                      },
+                      }
+                    },
+
+                    /*onPressed: _isLoading
+                        ? null
+                        : () async {
+                      // Imposta lo stato di caricamento e mostra il dialog
+                      setState(() => _isLoading = true);
+                      _showLoadingDialog(context);
+
+                      final gameState = context.read<GameState>();
+                      final roles = buildRoleMap();
+
+                      try {
+                        // --- ESEGUI LE OPERAZIONI ASINCRONE ---
+                        // 1. Crea la partita (questo metodo cambierà la schermata)
+                        await gameState.createGameAndSetSession(
+                          widget.numPlayers,
+                          widget.settingName,
+                          widget.nickname,
+                          widget.password,
+                          roles,
+                        );
+
+                        // 2. Aggiungi i giocatori finti. Questa chiamata ora avviene
+                        //    mentre il cambio di schermata è già in corso.
+                        if (gameState.game != null) {
+                          gameState.addFakePlayersForTesting(widget.numPlayers);
+                        }
+
+                        // !!! NON METTERE CODICE QUI DOPO L'AWAIT !!!
+                        // A questo punto, questo widget sta per essere distrutto.
+                        // Non chiamare _hideLoadingDialog o setState.
+
+                      } catch (e) {
+                        // Se c'è un errore PRIMA del cambio di schermata,
+                        // allora dobbiamo nascondere il dialog e riabilitare il pulsante.
+                        debugPrint("Errore durante la creazione della partita: $e");
+
+                        if (mounted) {
+                          _hideLoadingDialog(context); // Nascondi il caricamento SOLO IN CASO DI ERRORE
+                          setState(() => _isLoading = false); // Riabilita il pulsante
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error creating game: ${e.toString()}')),
+                          );
+                        }
+                      }
+                      // !!! RIMUOVI IL BLOCCO 'finally' DA QUI !!!
+                    },*/
+
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF003943),
                       foregroundColor: Colors.white,
