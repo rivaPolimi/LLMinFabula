@@ -22,9 +22,9 @@ class AdultSettingsScreen extends StatefulWidget {
   final String password;
 
   const AdultSettingsScreen({
-    required this.numPlayers, 
-    required this.settingName, 
-    required this.nickname, 
+    required this.numPlayers,
+    required this.settingName,
+    required this.nickname,
     required this.password,
     required this.onBack,
     super.key,
@@ -35,7 +35,7 @@ class AdultSettingsScreen extends StatefulWidget {
 }
 
 class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
-  
+
   bool _isLoading = false;
 
   final List<RoleDefinition> secondaryRoles = [
@@ -48,11 +48,11 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
     RoleDefinition(name: 'jailer', asset: ''),
     RoleDefinition(name: 'copycat', asset: ''),
   ];
-  
+
   // Set per tracciare gli indici dei ruoli secondari selezionati (multi-selezione)
   final Set<int> _selectedSecondaryIndices = {};
   late GameTheme theme;
-  
+
   int _numberOfWolves = 1;
   int _numberOfVillagers = 1;
 
@@ -95,7 +95,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   void _showLoadingDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, 
+      barrierDismissible: false,
       builder: (_) => const Center(
         child: CircularProgressIndicator(),
       ),
@@ -469,6 +469,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
                         _hideLoadingDialog(context);
 
+                        gameState.addFakePlayersForTesting(widget.numPlayers);
+
                         gameState.goToGamePhase();
                       } catch (e, stackTrace) {
                         //TODO: provvisorio, togliere e gestire meglio eccezioni
@@ -491,53 +493,6 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                       }
                     },
 
-                    /*onPressed: _isLoading
-                        ? null
-                        : () async {
-                      // Imposta lo stato di caricamento e mostra il dialog
-                      setState(() => _isLoading = true);
-                      _showLoadingDialog(context);
-
-                      final gameState = context.read<GameState>();
-                      final roles = buildRoleMap();
-
-                      try {
-                        // --- ESEGUI LE OPERAZIONI ASINCRONE ---
-                        // 1. Crea la partita (questo metodo cambierà la schermata)
-                        await gameState.createGameAndSetSession(
-                          widget.numPlayers,
-                          widget.settingName,
-                          widget.nickname,
-                          widget.password,
-                          roles,
-                        );
-
-                        // 2. Aggiungi i giocatori finti. Questa chiamata ora avviene
-                        //    mentre il cambio di schermata è già in corso.
-                        if (gameState.game != null) {
-                          gameState.addFakePlayersForTesting(widget.numPlayers);
-                        }
-
-                        // !!! NON METTERE CODICE QUI DOPO L'AWAIT !!!
-                        // A questo punto, questo widget sta per essere distrutto.
-                        // Non chiamare _hideLoadingDialog o setState.
-
-                      } catch (e) {
-                        // Se c'è un errore PRIMA del cambio di schermata,
-                        // allora dobbiamo nascondere il dialog e riabilitare il pulsante.
-                        debugPrint("Errore durante la creazione della partita: $e");
-
-                        if (mounted) {
-                          _hideLoadingDialog(context); // Nascondi il caricamento SOLO IN CASO DI ERRORE
-                          setState(() => _isLoading = false); // Riabilita il pulsante
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error creating game: ${e.toString()}')),
-                          );
-                        }
-                      }
-                      // !!! RIMUOVI IL BLOCCO 'finally' DA QUI !!!
-                    },*/
 
 
                     style: ElevatedButton.styleFrom(
