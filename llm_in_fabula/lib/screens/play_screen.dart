@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/screens/role_screen_preview.dart';
+import 'package:llm_in_fabula/screens/wolf_voting_screen_preview.dart';
 import 'package:provider/provider.dart';
 
 // 1.5) PLAY SCREEN (schermata centrale 'play with friends')
@@ -61,17 +62,32 @@ class PlayScreen extends StatelessWidget {
             Positioned(
               top: 50,
               right: 20,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RoleScreenPreview(),
-                    ),
-                  );
-                },
-                child: const Text('Test Role'),
-              ),
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RoleScreenPreview(),
+                        ),
+                      );
+                    },
+                    child: const Text('Test Role'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WolfVotingScreenPreview(),
+                        ),
+                      );
+                    },
+                    child: const Text('Test Wolf'),
+                  ),
+                ],
+              )
             )
           ],
         ),

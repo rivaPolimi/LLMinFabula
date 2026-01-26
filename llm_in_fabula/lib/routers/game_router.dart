@@ -4,6 +4,8 @@ import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
 import 'package:llm_in_fabula/screens/role_screen.dart';
+import 'package:llm_in_fabula/screens/wolf_voting_screen.dart';
+import 'package:provider/provider.dart';
 
 class GameRouter extends StatelessWidget {
   final GamePhase phase;
@@ -45,7 +47,11 @@ class GameRouter extends StatelessWidget {
         return const CreateJoinScreen();
 
       case GamePhase.roleAction:
-        //TODO: DA IMPLEMENTARE
+        final role = context.watch<GameState>().player?.roleName;
+        if (role == 'wolf') {
+          return const WolfVotingScreen();
+        }
+        //TODO: DA IMPLEMENTARE PER ALTRI RUOLI. DIPENDE ANCHE DA COME SI VUOLE GESTIRE LA COSA, SE UNO ALLA VOLTA COME NEL GIOCO VERO O TUTTO INSIEME (POTREBBE DARE PROBLEMI...)
         return const CreateJoinScreen();
 
       case GamePhase.checkWin:
