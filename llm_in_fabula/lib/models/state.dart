@@ -24,6 +24,7 @@ class GameState extends ChangeNotifier{
 
   Tts tts = Tts();
   String? narratorText;
+  int? selectedPlayerId;
 
   Timer? _ticker;
 
@@ -32,14 +33,14 @@ class GameState extends ChangeNotifier{
   //Getters
   Game? get game => _game;
   Player? get player => _player;
-  
+
   /// Get the current game theme based on setting
   GameTheme get theme => GameThemes.getTheme(_game?.setting ?? 'medieval');
-  
+
   Duration get remaining {
     // Use local time to calculate elapsed, avoiding clock skew issues
     if (_localPhaseStart == null) return Duration(seconds: duration);
-    
+
     final elapsed = DateTime.now().difference(_localPhaseStart!);
     final remaining = Duration(seconds: duration) - elapsed;
     return remaining.isNegative ? Duration.zero : remaining;
@@ -61,6 +62,20 @@ class GameState extends ChangeNotifier{
     _ticker = Timer.periodic(const Duration(seconds: 1), (_){
       notifyListeners();
     });
+  }
+
+  void selectPlayer(int playerId) {
+    selectedPlayerId = playerId;
+    notifyListeners();
+  }
+
+  void confirmVote() {
+    if (selectedPlayerId == null) return;
+    // TODO: Send vote to server
+    debugPrint("Voted for player $selectedPlayerId");
+    // maybe reset selection after voting?
+    // selectedPlayerId = null;
+    notifyListeners();
   }
 
   //Manage the transitions till the lobby
@@ -123,7 +138,7 @@ class GameState extends ChangeNotifier{
       password,
       roles,
     );
-    
+
     _game = session.game;
     _game!.setting = settingName; // Store the setting
     _player = session.player;
@@ -209,6 +224,7 @@ class GameState extends ChangeNotifier{
     phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
     this.duration = duration;
     _localPhaseStart = DateTime.now(); // Capture local time when phase starts
+    selectedPlayerId = null; // Reset selection on new phase
 
     _stopTts();
     _startTicker();
@@ -221,7 +237,7 @@ class GameState extends ChangeNotifier{
     debugPrint("Story: $text");
 
     narratorText = text;
-    
+
     notifyListeners();
   }
 
@@ -263,6 +279,4 @@ class GameState extends ChangeNotifier{
 
     notifyListeners();
   }
-
-
 }

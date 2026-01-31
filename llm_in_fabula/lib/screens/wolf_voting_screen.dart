@@ -16,14 +16,14 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GameState>(builder: (context, gameState, _) {
-      final remaining = gameState.remaining;
+    return Consumer<GameState>(builder: (_, state, _) {
+      final remaining = state.remaining;
       final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
 
       // Filter out non-votable players
-      final currentPlayer = gameState.player!;
-      final votablePlayers = gameState.game!.players.where((p) {
+      final currentPlayer = state.player!;
+      final votablePlayers = state.game!.players.where((p) {
         // Can't vote for yourself, dead players, or other wolves.
         // This assumes roleName is available for all players if you are a wolf.
         return !p.isDead &&
@@ -34,7 +34,8 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
       return GradientPage(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               children: [
                 Text(
@@ -45,7 +46,8 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
                 Expanded(
                   child: GridView.builder(
                     itemCount: votablePlayers.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,

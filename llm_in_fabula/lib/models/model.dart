@@ -55,3 +55,10 @@ class Game {
     };
   }
 }
+
+class Vote {
+  final int voterId;
+  final int votedPlayerId;
+
+  Vote({required this.voterId, required this.votedPlayerId});
+}

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/screens/lynch_results_screen_preview.dart';
+import 'package:llm_in_fabula/screens/lynch_voting_screen_preview.dart';
+import 'package:llm_in_fabula/screens/player_death_screen_preview.dart';
 import 'package:llm_in_fabula/screens/role_screen_preview.dart';
 import 'package:llm_in_fabula/screens/wolf_voting_screen_preview.dart';
 import 'package:provider/provider.dart';
@@ -85,6 +88,39 @@ class PlayScreen extends StatelessWidget {
                       );
                     },
                     child: const Text('Test Wolf'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LynchVotingScreenPreview(),
+                        ),
+                      );
+                    },
+                    child: const Text('Test Lynch'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PlayerDeathScreenPreview(),
+                        ),
+                      );
+                    },
+                    child: const Text('Test Death'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LynchResultsScreenPreview(),
+                        ),
+                      );
+                    },
+                    child: const Text('Test Results'),
                   ),
                 ],
               )
