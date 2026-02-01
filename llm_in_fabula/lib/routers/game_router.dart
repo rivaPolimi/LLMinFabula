@@ -3,6 +3,7 @@ import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
+import 'package:llm_in_fabula/screens/night_action_prompt_screen.dart';
 import 'package:llm_in_fabula/screens/role_screen.dart';
 import 'package:llm_in_fabula/screens/wolf_voting_screen.dart';
 import 'package:provider/provider.dart';
@@ -19,11 +20,9 @@ class GameRouter extends StatelessWidget {
         return const LobbyScreen();
 
       case GamePhase.introduction:
-        //TODO: forse dovrei passare l'introduzione qui
         return const NarratorIntroScreen();
 
       case GamePhase.roleReveal:
-        //TODO: come passo il ruolo?
         return const RoleScreen();
 
       case GamePhase.discussion:
@@ -39,8 +38,11 @@ class GameRouter extends StatelessWidget {
         return const CreateJoinScreen();
 
       case GamePhase.nightIntro:
-        //TODO: DA IMPLEMENTARE
+        // This screen will show the second narrator text
         return const NarratorIntroScreen();
+
+      case GamePhase.nightActionPrompt:
+        return const NightActionPromptScreen();
 
       case GamePhase.nightReport:
         //TODO: DA IMPLEMENTARE
@@ -51,7 +53,7 @@ class GameRouter extends StatelessWidget {
         if (role == 'wolf') {
           return const WolfVotingScreen();
         }
-        //TODO: DA IMPLEMENTARE PER ALTRI RUOLI. DIPENDE ANCHE DA COME SI VUOLE GESTIRE LA COSA, SE UNO ALLA VOLTA COME NEL GIOCO VERO O TUTTO INSIEME (POTREBBE DARE PROBLEMI...)
+        //TODO: DA IMPLEMENTARE PER ALTRI RUOLI
         return const CreateJoinScreen();
 
       case GamePhase.checkWin:

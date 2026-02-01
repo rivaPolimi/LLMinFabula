@@ -8,7 +8,7 @@ import 'package:llm_in_fabula/services/http_request_handler.dart';
 import 'package:llm_in_fabula/constants.dart';
 import 'package:llm_in_fabula/models/game_theme.dart';
 
-enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightReport, roleAction, checkWin, endGame}
+enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightActionPrompt, nightReport, roleAction, checkWin, endGame}
 enum AppFlow {title, joinOrCreate, join, create, inGame,}
 
 class GameState extends ChangeNotifier{
@@ -117,6 +117,14 @@ class GameState extends ChangeNotifier{
 
   void _onTtsCompleted(){
     debugPrint("FINISHED TALKING");
+
+    // For testing: automatically advance to the night prompt after the intro
+    if (phase == GamePhase.nightIntro) {
+      phase = GamePhase.nightActionPrompt;
+      notifyListeners();
+      return;
+    }
+
     _ws.send({
       "type": "narration_finished",
       "phase": phase.name,
