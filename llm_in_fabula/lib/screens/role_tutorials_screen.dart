@@ -1,39 +1,15 @@
-
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/game_theme.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 
 class RoleTutorialsScreen extends StatelessWidget {
   const RoleTutorialsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Lista dei ruoli da mostrare
-    final List<Map<String, String>> roles = [
-      {
-        'name': 'WOLF:',
-        'icon': 'assets/icons/wolf.png',
-        'desc': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      },
-      {
-        'name': 'VILLAGER:',
-        'icon': 'assets/icons/Villager.png',
-        'desc': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-      },
-      {
-        'name': 'SEER:',
-        'icon': 'assets/icons/Seer.png',
-        'desc': 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-      },
-      {
-        'name': 'MADMAN:',
-        'icon': 'assets/icons/MadMan.png',
-        'desc': 'ddddddddddddddddddddddddddddddddddddddddddd',
-      },
-      {
-        'name': 'COURTESAN:',
-        'icon': 'assets/icons/Courtesan.png',
-        'desc': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      },
-    ];
+    final theme = context.watch<GameState>().theme;
+    final roles = theme.roles.entries.toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF003943),
@@ -70,11 +46,12 @@ class RoleTutorialsScreen extends StatelessWidget {
                 itemCount: roles.length,
                 separatorBuilder: (ctx, idx) => const SizedBox(height: 16),
                 itemBuilder: (ctx, index) {
-                  final role = roles[index];
+                  final roleEntry = roles[index];
+                  final role = roleEntry.value;
+
                   return _buildRoleCard(
-                    name: role['name']!,
-                    iconAsset: role['icon']!,
-                    description: role['desc']!,
+                    name: role.name,
+                    icon: role.icon,
                   );
                 },
               ),
@@ -87,8 +64,7 @@ class RoleTutorialsScreen extends StatelessWidget {
 
   Widget _buildRoleCard({
     required String name,
-    required String iconAsset,
-    required String description,
+    required IconData icon,
   }) {
     // Altezza del contenitore (card)
     const double cardHeight = 80;
@@ -109,8 +85,8 @@ class RoleTutorialsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(90, 8, 16, 8),
             alignment: Alignment.centerLeft,
             decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0), 
-              borderRadius: BorderRadius.circular(40), 
+              color: const Color(0xFFE0E0E0),
+              borderRadius: BorderRadius.circular(40),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,22 +100,11 @@ class RoleTutorialsScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 13,
-                    height: 1.0,
-                  ),
-                ),
               ],
             ),
           ),
 
           // 2. CERCHIO CON ICONA
-          // Rimosso Positioned e usato Container diretto per sfruttare alignment: centerLeft
           Container(
             width: circleSize,
             height: circleSize,
@@ -152,11 +117,9 @@ class RoleTutorialsScreen extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Image.asset(
-                iconAsset,
-                width: circleSize * 0.65,
-                height: circleSize * 0.65,
-                fit: BoxFit.contain,
+              child: Icon(
+                icon,
+                size: circleSize * 0.65,
               ),
             ),
           ),

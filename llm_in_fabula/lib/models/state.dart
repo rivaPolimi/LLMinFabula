@@ -281,6 +281,9 @@ class GameState extends ChangeNotifier{
         isAdmin: false,
         isDead: false,
       );
+      // Assign a default role to prevent initialization errors
+      fakePlayer.roleName = 'villager';
+      fakePlayer.roleDescription = 'A simple villager.';
       _game!.players.add(fakePlayer);
     }
 

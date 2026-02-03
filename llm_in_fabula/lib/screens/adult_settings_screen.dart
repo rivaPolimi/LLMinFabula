@@ -4,14 +4,6 @@ import 'package:llm_in_fabula/models/game_theme.dart';
 import 'package:llm_in_fabula/screens/role_tutorials_screen.dart';
 import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:llm_in_fabula/models/model.dart';
-
-class RoleDefinition{
-  final String name;
-  final String asset;
-
-  const RoleDefinition({required this.name, required this.asset});
-}
 
 class AdultSettingsScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -22,9 +14,9 @@ class AdultSettingsScreen extends StatefulWidget {
   final String password;
 
   const AdultSettingsScreen({
-    required this.numPlayers,
-    required this.settingName,
-    required this.nickname,
+    required this.numPlayers, 
+    required this.settingName, 
+    required this.nickname, 
     required this.password,
     required this.onBack,
     super.key,
@@ -35,32 +27,29 @@ class AdultSettingsScreen extends StatefulWidget {
 }
 
 class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
-
+  
   bool _isLoading = false;
 
-  final List<RoleDefinition> secondaryRoles = [
-    RoleDefinition(name: 'seer', asset: 'assets/icons/Seer.png'),
-    RoleDefinition(name: 'courtesan', asset: 'assets/icons/Courtesan.png'),
-    RoleDefinition(name: 'madman', asset: 'assets/icons/MadMan.png'),
-    RoleDefinition(name: 'medium', asset: ''),
-    RoleDefinition(name: 'hunter', asset: ''),
-    RoleDefinition(name: 'guard', asset: ''),
-    RoleDefinition(name: 'jailer', asset: ''),
-    RoleDefinition(name: 'copycat', asset: ''),
-  ];
-
-  // Set per tracciare gli indici dei ruoli secondari selezionati (multi-selezione)
+  // This list will be populated dynamically from the theme.
+  late final List<String> _secondaryRoles;
+  
+  // Set to track the selected indices of secondary roles.
   final Set<int> _selectedSecondaryIndices = {};
   late GameTheme theme;
-
+  
   int _numberOfWolves = 1;
   int _numberOfVillagers = 1;
 
-  //TODO: controllare che non escano numeri di ruoli impossibili
   @override
   void initState() {
     super.initState();
     theme = GameThemes.getTheme(widget.settingName);
+
+    // Dynamically load secondary roles from the theme, excluding primary ones.
+    final allRoles = theme.roles.keys.toList();
+    allRoles.removeWhere((role) => role == 'wolf' || role == 'villager');
+    _secondaryRoles = allRoles;
+
     _numberOfWolves = widget.numPlayers ~/ 5;
     _numberOfWolves = _numberOfWolves < 1 ? 1 : _numberOfWolves;
     _numberOfVillagers = widget.numPlayers - _numberOfWolves;
@@ -72,9 +61,9 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
     roleMap['wolf'] = _numberOfWolves;
     roleMap['villager'] = _numberOfVillagers;
 
-    for(final i in _selectedSecondaryIndices){
-      if(i < _selectedSecondaryIndices.length){
-        final roleName = secondaryRoles[i].name;
+    for(final index in _selectedSecondaryIndices){
+      if(index < _secondaryRoles.length){
+        final roleName = _secondaryRoles[index];
         roleMap[roleName] = 1;
       }
     }
@@ -95,7 +84,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
   void _showLoadingDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: false, 
       builder: (_) => const Center(
         child: CircularProgressIndicator(),
       ),
@@ -257,7 +246,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 45),
-                  itemCount: 8,
+                  itemCount: _secondaryRoles.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
@@ -266,14 +255,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   ),
                   itemBuilder: (context, index) {
                     const double gridBtnSize = 90.0;
-
-                    // Get roles from the selected theme setting
-                    final theme = GameThemes.getTheme(widget.settingName);
-                    final List<String> activeRoles = theme.roles.keys.toList();
-
-                    final String? roleKey = index < activeRoles.length
-                        ? activeRoles[index]
-                        : null;
+                    final String roleKey = _secondaryRoles[index];
 
                     return Center(
                       child: RoleButton(
@@ -281,8 +263,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                         roleKey: roleKey,
                         theme: theme,
                         isSelected: _selectedSecondaryIndices.contains(index),
-                        // Se non c'è ruolo, onTap è null e quindi non è selezionabile
-                        onTap: roleKey != null ? () => _toggleSecondarySelection(index) : null,
+                        onTap: () => _toggleSecondarySelection(index),
                       ),
                     );
                   },
@@ -436,17 +417,10 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(
-                    // All'interno di adult_settings_screen.dart, nel pulsante "create lobby"
-
-                    // In adult_settings_screen.dart
-
-// ... (dentro il pulsante per creare la lobby)
-
                     onPressed: _isLoading
                         ? null
                         : () async {
                       final gameState = context.read<GameState>();
-                      // TODO: rimuovi final navigator = Navigator.of(context);
                       final messenger = ScaffoldMessenger.of(context);
 
                       setState(() {
@@ -456,7 +430,6 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                       _showLoadingDialog(context);
 
                       try {
-                        //Queries the server to create the game, then set game and player in the state
                         await gameState.createGameAndSetSession(
                             widget.numPlayers,
                             widget.settingName.toLowerCase(),
@@ -470,10 +443,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                         _hideLoadingDialog(context);
 
                         gameState.addFakePlayersForTesting(widget.numPlayers);
-
                         gameState.goToGamePhase();
                       } catch (e, stackTrace) {
-                        //TODO: provvisorio, togliere e gestire meglio eccezioni
                         debugPrint('Create game error: $e');
                         debugPrintStack(stackTrace: stackTrace);
 
@@ -515,7 +486,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0),
                       foregroundColor: const Color(0xFF003943),
-                      side: const BorderSide(color: Color(0xFF003943), width: 1.5),
+                      side: const BorderSide(color: const Color(0xFF003943), width: 1.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
