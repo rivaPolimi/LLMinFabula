@@ -12,23 +12,54 @@
 \usepackage{verbatim}
 \usepackage{array}
 \usepackage{tabularray}
+\usepackage{marginnote}
 
-\title{3.6 - LLMs in Fabula}
-\author{Stefano Riva, Diego Tagliabue, Francesca Trevisan}
-\date{}
+\begin{document}
+\begin{titlepage}
+\centering
+Advanced User Interfaces - Politecnico di Milano
+\\ {\large Project Documentation} 
+\vspace*{0.5cm} 
+\vspace*{1cm}
+\\
+{\Huge\bfseries 3.6 - LLM in Fabula\par}
+\vspace{1cm}
+{\large Group 05 \\ Stefano Riva, Diego Tagliabue, Francesca Trevisan\par}
+\vspace{0.5cm}
+{A.A. 2025-2026\par} 
+\vspace{12cm}
+    \includegraphics[width=0.5\linewidth]{Documentation/Images/polimi LOGO.png} 
+\end{titlepage}
+
+
 
 \numberwithin{figure}{section}
 \numberwithin{table}{section}
 
-\begin{document}
-
-\maketitle
 
 \newpage
-
+\null
+\vfill
+\begin{center}
 \section*{Abstract}
+\end{center}
+\textit{LLM in Fabula} is a new version of the famous party game Lupus in Fabula in which players in the same place can use their phones to make the game easier. \\ In this game, the key element to enjoy a session is having a good narrator leading the story and the flow of the game. \textit{LLM in Fabula} provide a LLM narrator that helps the players fully enjoy the game while it leads the session in a more balanced and engaging way. Developed has a mobile application, it makes the game accessible and enjoyable for people of all ages, as children do not need an adult to help them understanding the rules or narrating the story, since the LLM does it instead. Each phase of the session is managed by the Artificial Intelligence, that speaks from the host phone, showing how the use of this new technology can actually help connecting people sometimes.
+\vfill
+\null
 
+\newpage
 \section*{The Team}
+\begin{center}
+    \includegraphics[width=0.25\linewidth]{Documentation/Images/IMG_0075.JPG} \includegraphics[width=0.25\linewidth]{Documentation/Images/IMG_0075.JPG}
+    \includegraphics[width=0.25\linewidth]{Documentation/Images/IMG_0075.JPG}
+\end{center}
+
+
+STEFANO RIVA \\ Computer Science student enrolled in the second year of Computer Science and Engineering, coming from Computer science, in which he graduated in 2024 with a Bachelor Degree from Politecnico di Milano.
+
+DIEGO TAGLIABUE \\Aggiungere 2 righe di descrizione sul proprio percorso
+
+FRANCESCA TREVISAN \\ Design student enrolled in the first year of Digital Interaction Design MSc, coming from the field of Interior Design, in which she graduated in 2025 with a Bachelor Degree from Politecnico di Milano.
 
 \section*{Member's Contribution}
     % I capitoli sono riferiti a questa documentazione
@@ -41,40 +72,243 @@
             \hline
             Diego Tagliabue & Frontend development, documentation chapter 7.\\
             \hline
-            Francesca Trevisan & Mockup, app, video and presentation design, documentation chapters 1, 2, 4 \& 6.\\
+            Francesca Trevisan & Mockup, UX app design, video and presentation design, documentation chapters 1, 2, 4 \& 6.\\
             \hline
             \caption{Contribution table}
             \label{contribution-table}
         \end{longtable}
     \end{center}
 
+\newpage
 \tableofcontents
 
+\newpage
 \section{Executive Summary}
+Nowadays, digital tools are reshaping the way people interact and connect with one another. This concerns also how they play and have fun together. If few years ago was strictly necessary to meet in order to play a game together, today everyone can easily connect with friends to do that, using a computer or even just a smartphone. Indeed, several applications were released in these past years to replace classical board games and help people play  remotely. 
 
+However, people are starting to rediscover the authenticity of sharing these experiences physically together and not only behind a screen, even if traditional social games often face practical limitations. \\Lupus in Fabula, a game built on narration, deception and group dynamics, requires a skilled narrator to manage rules, timing and atmosphere. It often becomes difficult to find someone among the players that can or want to do that. Without this role, the experience can quickly lose its balance and engagement, especially for new or young players. 
+
+This project addresses this challenge by introducing an AI-powered narrator that transforms the game into an accessible, engaging and always available experience. \\The solution is provided as a mobile application, so that each player can use only his smartphone. At the core of the app there is an LLM narrator designed to guide players through the game. Acting as an impartial storyteller, the narrator assigns roles, manages the phases and help building a new story every time. The app allows each player to focus only on strategy, social interactions and immersion. Different settings are introduced, in order to provide even more possibilities to customize each game session, adding also an easier and shorter version of the game for children.
+
+From a UX point of view, the interface is very simple and clear, in order to focus players' attention on the social interactions in the physical shared space, more than on the screen.
+
+Technologically, ....
+
+The final goal of this project is to make Lupus in Fabula more accessible, engaging and enjoyable. The app aims to preserve the social essence of the game, while enhancing is playability, providing a new version of the game, that relies on AI implementation, without giving up on social interactions. It offers a modern reinterpretation of the classical game that enables players discover the potential of technology as an ally more than a substitute.  
+
+From this starting point, the project could be developed more in the future, adding new settings and options to customize the experience and narration. 
+
+
+\newpage
 \section{Requirements}
+This chapter outlines the requirements that guided the design and development of the application. The users' needs are the starting point to envision the possible solution and develop the system. In the next paragraphs stakeholders, user needs, context, constraints and goals are fully described and analyzed.
+
 \subsection{UNG Diagram}
+The \textit{ UNG Diagram} (User Needs Goals Diagram) helps organizing and correlating all the elements previously mentioned, that are useful for the requirements analysis: stakeholders definition, users' needs, goals of the project, constraints and general context. \\Each cathegory will be addressed in the next paragraphs.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{Documentation/Images/Diagrams/UNG diagram.png} 
+    \caption{UNG diagram}
+    \label{UNG diagram}
+\end{figure}
+
 \subsection{Stakeholders}
+This project addresses teenagers and young adults (14-25 y.o.) as the main users, as they are usually more interested in playing this kind of games. \\However, it considers also kids (8-14 y.o.) and adults (25+ y.o., especially parents or educators) as secondary users, as the game could actually be played by almost everyone.\\These three categories together form the set of stakeholders.
+
+Based on these categories, three users archetypes were defined using the \textit{persona} methodology. Personas are a qualitative design instrument for identifying fictional, yet realistic, characters representing distinct user groups. By consolidating patterns, expectations, and behaviors, personas facilitate the interpretation of complex sets of users and guide the design choices keeping in mind the users' needs as the main starting point.
+\\
+\\Personas definition:
+\footnote{Personas' descriptions have been generated with the help of MULCA AI tool}
+\begin{itemize}
+    \item LEO, 10 y.o. -secondary user 
+    \\ \textit{Leo is an energetic pre-teen who loves mysteries and games like Among Us and Roblox. He often plays with his cousins during family gatherings and loves being part of a story. He finds it hard when adults have to explain complex rules, so an AI narrator that takes charge feels magical to him.}
+    \item MATTEO, 23 y.o. -primary user
+    \\ \textit{Matteo is a busy student which loves party games like Mafia, Werewolf, and Jackbox, but often ends up being the narrator instead of playing. When he heard about an AI narrator that could take over that role, he got instantly excited: finally, everyone could participate equally.}
+    \item MARTA, 38 y.o. -secondary user
+    \\ \textit{Marta used to love playing Mafia with friends in university, but since having two kids, time is scarce. She’s looking for games the family can play together that don’t require setup or long instructions. An AI narrator that guides and entertains makes family game night much easier.}
+\end{itemize}
+
 \subsection{Needs of the Stakeholders}
+The users' needs are related to all stakeholders, even if some of them are more specific for some categories. 
+Primary needs are listed below with some sub-needs where needed to clarify and better explain the challenge.
+\\
+\\Users needs:
+\begin{itemize}
+    \item EMOTIONAL AND NARRATIVE IMMERSION: Users seek an engaging and evolving narrative experience capable of sustaining attention over time. Emotional involvement enhances participation and fosters a deeper connection with the game dynamics.
+    \begin{itemize} 
+    \item SUB-NEED: Be stimulated with ever-changing experiences
+    \end{itemize}
+    \item FUN: The experience is expected to be entertaining and engaging, encouraging active participation rather than passive listening. Enjoyment is a key factor in maintaining motivation and repeated use.
+    \begin{itemize} 
+    \item SUB-NEED: Be an active player and not a narrator: Sometimes being the narrator can be exciting, but when someone is not able or does not want to have this role, it can become something that slows down the game rhythm and discourage players to do multiple sessions.
+    \end{itemize}
+    \item POSSIBILITY TO PLAY THE GAME ONLY WITH THE SMARTPHONE: Users require the game to be fully playable using a single device, without the need for additional tools or materials. This ensures accessibility, portability, and ease of use in different contexts.
+    \item CLARITY AND SIMPLICITY: Clear rules and intuitive interactions are essential to ensure immediate understanding of the gameplay. Simplicity reduces cognitive load and allows users to focus on the experience rather than on instructions. (Especially for young players)
+    \item SAFETY AND APPROPRIATENESS: The content and interactions must be suitable for users of different ages and backgrounds. Ensuring safety and appropriateness contributes to a comfortable and inclusive gaming environment. (Especially for young players)
+\end{itemize}
+
 \subsection{Context}
+The project refers to the context of RPG (Role Play Games), as it is a revisitation of one of the most popular of those. It concerns people's free time as it is developed to be a way of entertainment, a fun activity. 
+
+One of the core elements of this project is to maintain the social interactions that are characteristic of the original Lupus in Fabula game, so it is important that the app is used by people that are together in the same physical space while playing, but it can be used anywhere at anytime, since players only need their phones and no others supplies. 
+
+The LLM narrator gives the possibility to each player to play, reducing the total minimun number of players compared to the original game, in which one of the players must take the role of the narrator (meaning that one more person is required to reach the minimun number). Anyway, to make the game session more engaging, this version is designed for at least 5 players, also to maintain the social nature of this game.
+\\
+\\Having the personas in mind, three possible scenarios can be described to better understand the context of this project:
+\footnote{Scenarios descriptions have been generated with the help of MULCA AI tool}
+\begin{itemize}
+    \item SCENARIO 1 (LEO, 10 y.o. -secondary user) 
+    \\ \textit{Leo was buzzing with excitement as the weekend arrived, bringing the promise of a joyous family gathering at his grandparents’ house. As soon as he stepped in, and after exchanging all the customary greetings and hugs, he spotted his cousins gathered around a table, already chatting animatedly about what games they might play.
+    "Can we play Lupus in Fabula?" Leo eagerly suggested, recalling the app his parents had recently installed on his tablet. After promptly asking for and receiving permission from his mom to play for a little while, Leo energetically led his cousins to a cozy corner of the living room.  
+    He grabbed his smartphone and opened the app, effortlessly navigating to the "Play with Friends" option. With a few swift taps, he set up the session, entering the number of players and crafting a playful password. After typing in his nickname, he watched as each of his cousins joined the lobby, eagerly punching in their own nicknames and the secret password, all giggling with excitement.  
+    Once everyone was settled, Leo selected the child-friendly version of Lupus in Fabula, choosing bright and adventurous graphics that promised fun and playful storytelling. The screen shimmered to life as the charismatic AI narrator took center stage, greeting them with an engaging introduction to the game. Voices filled the room with laughter and exclamation as they each learned their roles through animated prompts, perfectly designed to keep them self-sufficient and in the spirit of playing.  
+    As the game progressed, Leo found himself deeply immersed, strategizing and bluffing with flair. With each round succinctly paced, Leo and his cousins could savor multiple narratives, each wrapping them in fresh twists and vivid plots.
+    As the session wound down, the AI narrator shared playful feedback and awarded fictional storytelling badges, making Leo beam with pride and determination to outsmart his cousins the next time. Finally, the AI concluded with an eloquent wrap-up, summarizing highlights and prompting a chorus of delighted chatter among the young players.  
+    Leo, his screen time nearly up as per his parents’ reminder, closed the app with a satisfied sigh. The game had not only provided an exhilarating adventure but also left a lingering excitement about stories and strategies for the games to come.}
+    \item SCENARIO 2 (MATTEO, 23 y.o. -primary user) 
+    \\ \textit{Matteo glanced at his phone, a brief lull in his part-time shift giving him just enough breathing room to hatch a plan. He craved the kind of spontaneous, fun-filled evening that only a good game night could deliver. Within a few taps, his phone became the catalyst for camaraderie, as he messaged his closest friends, coordinating schedules and effortlessly carving out a time post-shift that everyone could join.  
+    With time set and excitement brewing, Matteo opened the Lupus in Fabula app. Its intuitive interface made quick work of setup, primed for the impromptu fun to come. Matteo appreciated the efficient design—it meant more time for thrills and less for logistics.  
+    As friends began to join in via their smartphones, Matteo felt a familiar, exhilarating anticipation. Invites flew out, and within moments, the digital lobby filled with friends eager to dive into the loop of mystery and mirth. The AI narrator swiftly took command, weaving an introduction that blended clarity with charm. Matteo watched his friends' faces light up, each reassured and entertained by the effortless explanation of game roles and rules.  For the first time in ages, Matteo found himself just another player, free from the duties of narrator. The game unfurled with lively twists orchestrated by the AI, every moment a fresh challenge. Matteo reveled in the strategic banter and playful bluffing, his keen mind delighting in the game’s agility and depth. Laughter and mock-serious debates filled the room, energizing the group with shared purpose and enjoyment.  
+    As the final round concluded and the AI artfully narrated the game’s end, Matteo couldn’t help but smile with satisfaction. The wrap-up sparkled, highlighting humorous blunders and brilliant strategies, sparking post-game banter that lingered as sweet echoes of a night well-lived.
+    Later, group chats buzzed with memes, recounting the epic plays and comedic moments that etched the evening into their shared history. Social media lit up with Matteo’s captures of the night, the debriefing already a treasured ritual to reinforce the bonds of friendship and the love of the game.  
+    With a feeling of fulfillment, Matteo tucked his phone away, reflecting on how the evening’s success bodes well for many more game nights to come, enhanced by AI’s magic and the simple joy of being present with friends.}
+    \item SCENARIO 3 (MARTA, 38 y.o. -secondary user) 
+    \\ \textit{Saturday morning was bustling in Marta's household as sunlight spilled through the windows of their cozy Naples apartment. With a long weekend stretching ahead, Marta decided it was the perfect opportunity to plan a family game night. Over breakfast, she animatedly described the idea to her husband and gathered their two children, ages 8 and 10, and her sister making sure everyone was on board. The mere mention of the new AI-driven game, Lupus in Fabula, sparked immediate excitement in the kids' eyes.  
+    The anticipation built steadily through the day, and by evening, the living room was a canvas primed for fun. Marta deftly launched the app on her smartphone, selecting "Play with Friends" and opting for the "Child-friendly" mode—purely designed to delight and engage her little ones. A quick few taps set up the game session; she created a lighthearted code and crafted a whimsical nickname. Her family eagerly joined, inputting their own nicknames and smiling as they were welcomed into the lively digital lobby.  
+    The game began with the AI narrator seamlessly introducing the rules and objectives in a voice imbued with warmth and humor, effortlessly captivating the children. Marta relished in being an active participant, freed from the constraints of moderation, engaging wholeheartedly in the narrative. As they took turns, the room filled with giggles and spirited storytelling, each family member playing their part in the shared adventure.  
+    As the game unfolded, alliances were formed, and playful strategies hatched, reinforcing bonds through laughter and teamwork. Marta’s heart swelled watching her children immerse themselves, glowingly taking the lead in colorful, imaginative sequences.
+    When the last chapter of their game came to an end, the AI brought them together with a delightful summary, highlighting their antics and the laughter shared. The family collectively reflected on the experience, animatedly recounting blunders and bold moves, pondering over what strategies could be tried in the future.  
+    As the night winded down, Marta and her husband savored the success of the evening. They marveled at the joy on their children’s faces and decided there would certainly be another game session soon. After tucking the children into bed, both satisfied and brimming with ideas, Marta realized these would be the moments her family would cherish and carry forward—laughter, learning, and love, all wrapped in the adventure of a simple, wonderful game experience.}
+    \end{itemize}
+The analysis of these scenarios helped also as a starting point for the definition of users' tasks and workflows, explained in chapter 4.
+
 \subsection{Constraints}
+Constraints that have to be taken into account for the development of the project are listed below divided into categories.
+\\
+\\Technological costraints:
+\begin{itemize}
+    \item SMARTPHONE: each player needs a phone with the app downloaded
+    \item INTERNET CONNECTION: internet connection is necessary for each player to connect with others and join the lobby
+\end{itemize}
+\\
+Social constraints:
+\begin{itemize}
+    \item GROUP SETTING: to play the game the expected and necessary minimum number of players is 5. The app is developed to host a maximum number of players in the lobby. 
+\end{itemize}
+\\
+Resources constraints:
+\begin{itemize}
+    \item LIMITED RESOURCES: the project has to be developed in a limited time span, without a specific budget designated for that.
+\end{itemize}
+\\
+Time constraints:
+\begin{itemize}
+    \item LIMITED TIME: each game session has to conclude within a limited time window in order to match limited attention span and engagment rate of players.
+\end{itemize}
+
 \subsection{Goals}
+Considering all the elements previously mentioned, especially having in mind users' need and expectations, the project's goals have been defined and are listed below.
 \subsubsection{Stakeholders'}
+Starting from the stakeholders' needs and expectations, the project goals have been defined and are listed in this paragraph:
+\begin{itemize}
+    \item GUARANTEE AN ENGAGING NARRATIVE EXPERIENCE AND ADAPTIVE NARRATIVE FLOW
+    \item STRUCTURE TIME-LIMITED GAME SESSIONS
+    \item GIVE THE POSSIBILITY TO EVERYONE TO PLAY ACTIVELY, PROVIDING A NARRATOR
+    \item GIVE THE POSSIBILITY TO PLAY WITH DIFFERENT SETTINGS AND STORIES
+    \item PROVIDE DISTRIBUTED AND COLLABORATIVE PLAY EXPERIENCES 
+    \item DESIGN USER INTERFACE AND NARRATIVE PROMPTS TO BE CLEAR, STRAIGHTFORWARD
+    \item AMONG THE VARIOUS SETTINGS, PROVIDE A VERSION OF THE GAME ADAPTED FOR CHILDREN 
+\end{itemize}
 \subsubsection{Technological}
 
+\newpage
 \section{State of the art}
 \subsection{Lupus in Fabula}
 \subsection{Papers} %Titolo provvisorio
 
-\section{UX Design}
+\section{Solution - UX Design}
+This chapter describes the solution proposed and the design process for developing the User Experience and User Interface. 
 \subsection{General approach}
-\subsection{User workflow}
+The proposed solution is a mobile application that helps people play Lupus in Fabula in a more engaging way, providing a virtual narrator. 
+\\In the next pages the design process and the motivations behind every choice will be addressed and explained in details. It is important to keep in mind that while working on the UX design, it was crucial to remember everything mentioned in Chapter 2: the requirements served as a guide during the entire process. 
+
+CHOICE OF THE TECHNOLOGICAL SUPPORT \\In order to make the game more accessible for everyone to play it everywhere, the solution was developed as a mobile application for smartphones. In our society, the smartphone is the tool that everyone has with them everyday, representing an easy way to play the game without additional supplies. It is accessible also by children who can easily ask their parents' permission to use their phones.
+
+CHOICE OF THE DESIGN STYLE \\One of the main goals of this project is to look at the technology as a support for already existing social dynamics. Starting from this assumption, the design of the user interface has been developed to be useful and intuitive, but not too rich. This was a choice made so that the screen will not be the main focus in the context of interaction with other players, that remains the core of playing together and having fun with others.
+\subsection{Interaction and workflow}
+To better understand the user interaction with the app, here is attached the Primary User Task Diagram. In the next pages it will be analyzed in details, associating every action to the screen interface.
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=1\linewidth]{Documentation/Images/TASK diagram.jpg}
+    \caption{TASK diagram}
+    \label{TASK diagram}
+\end{figure}
+\newpage
+\subsubsection{Pre-Setting}
+For what concerns the Pre-setting phase, the solution provide a faster and easier alternative to the classical game: the only task that the user has to complete is to gather with friends in the same place with their smartphones. The use of the app eliminates the struggle to convince some of the players to play as narrator and the difficulty to remember all the roles and rules (if the players do not have the board game cards with them at the moment, which is very commen due to the spontaneous nature of Lupus In Fabula game sessions).
+\subsubsection{Game-Setting}
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=1\linewidth]{Documentation/Images/GAME SETTING - TASK diagram.jpg}
+    \caption{Game-Setting}
+    \label{Game-Setting}
+\end{figure}
+\begin{itemize}
+    \item Opening the application, the user can simply tap on the screen to launch it and play with friends.
+    \item The user can now choose to host the game, creating a new lobby, or join an existing one created by their friend. The choice is made by tapping on the corresponding button.
+    \begin{itemize}
+        \item HOST-CREATE LOBBY\\The host has to: insert the number of players, select the setting of the game among various versions available (Classical, Vampire, Zombie, Children), create and share a password for the lobby, choose his nickname for the game.
+        It is also possible for the host to customize the settings of the game by choosing which roles to add. Each role is explained in an additional page that can be open when needed, pressing the button "roles". Secondary roles can be added only one per type.
+        \footnote{In children version, in order to make the game easier and shorter, the host can not choose what roles to add and the children will play the game only with primary roles: wolves and villagers, automatically counted based on the number of players.}
+        \begin{figure} [H]
+            \centering
+            \includegraphics[width=0.75\linewidth]{Documentation/Images/versions icon.pdf}
+            \caption{Versions options (icons)}
+            \label{Versions options (icons)r}
+        \end{figure}
+        \item GUEST-JOIN LOBBY\\The guests have to join the lobby created by their (host) friend by inserting the shared password and choosing their nicknames.
+    \end{itemize}
+    \item Only when the number of participants in the lobby reaches the number of players indicated previously by the host (meaning the everybody succeded in connecting to the lobby), it will be possible to select the button "start the game" and launch the session.
+    \item Finally, the narrator presents himself, sets the mood to start the game and prepares players to recieve their role. When everyone is ready to play, they can tap on the screen and be able to discover their role in the game. 
+    \item The players can visualize their roles on their screens. They will find also an explanation of their powers, their goal and what actions they have to do in order to win the game.\footnote{Roles are randomly assigned, so that everyone can have the chance to play different roles and interpret different characters in different game sessions. It is important that each player keeps their role secret in order to enjoy the mystery of the game, as in the original version of Lupus in Fabula} This phase is regulated by a timer, automatically controlled by the app, to give everyone time to read and understand their position but, at the same time, maintain a proper and engaging timing.
+\end{itemize}
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=1\linewidth]{Documentation/Images/GAME-SETTING.jpg}
+    \caption{Game Setting workflow}
+    \label{Game Setting workflow}
+\end{figure}
+\subsubsection{Game Session}
+
 \subsection{User scenarios}
 \subsection{Conversational interaction}
 
 \section{Implementation}
-\subsection{Hardware}
-\subsection{Software}
+\subsection{Overview}
+\begin{comment}
+    App mobile + server in Django + Azure AI
+    comunicano tramite HTTP + websocket
+\end{comment}
+
+\subsection{Mobile app}
+\begin{comment}
+    Sviluppata in flutter dart. Spiegare quante e quali schermate ha. Aggiunta di TTS, gestione temi distinti con JSON file.
+\end{comment}
+
+\subsection{Server}
+\begin{comment}
+    Sviluppato in Django + channels + redis + viewflow. Inserire state diagram del server e spiegare ciclo. Inserire ER per database.
+    Spiegare tutti i componenti del server e riportarli (component diagram?). Comunicazione tra app e server
+\end{comment}
+
+\subsection{Use Case}
+\begin{comment}
+    Inserire diagrammi riguardo ai vari scenari + use case vari come creazione lobby o join per far vedere la comunicazione
+\end{comment}
+
+
+
 
 \section{Value Proposition}
 
