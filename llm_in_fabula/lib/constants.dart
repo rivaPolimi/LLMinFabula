@@ -1,5 +1,5 @@
 // Debug mode toggle
-const bool DEBUG = false;
+const bool DEBUG = true;
 
 // API Endpoints
 const String PRODUCTION_API_URL = 'https://llminfabula.onrender.com/api';

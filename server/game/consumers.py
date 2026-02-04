@@ -179,6 +179,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "type": "poll_begin",
             "poll_id": event["poll_id"],
             "duration": event["duration"],
+            "started_at": event["started_at"],
         })
 
     async def start_extra_time(self, event):
@@ -200,6 +201,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "phase": event["phase"],
             "started_at": event["started_at"],
             "duration": event["duration"],
+        })
+
+    async def role_turn(self, event):
+        await self.send_json({
+            "type": "role_turn",
+            "role": event["role"],
         })
 
     async def handle_phase_ack(self, content):

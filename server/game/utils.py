@@ -24,7 +24,7 @@ def resolve_night(game: Game):
     killed_players = []
 
     # Target does not die if he is protected
-    if target_player.protected:
+    if target_player.is_protected:
         return None
 
     # If courtesan is killed also her protected dies
@@ -50,7 +50,7 @@ def resolve_night(game: Game):
 
 def kill_player(game, player):
     player.is_dead = True
-    player.protected = False
+    player.is_protected = False
     ghost = Role.objects.filter(name = "ghost")
     player.role = ghost
     player.save()

@@ -125,19 +125,9 @@ class TimerBar extends StatelessWidget {
 
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                formatDuration(remaining),
-                style: TextStyle(
-                  color: remaining.inSeconds < 5 ? Colors.red : Colors.white,
-                  fontSize: 12,
-                ),
-              ),
-            ),
             LinearProgressIndicator(
               value: progress,
-              color: remaining.inSeconds < 5 ? Colors.red : Colors.amber,
+              color: remaining.inSeconds < 5 ? Colors.red : const Color.fromRGBO(75, 139, 161, 1),
             ),
           ],
         );

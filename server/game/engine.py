@@ -1,4 +1,4 @@
-
+import logging
 from django.db import transaction
 from .models import Game, Player, Poll, States
 from .services.poll import get_result, start_poll_timer, create_poll
@@ -7,6 +7,8 @@ from .notifications import *
 from .narrator import Narrator
 from .services.phase import start_phase_timer
 from .fsm import GameStateMachine
+
+logger = logging.getLogger("redis_events")
 
 class GameEngine:
     """
@@ -71,7 +73,7 @@ class GameEngine:
         game.night_counter += 1
         GameEngine._transition(game, "begin_night")
 
-        NIGHT_INTRO_DURATION = 15
+        NIGHT_INTRO_DURATION = 45
 
         # Generate intro
         Narrator.gen_night_intro(game, game.setting)
@@ -88,8 +90,9 @@ class GameEngine:
         """
 
         next_role = game.next_active_role()
+        logger.info("Next role for night: %s", next_role.name if next_role else "None", extra={'game_id': game.id})
 
-        if not next_role:
+        if next_role is None:
             return GameEngine.finish_night(game)
         
         # Assign next role
@@ -101,6 +104,9 @@ class GameEngine:
         
         # Generate the message for the role
         Narrator.gen_role_action_message(game, game.setting, next_role.name)
+
+        notify_phase_start(game.id, "roleAction", None)
+        notify_role_turn(game.id, next_role.name)
 
         poll = create_poll(game, role=next_role.name)
         notify_poll_begin(game, poll)
@@ -143,7 +149,7 @@ class GameEngine:
 
         # Computes all the night actions
         killed_players = resolve_night(game)
-        name_killed_players = [killed_player.nickname for killed_player in killed_players]
+        name_killed_players = [killed_player.nickname for killed_player in killed_players] if killed_players else []
 
         NIGHT_REPORT_DURATION = 30
 

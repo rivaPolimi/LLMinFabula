@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
-import 'package:llm_in_fabula/models/model.dart';
 
 class WolfVotingScreen extends StatefulWidget {
-  const WolfVotingScreen({super.key});
+  final void Function() onNext;
+  const WolfVotingScreen({required this.onNext, super.key});
 
   @override
   State<WolfVotingScreen> createState() => _WolfVotingScreenState();
@@ -15,17 +15,19 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
   int? _selectedPlayerId;
 
   @override
+  void initState(){
+    super.initState();
+    _selectedPlayerId = null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<GameState>(builder: (_, state, _) {
-      final remaining = state.remaining;
-      final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
-      final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
-
       // Filter out non-votable players
       final currentPlayer = state.player!;
       final votablePlayers = state.game!.players.where((p) {
         // Can't vote for yourself, dead players, or other wolves.
-        // This assumes roleName is available for all players if you are a wolf.
+        // This assumes roleName is available for all players if you are a wolf. //TODO: come mando ruolo lupo a tutti gli altri lupi?
         return !p.isDead &&
             p.id != currentPlayer.id &&
             p.roleName != 'wolf';
@@ -38,10 +40,7 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
                 const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               children: [
-                Text(
-                  '$minutes:$seconds',
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
+                TimerBar(),
                 const SizedBox(height: 32),
                 Expanded(
                   child: GridView.builder(
@@ -110,13 +109,14 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
                     onPressed: _selectedPlayerId == null
                         ? null
                         : () {
-                            // Handle vote confirmation logic here
+                            state.confirmVote(_selectedPlayerId!);
+                            widget.onNext();
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0), // Beige
                       foregroundColor: const Color(0xFF003943), // Dark Teal
                       disabledBackgroundColor:
-                          const Color(0xFFDCC8A0).withOpacity(0.5),
+                          const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

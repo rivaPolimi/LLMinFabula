@@ -64,7 +64,7 @@ class Narrator:
         # Ask LLM to generate the message
         conversation.append({
             "role": "user",
-            "content": "Write an introduction to the night phase of the game",
+            "content": "Write a short introduction (max 45 seconds) to the night phase of the game",
         })
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),

@@ -442,7 +442,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
                         _hideLoadingDialog(context);
 
-                        gameState.addFakePlayersForTesting(widget.numPlayers);
+                        //gameState.addFakePlayersForTesting(widget.numPlayers);
                         gameState.goToGamePhase();
                       } catch (e, stackTrace) {
                         debugPrint('Create game error: $e');

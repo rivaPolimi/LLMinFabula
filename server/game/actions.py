@@ -68,7 +68,7 @@ class CourtesanActionHandler(BaseActionHandler):
             game.courtesan_target = None
             return "No one was protected, invalid target"
         
-        target_player.isProtected = True
+        target_player.is_protected = True
         game.courtesan_target = target_player
         target_player.save()
         game.save()
@@ -93,7 +93,7 @@ class GuardActionHandler(BaseActionHandler):
             game.guard_target = None
             return "No one was protected, invalid target"
         
-        target_player.isProtected = True
+        target_player.is_protected = True
         game.guard_target = target_player
 
         return "Target protected"
@@ -134,7 +134,7 @@ class JailerActionHandler(BaseActionHandler):
             return "No one has been put in jail tonight, invalid target"
         
         game.jailer_target = target_player
-        target_player.isProtected = True
+        target_player.is_protected = True
         
         notify_player_in_jail(game.id, target_player.id)
 

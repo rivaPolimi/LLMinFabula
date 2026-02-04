@@ -26,6 +26,14 @@ def notify_narrator_story(game_id: int, role: str, phase: str, text: str):
         }
     )
 
+def notify_role_turn(game_id: int, role: str):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_{role}",
+        {"type": "role.turn", "role": role}
+    )
+
 def notify_action_outcome(game_id: int, target: Player, role: str, outcome: str):
     channel_layer = get_channel_layer()
 
@@ -65,10 +73,11 @@ def notify_lynch_victim(game_id: int, target: Player):
 
 def notify_poll_begin(game: Game, poll: Poll):
     channel_layer = get_channel_layer()
+    started_at = datetime.now(timezone.utc).astimezone().isoformat()
 
     async_to_sync(channel_layer.group_send)(
         f"game_{game.id}_{poll.role.name}",
-        {"type": "poll.begin", "poll_id": poll.id, "duration": poll.duration}
+        {"type": "poll.begin", "poll_id": poll.id, "duration": poll.duration, "started_at": started_at,}
     )
 
 async def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):

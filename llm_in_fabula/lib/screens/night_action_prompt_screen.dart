@@ -3,13 +3,15 @@ import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 
 class NightActionPromptScreen extends StatelessWidget {
-  const NightActionPromptScreen({super.key});
+  final void Function() onNext;
+  const NightActionPromptScreen({required this.onNext, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<GameState>(
       builder: (context, gameState, _) {
-        final isWolf = gameState.player?.roleName == 'wolf';
+        final isInTurn = gameState.player?.roleName == gameState.game?.rolePlaying;
+        final roleActionPrompt = gameState.narratorText;
 
         return Scaffold(
           backgroundColor: const Color(0xFF0D141A), // Dark Blue-Gray
@@ -17,12 +19,33 @@ class NightActionPromptScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (isWolf)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  decoration: BoxDecoration(
+                      color: const Color(0xFFC2D1D9).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        width: 2,
+                      )),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      roleActionPrompt == null ? roleActionPrompt! : 'zzz... zzz...',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF2E3B44),
+                        fontSize: 16,
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                if (isInTurn)
                   ElevatedButton(
                     onPressed: () {
-                      // Navigate to the wolf voting screen
-                      gameState.phase = GamePhase.roleAction;
-                      gameState.notifyListeners();
+                      onNext();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0), // Beige

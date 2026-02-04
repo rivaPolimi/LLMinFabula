@@ -8,7 +8,7 @@ import 'package:llm_in_fabula/services/http_request_handler.dart';
 import 'package:llm_in_fabula/constants.dart';
 import 'package:llm_in_fabula/models/game_theme.dart';
 
-enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightActionPrompt, nightReport, roleAction, checkWin, endGame}
+enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightReport, roleAction, checkWin, endGame}
 enum AppFlow {title, joinOrCreate, join, create, inGame,}
 
 class GameState extends ChangeNotifier{
@@ -22,9 +22,10 @@ class GameState extends ChangeNotifier{
   late int duration;
   DateTime? _localPhaseStart; // Track when we received the phase locally
 
+  int? currentPollId;
+
   Tts tts = Tts();
   String? narratorText;
-  int? selectedPlayerId;
 
   Timer? _ticker;
 
@@ -35,7 +36,7 @@ class GameState extends ChangeNotifier{
   Player? get player => _player;
 
   /// Get the current game theme based on setting
-  GameTheme get theme => GameThemes.getTheme(_game?.setting ?? 'medieval');
+  GameTheme get theme => GameThemes.getTheme(_game?.setting ?? 'classic');
 
   Duration get remaining {
     // Use local time to calculate elapsed, avoiding clock skew issues
@@ -64,15 +65,14 @@ class GameState extends ChangeNotifier{
     });
   }
 
-  void selectPlayer(int playerId) {
-    selectedPlayerId = playerId;
-    notifyListeners();
-  }
-
-  void confirmVote() {
-    if (selectedPlayerId == null) return;
-    // TODO: Send vote to server
+  void confirmVote(int selectedPlayerId) {
     debugPrint("Voted for player $selectedPlayerId");
+    // Send vote to server
+    _ws.send({
+      "type": "vote",
+      "poll_id": currentPollId,
+      "target": selectedPlayerId,
+    });
     // maybe reset selection after voting?
     // selectedPlayerId = null;
     notifyListeners();
@@ -99,8 +99,6 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 
-  //Manage game transitions
-
   //Manage TextToSpeech
   void _configureTts() async{
     tts.configureTts();
@@ -117,13 +115,6 @@ class GameState extends ChangeNotifier{
 
   void _onTtsCompleted(){
     debugPrint("FINISHED TALKING");
-
-    // For testing: automatically advance to the night prompt after the intro
-    if (phase == GamePhase.nightIntro) {
-      phase = GamePhase.nightActionPrompt;
-      notifyListeners();
-      return;
-    }
 
     _ws.send({
       "type": "narration_finished",
@@ -196,6 +187,7 @@ class GameState extends ChangeNotifier{
         break;
 
       case 'game_phase':
+      //TODO: what if no duration?
         final startedAt = DateTime.parse(event['started_at']);
         _onUpdatePhase(event['phase'], startedAt, event['duration']);
         break;
@@ -206,6 +198,15 @@ class GameState extends ChangeNotifier{
 
       case 'role_reveal':
         _onRoleReveal(event['name'], event['description']);
+        break;
+      
+      case 'role_turn':
+        _onRoleTurnChange(event['role']);
+        break;
+
+      case 'poll_begin':
+        final startedAt = DateTime.parse(event['started_at']);
+        _onPollBegin(event['poll_id'], event['duration'], startedAt);
         break;
     }
   }
@@ -232,7 +233,6 @@ class GameState extends ChangeNotifier{
     phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
     this.duration = duration;
     _localPhaseStart = DateTime.now(); // Capture local time when phase starts
-    selectedPlayerId = null; // Reset selection on new phase
 
     _stopTts();
     _startTicker();
@@ -258,6 +258,22 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 
+  void _onRoleTurnChange(String roleName){
+    game!.rolePlaying = roleName;
+    notifyListeners();
+  }
+
+  void _onPollBegin(int id, int duration, DateTime start){
+    currentPollId = id;
+    phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
+    this.duration = duration;
+    _localPhaseStart = DateTime.now();
+
+    _startTicker();
+    notifyListeners();
+  }
+
+  //TODO: RIMUOVI
   //diego: added this method to add fake players to the lobby
   void addFakePlayersForTesting(int totalPlayers) {
     if (_game == null) return;

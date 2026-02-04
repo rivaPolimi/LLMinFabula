@@ -3,15 +3,25 @@ import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
-class LynchVotingScreen extends StatelessWidget {
+class LynchVotingScreen extends StatefulWidget {
   const LynchVotingScreen({super.key});
+    
+  @override
+  State<LynchVotingScreen> createState() => _LynchVotingScreenState();
+}
 
+class _LynchVotingScreenState extends State<LynchVotingScreen> {
+  int? _selectedPlayerId;
+
+  @override
+  void initState(){
+    super.initState();
+    _selectedPlayerId = null;
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Consumer<GameState>(builder: (context, gameState, _) {
-      final remaining = gameState.remaining;
-      final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
-      final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
 
       final players = gameState.game!.players;
 
@@ -21,10 +31,7 @@ class LynchVotingScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               children: [
-                Text(
-                  '$minutes:$seconds',
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
+                TimerBar(),
                 const SizedBox(height: 32),
                 Expanded(
                   child: GridView.builder(
@@ -37,7 +44,7 @@ class LynchVotingScreen extends StatelessWidget {
                     ),
                     itemBuilder: (context, index) {
                       final player = players[index];
-                      final isSelected = player.id == gameState.selectedPlayerId;
+                      final isSelected = player.id == _selectedPlayerId;
 
                       if (player.isDead) {
                         return Column(
@@ -67,7 +74,9 @@ class LynchVotingScreen extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
-                          gameState.selectPlayer(player.id);
+                          setState(() {
+                            _selectedPlayerId = player.id;
+                          });
                         },
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -113,16 +122,16 @@ class LynchVotingScreen extends StatelessWidget {
                   height: 48,
                   width: 250,
                   child: ElevatedButton(
-                    onPressed: gameState.selectedPlayerId == null
+                    onPressed: _selectedPlayerId == null
                         ? null
                         : () {
-                            gameState.confirmVote();
+                            gameState.confirmVote(_selectedPlayerId!);
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0),
                       foregroundColor: const Color(0xFF003943),
                       disabledBackgroundColor:
-                          const Color(0xFFDCC8A0).withOpacity(0.5),
+                          const Color(0xFFDCC8A0).withValues(alpha: .5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
