@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor Player
+    participant Server
+    participant Bot as "Gpt-5.1-chat"
+    participant GameGroup as "WS Group: game_{id}_all"
+
+    Note left of Player: after night or <br> lynch report
+    Server ->> Server: check_win
+
+    alt Somebody won
+        Server ->>+ GameGroup: notify_game_phase(end_game)
+        GameGroup -->>- Player: WS Event: end_game
+
+        Server ->>+ GameGroup: send winners
+        GameGroup -->>- Player: WS Event: winners
+
+        Server ->>+ Bot: generate end report
+        Bot -->>- Server: end_report
+        Server ->>+ GameGroup: notify_narrator_story(end_report)
+        GameGroup -->>- Player: WS Event: end_report
+    else Nobody won
+        alt previous phase == lynch
+            Server ->> Server: night
+        else previous phase == night
+            Server ->> Server: discussion
+        end
+    end
+    

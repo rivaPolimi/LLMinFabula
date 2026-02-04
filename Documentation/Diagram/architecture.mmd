@@ -1,0 +1,31 @@
+flowchart LR
+    %% ===== Client =====
+    subgraph Client
+        App[Client App]
+    end
+
+    %% ===== Backend =====
+    subgraph Backend
+        Server[Server]
+        Worker[Timer Worker]
+        Redis[(Redis)]
+        DB[(Database)]
+    end
+
+    %% ===== External =====
+    subgraph External Services
+        ChatbotAPI[Chatbot API]
+    end
+
+    %% ===== Connections =====
+    App <-->|HTTPS| Server
+    App <-->|WebSocket| Server
+
+    Server <-->|ORM| DB
+    Server <-->|Pub/Sub| Redis
+
+    Worker <-->|Pub/Sub| Redis
+    Worker -->|Timed Events| Server
+
+    Server -->|Requests| ChatbotAPI
+    ChatbotAPI -->|Responses| Server

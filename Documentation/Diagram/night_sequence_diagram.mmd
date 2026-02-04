@@ -1,0 +1,63 @@
+sequenceDiagram
+    autonumber
+    actor Player
+    participant Server
+    participant Timer
+    participant Database@{"type": "database"}
+    participant Bot as "Gpt-5.1-chat"
+    participant RoleGroup as "WS Group: game_{id}_role"
+    participant GameGroup as "WS Group: game_{id}_all"
+
+    Note left of Player: night_phase has begun
+    Server ->>+ GameGroup: notify_game_phase(night_intro)
+    GameGroup -->>- Player: night_intro_phase
+    Server ->>+ Bot: generate night introduction
+    Bot -->>- Server: night_intro
+    Server ->>+ GameGroup: notify_narrator_story(night_intro)
+    GameGroup -->>- Player: WS Event: night_intro
+    Server ->> Timer: start (45s)
+
+    Player ->> Player: read (night_intro)
+
+    alt ACK received in time
+        Player -->> Server: WS ACK: end night_intro
+        Server ->> Timer: cancel
+    else Timeout
+        Timer -->> Server: timeout
+    end
+
+    loop for each role
+        par Create poll
+            Server ->> Server: create action poll
+            Server ->>+ RoleGroup: notify_poll_begin(poll)
+            RoleGroup -->>- Player: WS Event: poll
+        and Generate role introduction
+            Server ->>+ Bot: generate role action message
+            Bot -->>- Server: role_message
+            Server ->>+ GameGroup: notify_narrator_story(role_message)
+            GameGroup -->>- Player: WS Event: role_message
+        end
+        Server ->> Timer: start (45s)
+
+        Player ->> Player: read(role_message)
+
+        loop for each player with role
+            Player ->> Server: WS Message: vote
+        end
+
+        alt  All votes received in time
+            Server ->> Timer: cancel
+        else Timeout
+            Timer -->> Server: timeout
+        end
+
+        Server ->> Server: compute_result(poll)
+        Server ->> Database: store poll result
+    end
+
+    Server ->> Server: resolve night
+    Server ->>+ Bot: generate night report
+    Bot -->>- Server: night_report
+    Server ->>+ GameGroup: notify_narrator_story(night_report)
+    GameGroup -->>- Player: WS Event: night_report
+    

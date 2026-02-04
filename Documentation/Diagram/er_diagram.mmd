@@ -1,0 +1,66 @@
+erDiagram
+    direction LR
+
+    SETTING {
+        int id PK
+        string name
+        json alternative_role_names
+        text initial_prompt
+    }
+
+    ROLE {
+        int id PK
+        string name
+        text description
+        int order
+        boolean play_first_night
+        boolean has_action
+        string action_class
+    }
+
+    GAME {
+        int id PK
+        int max_players
+        string password
+        json available_roles
+        int night_counter
+        string state
+    }
+
+    PLAYER {
+        int id PK
+        string nickname
+        boolean is_dead
+        boolean isProtected
+        string role_name
+    }
+
+    POLL {
+        int id PK
+        int duration
+        string role
+        datetime created_at
+        boolean expired
+    }
+
+    VOTE {
+        int id PK
+    }
+
+    %% Relationships
+    GAME ||--o{ POLL : "has"
+    SETTING ||--o{ GAME : "has"
+    ROLE ||--o| GAME : "current_turn_role"
+    ROLE ||--o{ PLAYER : "assigned to"
+
+    POLL ||--o{ VOTE : "contains"
+
+    PLAYER ||--o{ VOTE : "casts"
+    PLAYER ||--o{ VOTE : "targets"
+
+    GAME ||--o| PLAYER : "wolfTarget"
+    GAME ||--o| PLAYER : "courtesanTarget"
+    GAME ||--o| PLAYER : "hunterTarget"
+     GAME ||--o{ PLAYER : "has"
+    GAME ||--o| PLAYER : "guardTarget"
+    GAME ||--o| PLAYER : "lynchTarget"

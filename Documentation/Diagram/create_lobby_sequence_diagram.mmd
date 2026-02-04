@@ -1,0 +1,27 @@
+sequenceDiagram
+    autonumber
+    actor Player
+    participant Server
+    participant Database@{"type": "database"}
+
+    Player ->>+ Server: POST: create/<br/> {max_players, <br/>setting,<br/>password,<br/>roles,<br/>nickname}
+    
+    Server ->>+ Database: create(Game)
+    Database -->>- Server: Game
+
+    Server ->>+ Database: create(Player)
+    Database -->>- Server: Player
+
+    Server -->>- Player: {game_id, player_id}
+
+    Player ->>+ Server: WS connect(game_id, player_id)
+    Server ->>+ Database: get Game(id=game_id)
+    Database -->>- Server: Game
+
+    Server ->>+ Database: get Player(id=player_id, game)
+    Database -->>- Server: Player
+
+    Server ->> Server: group_add(game_all)
+    Server ->> Server: group_add(game_self)
+
+    Server -->> Player: WS accept()

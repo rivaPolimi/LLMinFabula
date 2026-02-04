@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    actor Player
+    participant Server
+    participant Database@{"type": "database"}
+    participant GameGroup as "WS Group: game_{id}_all"
+
+    Player ->>+ Server: POST /join<br/>{ nickname, password }
+
+    Server ->> Server: parse request body
+
+    Server ->>+ Database: find Game\n(password, not full)
+    
+    break Game not found or lobby full
+        Server -->> Player: 404 Not Found
+    end
+        
+    Database -->>- Server: Game
+
+    Server ->>+ Database: create Player\n(nickname, game)
+    Database -->>- Server: Player
+
+    Server ->>+ Database: get active players\n(game)
+    Database -->>- Server: players list
+
+    Server -->>- Player: 200 OK<br/>{ game_id, player_id, players }
+
+    Player ->>+ Server: WS connect(game_id, player_id)
+    Server ->>+ Database: get Game(id=game_id)
+    Database -->>- Server: Game
+
+    Server ->>+ Database: get Player(id=player_id, game)
+    Database -->>- Server: Player
+
+    Server ->> Server: group_add(game_all)
+    Server ->> Server: group_add(game_self)
+
+    Server -->> Player: WS accept()
+
+    Server ->>+ GameGroup: notify_new_player_joined(player)
+    GameGroup -->>- Player: WS event: player_joined

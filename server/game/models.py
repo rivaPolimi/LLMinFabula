@@ -171,7 +171,7 @@ class Player(models.Model):
     nickname = models.CharField(max_length=20)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     is_dead = models.BooleanField(default=False)
-    protected = models.BooleanField(default=False)
+    isProtected = models.BooleanField(default=False)
 
     # Queried by the medium to check the role of the player when he was alive
     role_name = models.CharField(max_length=20, default=None, null=True) 

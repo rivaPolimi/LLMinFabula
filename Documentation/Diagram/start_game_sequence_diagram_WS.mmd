@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor Player as Admin
+    participant Server
+    participant Timer
+    participant Bot as "Gpt-5.1-chat"
+    participant SelfGroup as "WS Group: game_{id}_self"
+    participant GameGroup as "WS Group: game_{id}_all"
+
+    Server ->> Server: WS: group_add(game_role)
+    Server ->>+ SelfGroup: role
+    SelfGroup -->>- Player: WS event: role
+
+    Server ->>+ GameGroup: notify_game_phase(introduction_phase)
+    GameGroup -->>- Player: introduction_phase
+    Server ->>+ Bot: generate introduction
+    Bot -->>- Server: introduction
+    Server ->>+ GameGroup: notify_narrator_story(introduction)
+    GameGroup -->>- Player: WS event: introduction
+    Server ->> Timer: start (120s)
+
+    Player ->> Player: read (introduction)
+
+    alt ACK received in time
+        Player -->> Server: WS ACK: end introduction
+        Server ->> Timer: cancel
+    else Timeout
+        Timer -->> Server: timeout
+    end
+
+    Server ->>+ GameGroup: notify_game_phase(role_reveal)
+    GameGroup -->>- Player: WS event: role_reveal
+    Server ->> Timer: start (15s)
+
+    Player ->> Player: show (role_reveal)
+
+    alt ACK received in time
+        Player -->> Server: WS ACK: end role reveal
+        Server ->> Timer: cancel
+    else Timeout
+        Timer -->> Server: timeout
+    end

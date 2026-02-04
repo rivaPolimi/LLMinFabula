@@ -1,0 +1,14 @@
+---
+id: 52fdf94e-309e-4bde-b4b7-757267857681
+---
+
+stateDiagram-v2
+    direction LR
+    
+    [*] --> Introduction
+    Introduction --> Night
+    Night --> Day
+    Day --> Night
+
+    Night --> [*]
+    Day --> [*]

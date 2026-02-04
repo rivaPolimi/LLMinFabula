@@ -1,0 +1,27 @@
+sequenceDiagram
+    autonumber
+    actor Player as Admin
+    participant Server
+    participant Database@{"type": "database"}
+
+    Player ->>+ Server: POST: start/<br/>{game_id,<br/>player_id}
+
+    Server ->> Server: parse request body
+    
+    Server ->>+ Database: get Game(id=game_id)
+    break Game not found
+        Server -->> Player: 404 Not found 
+    end
+    Database -->>- Server: Game
+
+    Server ->>+ Database: get players(Game)
+    Database -->>- Server: players
+    break player_id not in players
+        Server -->> Player: 403 Forbidden <br/>{Player not in game}
+    end
+
+    loop for each player in lobby
+        Server ->> Server: assign role to player
+    end
+
+    Server -->>- Player: 200 OK <br/>{game started}

@@ -1,0 +1,47 @@
+stateDiagram-v2
+    direction LR
+    state Introduction {
+        state "Role Reveal" as role
+        state "Introduction" as intro
+        [*] --> Lobby
+        Lobby --> role
+        role --> intro
+        intro --> [*]
+    }
+
+    state Night {
+        state "Night" as night
+        state "Role Play" as action
+        state "Night Report" as report
+
+        [*] --> night
+        night --> action
+        action --> night
+        night --> report: "if each role played"
+        report --> [*]
+    }
+
+    state "Check Win" as checkDay
+    state "Check Win" as checkNight
+
+    state Day {
+        state Discussion
+        state "Extra Vote" as eVote
+        state Lynch
+
+        [*] --> Discussion
+        Discussion --> eVote
+        Discussion --> Lynch
+        eVote --> Lynch
+        Lynch --> [*]
+    }
+
+    [*] --> Introduction
+    Introduction --> Night
+    Night --> checkNight
+    Day --> checkDay
+    checkNight --> Day
+    checkDay --> Night
+
+    checkDay --> [*]
+    checkNight --> [*]

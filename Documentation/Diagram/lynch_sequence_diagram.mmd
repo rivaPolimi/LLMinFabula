@@ -1,0 +1,46 @@
+sequenceDiagram
+    autonumber
+    actor Player
+    participant Server
+    participant Timer
+    participant Bot as "Gpt-5.1-chat"
+    participant GameGroup as "WS Group: game_{id}_all"
+
+    Note left of Player: after night and check <br> win end
+    Server ->>+ GameGroup: notify_game_phase(discussion)
+    GameGroup -->>- Player: WS Event: discussion
+
+    Server ->> Server: create discussion poll
+    Server ->>+ GameGroup: notify_poll_begin(poll)
+    GameGroup -->>- Player: WS Event: poll
+    Server ->> Timer: start (300s)
+
+    loop for each player
+        Player ->> Player: discuss and vote
+        Player ->> Server: vote
+    end
+
+    alt  All votes received in time
+        Server ->> Timer: cancel
+    else Timeout
+        Timer -->> Server: timeout
+        Server ->>+ GameGroup: notify_game_phase(extra_time)
+        GameGroup -->>- Player: WS Event: extra_time
+        Server ->> Timer: extend (timer, 30s)
+        loop for each player who didn't vote before
+            Player ->> Server: vote
+        end
+
+        alt  All votes received in time
+            Server ->> Timer: cancel
+        else Timeout
+            Timer -->> Server: timeout
+        end
+    end
+
+    Server ->> Server: compute_result(poll)
+    Server ->>+ Bot: generate lynch report
+    Bot -->>- Server: lynch_report
+    Server ->>+ GameGroup: notify_narrator_story(lynch_report)
+    GameGroup -->>- Player: WS Event: lynch_report
+    Server ->> Timer: start (30s)
