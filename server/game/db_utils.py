@@ -55,8 +55,10 @@ async def retry_on_db_lock_async(func, *args, max_retries=MAX_RETRIES, **kwargs)
     """
     Async version of retry_on_db_lock.
     Use this for async functions that call sync database operations.
+    Refreshes Django model instances before each retry to ensure clean state.
     """
     from asgiref.sync import sync_to_async
+    from django.db import models
     import asyncio
     
     last_exception = None
@@ -81,6 +83,15 @@ async def retry_on_db_lock_async(func, *args, max_retries=MAX_RETRIES, **kwargs)
                     )
                     await asyncio.sleep(delay)
                     delay = min(delay * 2, 1.0)
+                    
+                    # Refresh Django model instances to reset in-memory state
+                    # This ensures the retry starts with fresh data from the database
+                    for arg in args:
+                        if isinstance(arg, models.Model):
+                            await sync_to_async(arg.refresh_from_db, thread_sensitive=False)()
+                    for value in kwargs.values():
+                        if isinstance(value, models.Model):
+                            await sync_to_async(value.refresh_from_db, thread_sensitive=False)()
                 continue
             else:
                 raise

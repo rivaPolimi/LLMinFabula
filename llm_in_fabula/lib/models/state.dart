@@ -199,6 +199,10 @@ class GameState extends ChangeNotifier{
       case 'role_reveal':
         _onRoleReveal(event['name'], event['description']);
         break;
+
+      case 'wolves_list':
+        _onWolvesList(event['wolves']);
+        break;
       
       case 'role_turn':
         _onRoleTurnChange(event['role']);
@@ -224,18 +228,31 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 
+  // Sign all wolf allies
+  void _onWolvesList(List<int> wolvesId){
+    for (var id in wolvesId) {
+      final p = game!.getPlayerById(id);
+      if(p != null){
+        p.isWolf = true;
+      }
+    }
+  }
+
   void _onUpdatePhase(String phase, DateTime start, int duration){
     debugPrint("🟢 Final rule of thumb");
     debugPrint("Phase: $phase");
     debugPrint("Start: $start");
     debugPrint("Duration: $duration");
     this.phase = GamePhase.values.byName(phase);
-    phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
-    this.duration = duration;
-    _localPhaseStart = DateTime.now(); // Capture local time when phase starts
+    if (duration > 0){
+      phaseStart = DateTime.now().isAfter(start) ? start : DateTime.now();
+      this.duration = duration;
+      _localPhaseStart = DateTime.now(); // Capture local time when phase starts
+
+      _startTicker();
+    }
 
     _stopTts();
-    _startTicker();
     notifyListeners();
   }
 

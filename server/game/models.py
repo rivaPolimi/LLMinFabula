@@ -206,7 +206,7 @@ class Poll(models.Model):
     REQUIRED_FIELDS = ["game", "duration", "role"]
 
     def get_voter(self):
-        voter = Vote.objects.filter(poll__id=id).first()
+        voter = Vote.objects.filter(poll__id=self.id).first()
         
         if not voter:
             return None

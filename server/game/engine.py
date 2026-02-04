@@ -29,7 +29,6 @@ class GameEngine:
         return fsm
 
     @staticmethod
-    @transaction.atomic
     def start_game(game: Game):
         """
         Starts the game. 
@@ -47,7 +46,6 @@ class GameEngine:
         start_phase_timer(game.id, "introduction", INTRO_DURATION)
 
     @staticmethod
-    @transaction.atomic
     def role_reveal(game: Game):
         """
         Reveals the role to players
@@ -63,7 +61,6 @@ class GameEngine:
         start_phase_timer(game.id, "roleReveal", ROLE_DURATION)
 
     @staticmethod
-    @transaction.atomic
     def night_intro(game: Game):
         """
         Send the introduction to night phase to client.
@@ -82,7 +79,6 @@ class GameEngine:
         start_phase_timer(game.id, "nightIntro", NIGHT_INTRO_DURATION)
 
     @staticmethod
-    @transaction.atomic
     def handle_night(game: Game):
         """
         Chooses next role or starts day phase.
@@ -102,18 +98,18 @@ class GameEngine:
         # Transition NIGHT -> ROLE_ACTION
         GameEngine._transition(game, "start_role_action")
         
+        # Notify clients about the action phase and the role that has to play
+        notify_phase_start(game.id, "roleAction", 0)
+        notify_role_turn(game.id, next_role.name)
+
         # Generate the message for the role
         Narrator.gen_role_action_message(game, game.setting, next_role.name)
-
-        notify_phase_start(game.id, "roleAction", None)
-        notify_role_turn(game.id, next_role.name)
 
         poll = create_poll(game, role=next_role.name)
         notify_poll_begin(game, poll)
         start_poll_timer(poll)
 
     @staticmethod
-    @transaction.atomic
     def role_action(game: Game, player: Player, target: Player, poll: Poll):
         """
         Performs the action for a specific role.
@@ -138,7 +134,6 @@ class GameEngine:
 
 
     @staticmethod
-    @transaction.atomic
     def finish_night(game: Game):
         """
         Compute the outcome of the night and sends it to all players.
@@ -162,7 +157,6 @@ class GameEngine:
         start_phase_timer(game.id, "nightReport", NIGHT_REPORT_DURATION)
 
     @staticmethod
-    @transaction.atomic
     def check_win_engine(game: Game, previous_phase: str):
         """
         Check if there is any winner, if so end the game, if not continue.
@@ -182,14 +176,13 @@ class GameEngine:
             return GameEngine.night_intro(game)
 
     @staticmethod
-    @transaction.atomic
     def start_discussion(game: Game):
         """
         Create and send the discussion poll to players.
         CHECK_WIN -> DISCUSSION
         """
 
-        notify_phase_start(game.id, "discussion", None)
+        notify_phase_start(game.id, "discussion", 0)
 
         # Create poll for discussion
         poll = create_poll(game, duration=300)
@@ -201,7 +194,6 @@ class GameEngine:
         GameEngine._transition(game, "start_discussion")
 
     @staticmethod
-    @transaction.atomic
     def start_extra_vote(game: Game, poll: Poll):
         """
         If players did not vote before the timer expires start an extra voting time.
@@ -221,7 +213,6 @@ class GameEngine:
         GameEngine._transition(game, "start_extra_vote")
 
     @staticmethod
-    @transaction.atomic
     def end_discussion(game: Game, poll: Poll):
         """
         Close the discussion poll.
@@ -239,7 +230,6 @@ class GameEngine:
         return GameEngine.lynch_player(game)
 
     @staticmethod
-    @transaction.atomic
     def lynch_player(game: Game):
         """
         Lynch the target and check if anyone won.
@@ -257,7 +247,6 @@ class GameEngine:
         start_phase_timer(game.id, "lynch", LYNCH_DURATION)
 
     @staticmethod
-    @transaction.atomic
     def end_game(game: Game, winners: list[Player]):
         """
         Send the winners to the clients and end the game.

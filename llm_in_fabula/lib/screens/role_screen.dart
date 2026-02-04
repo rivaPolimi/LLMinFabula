@@ -15,20 +15,13 @@ class RoleScreen extends StatelessWidget {
       builder: (_, state, _) {
         final roleName = state.player!.roleName;
         final roleDescription = state.player!.roleDescription;
-        
-        final remaining = state.remaining;
-        final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
-        final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
 
         return GradientPage(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24.0, 48.0, 24.0, 24.0),
             child: Column(
               children: [
-                Text(
-                  '$minutes:$seconds',
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
+                TimerBar(),
                 const SizedBox(height: 16),
                 const Text(
                   'YOUR ROLE',

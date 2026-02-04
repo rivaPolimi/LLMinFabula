@@ -94,6 +94,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "game_id": event["game_id"],
         })
 
+    async def wolves_list(self, event):
+        await self.send_json({
+            "type": "wolves_list",
+            "wolves": event["wolves"],
+        })
+
     async def tell_story(self, event):
         await self.send_json({
             "type": "narrator",

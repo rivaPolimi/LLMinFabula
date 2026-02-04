@@ -105,7 +105,7 @@ async def end_poll(poll_id: int, game_id: int):
     try:
         # Retry fetching poll if database is locked
         def get_poll():
-            return Poll.objects.get(id=poll_id, game_id=game_id)
+            return Poll.objects.select_related("game").get(id=poll_id, game_id=game_id)
         
         poll = await retry_on_db_lock_async(get_poll)
         game = poll.game
@@ -203,7 +203,7 @@ def check_everybody_voted(game: Game, poll: Poll):
     if poll.role == "all":
         num_players = Player.objects.select_related("role").filter(game = game, is_dead = False).count()
     else:
-        targeted_players = Player.objects.select_related("role").filter(game = game, role__name = poll.role.name, is_dead = False)
+        targeted_players = Player.objects.select_related("role").filter(game = game, role__name = poll.role, is_dead = False)
         num_players = len(list(targeted_players))
 
     # Signal that the poll is completed if everybody voted

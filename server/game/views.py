@@ -6,10 +6,9 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Count, F, Q
 from django.core.paginator import Paginator
-from .notifications import notify_game_started
+from .notifications import notify_game_started, notify_wolves
 from .engine import GameEngine
 from .models import Game, Player, Role, Setting, RedisEventLog
-from .narrator import Narrator
 from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -99,6 +98,11 @@ class StartGameView(APIView):
 
         # Broadcast that game started
         notify_game_started(game.id)
+
+        # All wolves should know each other
+        wolves = players_in_lobby.filter(role__name="wolf")
+        wolf_ids = [wolf.id for wolf in wolves]
+        notify_wolves(game.id, wolf_ids)
 
         GameEngine.start_game(game)      
 

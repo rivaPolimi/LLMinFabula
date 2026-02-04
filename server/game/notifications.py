@@ -26,6 +26,14 @@ def notify_narrator_story(game_id: int, role: str, phase: str, text: str):
         }
     )
 
+def notify_wolves(game_id: int,wolves: list[int]):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"game_{game_id}_wolf",
+        {"type": "wolves.list", "wolves": wolves}
+    )
+
 def notify_role_turn(game_id: int, role: str):
     channel_layer = get_channel_layer()
 
@@ -76,7 +84,7 @@ def notify_poll_begin(game: Game, poll: Poll):
     started_at = datetime.now(timezone.utc).astimezone().isoformat()
 
     async_to_sync(channel_layer.group_send)(
-        f"game_{game.id}_{poll.role.name}",
+        f"game_{game.id}_{poll.role}",
         {"type": "poll.begin", "poll_id": poll.id, "duration": poll.duration, "started_at": started_at,}
     )
 

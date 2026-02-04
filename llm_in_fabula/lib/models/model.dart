@@ -3,6 +3,7 @@ class Player {
   final String nickname;
   final bool isAdmin;
   bool isDead = false;
+  bool isWolf = false;
   late final String roleName;
   late final String roleDescription;
 
@@ -46,6 +47,14 @@ class Game {
     }
     else{
       players.add(player);
+    }
+  }
+
+  Player? getPlayerById(int playerId) {
+    try {
+      return players.firstWhere((p) => p.id == playerId);
+    } catch (e) {
+      return null;
     }
   }
 
