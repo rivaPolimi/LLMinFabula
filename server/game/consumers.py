@@ -122,12 +122,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 })
 
             poll_finished = await record_vote(poll, self.player_id, content.get("target"))
+            
+            # Send updated tally to clients anyway, even if the poll is finished, to update the UI in real time
+            tally = await tally_votes_async(poll)
+            await notify_updated_votes(self.game_id, poll, tally)
 
             if poll_finished:
                 await end_poll_by_id(poll.id, player=self.player)
-            else:
-                tally = await tally_votes_async(poll)
-                await notify_updated_votes(self.game_id, poll, tally)
 
         except Poll.DoesNotExist:
             await self.send_json({
@@ -159,8 +160,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def player_eliminated(self, event):
         # Remove player from the role channel
-        await self.channel_layer.group_discard(self.group_role, self.channel_name)
-        self.group_role = ""
+        if self.group_role and self.group_role != "none":
+            await self.channel_layer.group_discard(self.group_role, self.channel_name)
+        self.group_role = "none"
         
         await self.send_json({
             "type": "death",

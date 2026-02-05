@@ -8,6 +8,7 @@ import 'package:llm_in_fabula/screens/lynch_outcome_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
 import 'package:llm_in_fabula/screens/night_report_screen.dart';
 import 'package:llm_in_fabula/screens/role_screen.dart';
+import 'package:provider/provider.dart';
 
 class GameRouter extends StatelessWidget {
   final GamePhase phase;
@@ -33,6 +34,11 @@ class GameRouter extends StatelessWidget {
         return const LynchOutcomeScreen();
 
       case GamePhase.nightIntro:
+        // Reset mysticText and tally
+        final state = context.read<GameState>();
+        state.mysticText = null;
+        state.tally = {};
+
         // This screen will show the second narrator text
         return const NarratorIntroScreen();
 

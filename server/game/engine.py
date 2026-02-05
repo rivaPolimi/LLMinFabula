@@ -72,8 +72,18 @@ class GameEngine:
         (ROLE_REVEAL or CHECK_WIN) -> NIGHT
         """
 
+        # Update night counter and reset targets
         game.night_counter += 1
+        game.wolf_target = None
+        game.courtesan_target = None
+        game.hunter_target = None
+        game.jailer_target = None
+        game.guard_target = None
+        game.lynch_target = None
+        game.current_turn_role = None
         GameEngine._transition(game, "begin_night")
+
+        game.save()
 
         NIGHT_INTRO_DURATION = 45
 
@@ -252,15 +262,15 @@ class GameEngine:
         else:
             reason = "Villagers killed all wolves"
 
+        # Handle transition BEFORE deleting the game
+        GameEngine._transition(game, "end_game")
+
         # Send winners to clients
         handle_win(game, winners)
 
         # Tell the story with the narrator
         Narrator.gen_story_end(game, game.setting, winners_name, reason)
         notify_phase_start(game.id, "endGame", 0)
-
-        # Handle transition
-        GameEngine._transition(game, "end_game")
 
     @staticmethod
     @transaction.atomic

@@ -135,8 +135,8 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                     ),
-                    child: const Text(
-                      'confirm your vote',
+                    child: Text(
+                      isPlayerDead ? 'you are banned' : 'confirm your vote',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

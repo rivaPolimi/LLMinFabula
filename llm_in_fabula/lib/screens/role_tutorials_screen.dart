@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:llm_in_fabula/models/game_theme.dart';
 import 'package:llm_in_fabula/models/state.dart';
 import 'package:provider/provider.dart';
 
