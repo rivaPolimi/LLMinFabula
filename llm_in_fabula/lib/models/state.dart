@@ -19,6 +19,9 @@ class GameState extends ChangeNotifier{
   // Recent victims
   Queue<Player> victims = Queue<Player>();
 
+  // Votes
+  Map<int, int> tally = {};
+
   AppFlow flow = AppFlow.title;
 
   GamePhase phase = GamePhase.lobby;
@@ -26,7 +29,7 @@ class GameState extends ChangeNotifier{
   late int duration;
   DateTime? _localPhaseStart; // Track when we received the phase locally
 
-  int? currentPollId;
+  int? currentPollId = -1;
 
   Tts tts = Tts();
   String? narratorText;
@@ -78,6 +81,9 @@ class GameState extends ChangeNotifier{
       "poll_id": currentPollId,
       "target": selectedPlayerId,
     });
+
+    // Reset active poll after voting
+    currentPollId = -1;
     // maybe reset selection after voting?
     // selectedPlayerId = null;
     notifyListeners();
@@ -127,10 +133,12 @@ class GameState extends ChangeNotifier{
   void _onTtsCompleted(){
     debugPrint("FINISHED TALKING");
 
-    _ws.send({
-      "type": "narration_finished",
-      "phase": phase.name,
-    });
+    if (player!.isAdmin) {
+      _ws.send({
+        "type": "narration_finished",
+        "phase": phase.name,
+      });
+    }
   }
 
   void _stopTts(){
@@ -227,6 +235,20 @@ class GameState extends ChangeNotifier{
       case 'night_victims':
         _onNightVictimReceived(event['victims_id']);
         break;
+
+      case 'death':
+        _onDeath();
+        break;
+
+      case 'tally':
+        final tallyRaw = event['tally'] as Map<String, dynamic>;
+
+        // Convert to a map with int keys
+        final tally = tallyRaw.map((key, value) => 
+          MapEntry(int.parse(key), value as int)
+        );
+        _onTallyUpdate(tally);
+        break;
     }
   }
 
@@ -316,6 +338,22 @@ class GameState extends ChangeNotifier{
         victims.addFirst(p);
       }
     }
+  }
+
+  void _onDeath(){
+    player!.isDead = true;
+  }
+
+  void _onTallyUpdate(Map<int, int> tally){
+    // Check that the incoming tally is the most recent version
+    for (var key in tally.keys) {
+      if(!this.tally.containsKey(key) || this.tally[key]! < tally[key]!){
+        this.tally = tally;
+        break;
+      }
+    }
+
+    notifyListeners();
   }
 
   //TODO: RIMUOVI

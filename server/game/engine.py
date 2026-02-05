@@ -102,13 +102,13 @@ class GameEngine:
 
         # Transition NIGHT -> ROLE_ACTION
         GameEngine._transition(game, "start_role_action")
+
+        # Generate the message for the role
+        Narrator.gen_role_action_message(game, game.setting, next_role.name)
         
         # Notify clients about the action phase and the role that has to play
         notify_phase_start(game.id, "roleAction", 0)
         notify_role_turn(game.id, next_role.name)
-
-        # Generate the message for the role
-        Narrator.gen_role_action_message(game, game.setting, next_role.name)
 
         poll = create_poll(game, role=next_role.name)
         notify_poll_begin(game, poll)
@@ -247,7 +247,7 @@ class GameEngine:
             kill_player(game, game.lynch_target)
             Narrator.gen_lynch_story(game, game.setting, game.lynch_target.nickname, True)
 
-        LYNCH_DURATION = 30
+        LYNCH_DURATION = 60
         
         notify_phase_start(game.id, "lynch", LYNCH_DURATION)
         start_phase_timer(game.id, "lynch", LYNCH_DURATION)

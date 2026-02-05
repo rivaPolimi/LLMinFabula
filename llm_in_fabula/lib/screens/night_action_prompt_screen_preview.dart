@@ -40,7 +40,7 @@ class _NightActionPromptScreenPreviewState
                     _isWolf = value;
                   });
                 },
-                activeColor: const Color(0xFFDCC8A0),
+                activeThumbColor: const Color(0xFFDCC8A0),
               ),
             ),
             const SizedBox(height: 40),

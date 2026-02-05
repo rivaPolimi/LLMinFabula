@@ -3,9 +3,25 @@ import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/shared_widgets.dart';
 import 'package:provider/provider.dart';
 
-class NightActionPromptScreen extends StatelessWidget {
+class NightActionPromptScreen extends StatefulWidget {
   final void Function() onNext;
   const NightActionPromptScreen({required this.onNext, super.key});
+
+  @override
+  State<NightActionPromptScreen> createState() => _NightActionPromptScreenState();
+}
+
+class _NightActionPromptScreenState extends State<NightActionPromptScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Delay to ensure context and provider are ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<GameState>().startTts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +38,8 @@ class NightActionPromptScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TimerBar(),
+                  if (isInTurn) 
+                    TimerBar(),
                   Column(
                     children: [
                       Container(
@@ -48,10 +65,10 @@ class NightActionPromptScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (isInTurn)
+                      if (isInTurn && gameState.currentPollId != -1)
                         ElevatedButton(
                           onPressed: () {
-                            onNext();
+                            widget.onNext();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFDCC8A0), // Beige

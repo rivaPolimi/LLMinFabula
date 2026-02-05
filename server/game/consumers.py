@@ -115,7 +115,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
             await self.reload_db_state()
 
-            if not self.player.role.name == poll.role:
+            if not self.player.role.name == poll.role and poll.role != "all":
                 await self.send_json({
                     "type": "Vote error",
                     "text": "Not allowed",
@@ -127,7 +127,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 await end_poll_by_id(poll.id, player=self.player)
             else:
                 tally = await tally_votes_async(poll)
-                await notify_updated_votes(self.game, poll, tally)
+                await notify_updated_votes(self.game_id, poll, tally)
 
         except Poll.DoesNotExist:
             await self.send_json({

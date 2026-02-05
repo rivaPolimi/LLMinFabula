@@ -108,7 +108,7 @@ async def end_phase(phase_name: str, game_id: int):
         "roleReveal": lambda g: GameEngine.night_intro(g),
         "nightIntro": lambda g: GameEngine.handle_night(g),
         "nightReport": lambda g: GameEngine.check_win_engine(g, "nightReport"),
-        "lynchOutcome": lambda g: GameEngine.check_win_engine(g, "lynchOutcome"),
+        "lynch": lambda g: GameEngine.check_win_engine(g, "lynchOutcome"),
     }
     
     handler = transitions.get(phase_name)

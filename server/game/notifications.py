@@ -91,10 +91,13 @@ def notify_poll_begin(game: Game, poll: Poll):
 async def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):
     # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
     channel_layer = get_channel_layer()
+    
+    # Convert tally to use player IDs as keys for JSON serialization
+    tally_data = {player.id: count for player, count in tally.items()} if tally else {}
 
-    channel_layer.group_send(
-        f"game_{game_id}_{poll.role.name}",
-        {"type": "send.tally", "poll_id": poll.id, "tally": tally}
+    await channel_layer.group_send(
+        f"game_{game_id}_{poll.role}",
+        {"type": "send.tally", "poll_id": poll.id, "tally": tally_data}
     )
 
 def notify_start_extra_time(game: Game, duration: int):

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/routers/discussion_router.dart';
 import 'package:llm_in_fabula/routers/role_action_router.dart';
 import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
@@ -26,15 +27,15 @@ class GameRouter extends StatelessWidget {
 
       case GamePhase.discussion:
         //TODO: DA IMPLEMENTARE
-        return const CreateJoinScreen();
+        return const DiscussionRouter();
 
       case GamePhase.extraVote:
-        //TODO: DA IMPLEMENTARE
+        //TODO: DA IMPLEMENTARE -> forse si può eliminare
         return const CreateJoinScreen();
 
       case GamePhase.lynch:
-        //TODO: DA IMPLEMENTARE
-        return const CreateJoinScreen();
+        //TODO: DA IMPLEMENTARE -> qua il narratore dice i risultati
+        return const NarratorIntroScreen();
 
       case GamePhase.nightIntro:
         // This screen will show the second narrator text

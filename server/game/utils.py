@@ -51,10 +51,10 @@ def resolve_night(game: Game):
 
     return killed_players
 
-def kill_player(game, player):
+def kill_player(game: Game, player: Player):
     player.is_dead = True
     player.is_protected = False
-    ghost = Role.objects.filter(name = "ghost")
+    ghost = Role.objects.filter(name = "ghost").first()
     player.role = ghost
     player.save()
 
@@ -66,15 +66,15 @@ def check_win(game):
     """
 
     # Madman wins if lynched
-    if game.lynch_target.role.name == "madman":
+    if game.lynch_target and game.lynch_target.role.name == "madman":
         return True, game.lynch_target
     
-    wolves = game.get_active_players().filter(role__name = "wolf")
-    villagers = game.get_active_players().exclude(role__name = "wolf")
+    wolves = list(game.get_active_players().filter(role__name = "wolf"))
+    villagers = list(game.get_active_players().exclude(role__name = "wolf"))
 
     # Good guys win if no wolf remain
     if not wolves:
-        return True, game.get_active_players().exclude(role__name = "madman").exclude(role__name = "copycat")
+        return True, list(game.get_active_players().exclude(role__name = "madman").exclude(role__name = "copycat"))
     
     # Wolves wins if they are equal or more than the good roles
     if len(wolves) >= len(villagers):

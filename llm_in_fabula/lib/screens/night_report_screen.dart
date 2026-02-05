@@ -13,7 +13,7 @@ class NightReportScreen extends StatefulWidget {
 
 class _NightReportScreenState extends State<NightReportScreen> {
   bool _showingDeaths = false;
-  late Timer _deathTimer;
+  Timer? _deathTimer;
 
   @override
   void initState() {
@@ -56,21 +56,26 @@ class _NightReportScreenState extends State<NightReportScreen> {
       
       // Remove the first victim from the queue
       gameState.victims.removeFirst();
-      
+
+      if (gameState.victims.isEmpty) {
+        _onDeathSequenceComplete();
+        return;
+      }
+
       setState(() {});
       _showNextDeath();
     });
   }
 
   void _onDeathSequenceComplete() {
-    _deathTimer.cancel();
+    _deathTimer?.cancel();
     context.read<GameState>().completeNightReportPhase();
   }
 
   @override
   void dispose() {
     if (_showingDeaths) {
-      _deathTimer.cancel();
+      _deathTimer?.cancel();
     }
     super.dispose();
   }

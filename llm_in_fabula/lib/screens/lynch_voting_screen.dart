@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
 class LynchVotingScreen extends StatefulWidget {
-  const LynchVotingScreen({super.key});
+  final void Function() onNext;
+  const LynchVotingScreen({required this.onNext, super.key});
     
   @override
   State<LynchVotingScreen> createState() => _LynchVotingScreenState();
@@ -50,12 +52,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset(
-                              'assets/icons/bara.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.contain,
-                            ),
+                            ThemedPlayerStatusIcon(isDead: player.isDead, isWolf: player.isWolf),
                             const SizedBox(height: 8),
                             Text(
                               player.nickname,
@@ -126,6 +123,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                         ? null
                         : () {
                             gameState.confirmVote(_selectedPlayerId!);
+                            widget.onNext();
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0),

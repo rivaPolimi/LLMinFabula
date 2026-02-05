@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:llm_in_fabula/models/model.dart';
+import 'package:llm_in_fabula/models/state.dart';
+import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
 class LynchResultsScreen extends StatelessWidget {
-  final List<Vote> votes;
-
-  const LynchResultsScreen({super.key, required this.votes});
+  const LynchResultsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Create a map to count votes for each player
-    final voteCounts = <int, int>{};
-    for (final vote in votes) {
-      voteCounts[vote.votedPlayerId] = (voteCounts[vote.votedPlayerId] ?? 0) + 1;
-    }
+    return Consumer<GameState>(
+      builder: (_, state, _) {
+            // Create a map to count votes for each player
+        final voteCounts = state.tally;
 
-    // Find the maximum number of votes received by any player
-    final maxVotes = voteCounts.values.fold(0, (max, a) => a > max ? a : max);
+        // Find the maximum number of votes received by any player
+        final maxVotes = voteCounts.values.fold(0, (max, a) => a > max ? a : max);
 
-    // Create a list of results to display
-    final results = voteCounts.entries.map((entry) {
-      // This is a bit of a hack, we need a way to get the player nickname from the ID
-      // For now, we'll just show the ID
-      return _VoteResult('Player ${entry.key}', entry.value);
-    }).toList();
+        // Create a list of results to display
+        final results = voteCounts.entries.map((entry) {
+          // This is a bit of a hack, we need a way to get the player nickname from the ID
+          // For now, we'll just show the ID
+          return _VoteResult('Player ${entry.key}', entry.value);
+        }).toList();
 
-    // Sort the results by vote count in descending order
-    results.sort((a, b) => b.voteCount.compareTo(a.voteCount));
+        // Sort the results by vote count in descending order
+        results.sort((a, b) => b.voteCount.compareTo(a.voteCount));
 
-    return GradientPage(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          automaticallyImplyLeading: true,
-          iconTheme: const IconThemeData(color: Colors.white),
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: ListView.builder(
-              itemCount: results.length,
-              itemBuilder: (context, index) {
-                final result = results[index];
-                return _buildVoteResultRow(context, result, maxVotes);
-              },
+        return GradientPage(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              automaticallyImplyLeading: true,
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                child: ListView.builder(
+                  itemCount: results.length,
+                  itemBuilder: (context, index) {
+                    final result = results[index];
+                    return _buildVoteResultRow(context, result, maxVotes);
+                  },
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 
