@@ -139,7 +139,7 @@ class Narrator:
                 Subtle foreshadowing or hints, but no direct spoilers
 
                 Keep the style evocative, full of imagery, reminiscent of a seasoned narrator spinning a tale from memory. The ending should transition naturally into the new day for the players. 
-                The players who died during the night are: {killed_players}               
+                The players who died during the night are: {killed_players if killed_players else "nobody"}               
                 """
         })
         response = client.chat.completions.create(

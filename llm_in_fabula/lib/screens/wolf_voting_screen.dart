@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
 import '../shared_widgets.dart';
 
@@ -27,10 +28,10 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
       final currentPlayer = state.player!;
       final votablePlayers = state.game!.players.where((p) {
         // Can't vote for yourself, dead players, or other wolves.
-        // This assumes roleName is available for all players if you are a wolf. //TODO: come mando ruolo lupo a tutti gli altri lupi?
+        // This assumes roleName is available for all players if you are a wolf.
         return !p.isDead &&
             p.id != currentPlayer.id &&
-            p.roleName != 'wolf';
+            !p.isWolf;
       }).toList();
 
       return GradientPage(
@@ -78,8 +79,9 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
                                   width: isSelected ? 3 : 2,
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.person,
+                              child: ThemedPlayerStatusIcon(
+                                isDead: player.isDead,
+                                isWolf: player.isWolf,
                                 color: Color(0xFF003943), // Darker Teal icon
                                 size: 40,
                               ),

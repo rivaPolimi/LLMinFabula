@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/services/tts.dart';
@@ -14,6 +15,9 @@ enum AppFlow {title, joinOrCreate, join, create, inGame,}
 class GameState extends ChangeNotifier{
   Game? _game;
   Player? _player;
+
+  // Recent victims
+  Queue<Player> victims = Queue<Player>();
 
   AppFlow flow = AppFlow.title;
 
@@ -65,6 +69,7 @@ class GameState extends ChangeNotifier{
     });
   }
 
+  // Server interaction functions
   void confirmVote(int selectedPlayerId) {
     debugPrint("Voted for player $selectedPlayerId");
     // Send vote to server
@@ -76,6 +81,10 @@ class GameState extends ChangeNotifier{
     // maybe reset selection after voting?
     // selectedPlayerId = null;
     notifyListeners();
+  }
+
+  void completeNightReportPhase(){
+    _onTtsCompleted();
   }
 
   //Manage the transitions till the lobby
@@ -104,12 +113,14 @@ class GameState extends ChangeNotifier{
     tts.configureTts();
   }
 
-  void startTts(){
+  void startTts([VoidCallback? onComplete]) {
     if(narratorText == null) return;
 
+    final callback = onComplete ?? _onTtsCompleted;
+    
     tts.speakText(
       narratorText!,
-      onComplete: _onTtsCompleted,
+      onComplete: callback,
     );
   }
 
@@ -212,6 +223,10 @@ class GameState extends ChangeNotifier{
         final startedAt = DateTime.parse(event['started_at']);
         _onPollBegin(event['poll_id'], event['duration'], startedAt);
         break;
+
+      case 'night_victims':
+        _onNightVictimReceived(event['victims_id']);
+        break;
     }
   }
 
@@ -229,8 +244,10 @@ class GameState extends ChangeNotifier{
   }
 
   // Sign all wolf allies
-  void _onWolvesList(List<int> wolvesId){
-    for (var id in wolvesId) {
+  void _onWolvesList(List<dynamic> wolvesId){
+    debugPrint("Received wolves: $wolvesId");
+    final integerIds = wolvesId.cast<int>();
+    for (var id in integerIds) {
       final p = game!.getPlayerById(id);
       if(p != null){
         p.isWolf = true;
@@ -288,6 +305,17 @@ class GameState extends ChangeNotifier{
 
     _startTicker();
     notifyListeners();
+  }
+
+  void _onNightVictimReceived(List<dynamic> victimsId){
+    final integerIds = victimsId.cast<int>();
+    for (var id in integerIds) {
+      final p = game!.getPlayerById(id);
+      if(p != null){
+        p.isDead = true;
+        victims.addFirst(p);
+      }
+    }
   }
 
   //TODO: RIMUOVI

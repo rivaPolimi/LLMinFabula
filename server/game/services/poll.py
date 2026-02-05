@@ -148,21 +148,21 @@ async def end_poll(poll_id: int, game_id: int):
         logger.exception("Error ending poll: %s", e)
 
 
-def record_vote(poll: Poll, voter_id: int, target_id: int):
+async def record_vote(poll: Poll, voter_id: int, target_id: int):
     """
     Save vote in the database
     """
 
-    voter = Player.objects.get(id=voter_id)
-    target = Player.objects.get(id=target_id)
+    voter = await database_sync_to_async(Player.objects.get)(id=voter_id)
+    target = await database_sync_to_async(Player.objects.get)(id=target_id)
 
-    Vote.objects.update_or_create(
+    await database_sync_to_async(Vote.objects.update_or_create)(
         poll = poll,
         voter = voter,
         target = target,
     )
 
-    return check_everybody_voted(poll.game, poll)
+    return await database_sync_to_async(check_everybody_voted)(poll.game, poll)
 
 
 def tally_votes(poll: Poll):
@@ -176,6 +176,12 @@ def tally_votes(poll: Poll):
         return None
     
     return tally
+
+async def tally_votes_async(poll: Poll):
+    """
+    Async version: Count votes for this poll
+    """
+    return await database_sync_to_async(tally_votes)(poll)
 
 def get_result(poll: Poll):
     """
@@ -222,7 +228,8 @@ async def end_poll_by_id(poll_id: int, player: Player = None):
         logger.info("Poll expiry ignored: poll_id=%s not found", poll_id)
         return
     
-    if poll.game.state == States.DISCUSSION and not check_everybody_voted(poll.game, poll):
+    everyone_voted = await database_sync_to_async(check_everybody_voted)(poll.game, poll)
+    if poll.game.state == States.DISCUSSION and not everyone_voted:
         logger.info("Poll extra time: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return GameEngine.start_extra_vote(poll.game, poll)
     

@@ -127,6 +127,8 @@ class TimerBar extends StatelessWidget {
           children: [
             LinearProgressIndicator(
               value: progress,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              minHeight: 10,
               color: remaining.inSeconds < 5 ? Colors.red : const Color.fromRGBO(75, 139, 161, 1),
             ),
           ],

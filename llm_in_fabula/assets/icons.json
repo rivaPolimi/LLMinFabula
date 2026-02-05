@@ -29,6 +29,8 @@
     "distractor": { "material": "dangerous" },
     "raider": { "material": "dangerous" },
     "perimeter_guard": { "material": "dangerous" },
-    "zombie": { "material": "dangerous" }
+    "zombie": { "material": "dangerous" },
+    "headstone": { "material": "church", "custom": "assets/icons/bara.png" },
+    "sign": { "material": "block" }
   }
 }

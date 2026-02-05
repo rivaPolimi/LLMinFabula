@@ -40,6 +40,11 @@ class GameEngine:
         # Generate introduction
         Narrator.gen_introduction(game.id, game.setting)
 
+        # All wolves should know each other
+        wolves = game.get_active_players().filter(role__name="wolf")
+        wolf_ids = [wolf.id for wolf in wolves]
+        notify_wolves(game.id, wolf_ids)
+
         # Notify client
         INTRO_DURATION = 120 # Max duration of introduction screen
         notify_phase_start(game.id, "introduction", INTRO_DURATION)
@@ -121,11 +126,11 @@ class GameEngine:
 
         if target and player:
             # call action handler
-            handler = game.get_action_handler(poll.role.name)
+            handler = game.get_action_handler(poll.role)
             outcome = handler.perform_action(player, target, game)
     
             # send outcome to clients
-            notify_action_outcome(game.id, target, poll.role.name, outcome)
+            notify_action_outcome(game.id, target, poll.role, outcome)
 
         # transition to NIGHT state
         GameEngine._transition(game, "end_action")
@@ -151,7 +156,8 @@ class GameEngine:
         # Narrator generates the report for the night
         Narrator.gen_night_report(game, game.setting, name_killed_players)
         
-        notify_night_victims(game.id, killed_players)
+        if killed_players is not None:
+            notify_night_victims(game.id, killed_players)
         
         notify_phase_start(game.id, "nightReport", NIGHT_REPORT_DURATION)
         start_phase_timer(game.id, "nightReport", NIGHT_REPORT_DURATION)

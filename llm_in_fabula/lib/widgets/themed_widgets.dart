@@ -67,6 +67,40 @@ class ThemedRoleIcon extends StatelessWidget {
   }
 }
 
+/// Widget that displays player status icon (person if alive, eliminated icon if dead, wolf if wolf role)
+class ThemedPlayerStatusIcon extends StatelessWidget {
+  final bool isDead;
+  final bool isWolf;
+  final double? size;
+  final Color? color;
+  final GameTheme? themeOverride;
+  
+  const ThemedPlayerStatusIcon({
+    super.key,
+    required this.isDead,
+    required this.isWolf,
+    this.size,
+    this.color,
+    this.themeOverride,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    final theme = themeOverride ?? context.watch<GameState>().theme;
+    
+    if (isDead) {
+      // Show eliminated icon
+      final eliminatedIconData = theme.getEliminatedIcon();
+      return Icon(eliminatedIconData, size: size, color: color);
+    } else if (isWolf) {
+      return ThemedRoleIcon(baseRole: 'wolf', size: size, color: color,);
+    } else {
+      // Show alive person icon
+      return Icon(Icons.person, size: size, color: color);
+    }
+  }
+}
+
 /// Helper extension to get themed values from context
 extension ThemeContext on BuildContext {
   /// Get themed role name

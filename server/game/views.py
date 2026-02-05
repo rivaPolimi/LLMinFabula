@@ -99,11 +99,6 @@ class StartGameView(APIView):
         # Broadcast that game started
         notify_game_started(game.id)
 
-        # All wolves should know each other
-        wolves = players_in_lobby.filter(role__name="wolf")
-        wolf_ids = [wolf.id for wolf in wolves]
-        notify_wolves(game.id, wolf_ids)
-
         GameEngine.start_game(game)      
 
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)

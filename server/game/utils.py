@@ -23,6 +23,9 @@ def resolve_night(game: Game):
     target_player = game.wolf_target
     killed_players = []
 
+    if target_player is None:
+        return None
+
     # Target does not die if he is protected
     if target_player.is_protected:
         return None

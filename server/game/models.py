@@ -144,7 +144,12 @@ class Game(models.Model):
             from .actions import NoActionHandler
             return NoActionHandler()
         
-        cls = import_string(role.action_class)
+        # If action_class doesn't contain a dot, assume it's in game.actions
+        action_class_path = role.action_class
+        if '.' not in action_class_path:
+            action_class_path = f'game.actions.{action_class_path}'
+        
+        cls = import_string(action_class_path)
         return cls()
 
     

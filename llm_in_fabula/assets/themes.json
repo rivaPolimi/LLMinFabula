@@ -44,7 +44,8 @@
             "name": "Wolf",
             "icon": "wolf"
         }
-      }
+      },
+      "eliminated_icon": "sign"
     },
     {
       "settingName": "classic",
@@ -89,7 +90,8 @@
             "name": "Wolf",
             "icon": "wolf"
         }
-      }
+      },
+      "eliminated_icon": "headstone"
     },
     {
       "settingName": "vampire",
@@ -134,7 +136,8 @@
             "name": "Vampire",
             "icon": "vampire"
         }
-      }
+      },
+      "eliminated_icon": "headstone"
     },
     {
       "settingName": "zombie",
@@ -179,7 +182,8 @@
             "name": "Zombie",
             "icon": "zombie"
         }
-      }
+      },
+      "eliminated_icon": "headstone"
     }
   ]
 }

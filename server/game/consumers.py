@@ -112,27 +112,28 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             poll = await database_sync_to_async(Poll.objects.select_related("game").get)(
                 id=content.get("poll_id")
             )
+
+            await self.reload_db_state()
+
+            if not self.player.role.name == poll.role:
+                await self.send_json({
+                    "type": "Vote error",
+                    "text": "Not allowed",
+                })
+
+            poll_finished = await record_vote(poll, self.player_id, content.get("target"))
+
+            if poll_finished:
+                await end_poll_by_id(poll.id, player=self.player)
+            else:
+                tally = await tally_votes_async(poll)
+                await notify_updated_votes(self.game, poll, tally)
+
         except Poll.DoesNotExist:
             await self.send_json({
                 "type": "Vote error",
                 "text": "Poll not found, vote not registered",
             })
-
-        await self.reload_db_state()
-
-        if not self.player.role.name == poll.role:
-            await self.send_json({
-                "type": "Vote error",
-                "text": "Not allowed",
-            })
-        
-        poll_finished = record_vote(poll, self.player_id, content.get("target"))
-
-        if poll_finished:
-            end_poll_by_id(poll.id, player=self.player)
-        else:
-            tally = tally_votes(poll)
-            await notify_updated_votes(self.game, poll, tally)
 
 #    async def handle_narration_finished(self, content):
 #        from engine import GameEngine
@@ -213,6 +214,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             "type": "role_turn",
             "role": event["role"],
+        })
+
+    async def night_victims(self, event):
+        await self.send_json({
+            "type": "night_victims",
+            "victims_id": event["victims_id"],
         })
 
     async def handle_phase_ack(self, content):

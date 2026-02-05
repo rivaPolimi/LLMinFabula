@@ -4,6 +4,7 @@ import 'package:llm_in_fabula/routers/role_action_router.dart';
 import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
+import 'package:llm_in_fabula/screens/night_report_screen.dart';
 import 'package:llm_in_fabula/screens/role_screen.dart';
 
 class GameRouter extends StatelessWidget {
@@ -40,14 +41,13 @@ class GameRouter extends StatelessWidget {
         return const NarratorIntroScreen();
 
       case GamePhase.nightReport:
-        //TODO: DA IMPLEMENTARE
-        return const CreateJoinScreen();
+        return const NightReportScreen();
 
       case GamePhase.roleAction:
         return RoleActionRouter();
 
       case GamePhase.checkWin:
-        //TODO: DA IMPLEMENTARE
+        // Useless
         return const CreateJoinScreen();
 
       case GamePhase.endGame:

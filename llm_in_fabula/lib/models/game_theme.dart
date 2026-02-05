@@ -32,6 +32,8 @@ const Map<String, IconData> _materialIconLookup = {
   'wb_sunny': Icons.wb_sunny,
   'dark_mode': Icons.dark_mode,
   'circle': Icons.circle,
+  'church': Icons.church,
+  'block': Icons.block,
 };
 
 /// Icon definition loaded from icons.json
@@ -54,10 +56,12 @@ final Map<String, IconDefinition> _iconMap = {};
 class GameTheme {
   final String settingName;
   final Map<String, ThemeElement> roles;
+  final String? eliminatedIcon; // Icon shown when player is eliminated
   
   const GameTheme({
     required this.settingName,
     required this.roles,
+    this.eliminatedIcon,
   });
   
   /// Get themed name for a role
@@ -73,6 +77,7 @@ class GameTheme {
       roles: (json['roles'] as Map<String, dynamic>).map(
         (key, value) => MapEntry(key, ThemeElement.fromJson(value)),
       ),
+      eliminatedIcon: json['eliminated_icon'] as String?,
     );
   }
   
@@ -81,7 +86,15 @@ class GameTheme {
     return {
       'settingName': settingName,
       'roles': roles.map((key, value) => MapEntry(key, value.toJson())),
+      if (eliminatedIcon != null) 'eliminated_icon': eliminatedIcon,
     };
+  }
+  
+  /// Get the icon to show for eliminated players
+  IconData getEliminatedIcon() {
+    if (eliminatedIcon == null) return Icons.person;
+    final def = _iconMap[eliminatedIcon];
+    return def?.iconData ?? Icons.person;
   }
 }
 
