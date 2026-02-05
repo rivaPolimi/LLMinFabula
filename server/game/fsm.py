@@ -33,11 +33,7 @@ class GameStateMachine:
     def start_discussion(self):
         pass
 
-    @state.transition(source=States.DISCUSSION, target=States.EXTRA_VOTE)
-    def start_extra_vote(self):
-        pass
-
-    @state.transition(source=[States.DISCUSSION, States.EXTRA_VOTE], target=States.LYNCH)
+    @state.transition(source=States.DISCUSSION, target=States.LYNCH)
     def end_discussion(self):
         pass
 

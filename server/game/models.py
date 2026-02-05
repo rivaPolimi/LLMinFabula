@@ -37,7 +37,6 @@ class States(models.TextChoices):
     INTRODUCTION = "introduction"
     ROLE_REVEAL = "roleReveal"
     DISCUSSION = "discussion"
-    EXTRA_VOTE = "extraVote"
     LYNCH = "lynching"
     NIGHT = "nightIntro"
     NIGHT_REPORT = "nightReport"

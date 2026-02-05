@@ -26,6 +26,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
     return Consumer<GameState>(builder: (context, gameState, _) {
 
       final players = gameState.game!.players;
+      final isPlayerDead = gameState.player?.isDead ?? false;
 
       return GradientPage(
         child: SafeArea(
@@ -70,7 +71,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                       }
 
                       return GestureDetector(
-                        onTap: () {
+                        onTap: isPlayerDead ? null : () {
                           setState(() {
                             _selectedPlayerId = player.id;
                           });
@@ -119,7 +120,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                   height: 48,
                   width: 250,
                   child: ElevatedButton(
-                    onPressed: _selectedPlayerId == null
+                    onPressed: (_selectedPlayerId == null || isPlayerDead)
                         ? null
                         : () {
                             gameState.confirmVote(_selectedPlayerId!);

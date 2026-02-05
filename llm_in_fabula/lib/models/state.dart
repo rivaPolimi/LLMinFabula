@@ -9,7 +9,7 @@ import 'package:llm_in_fabula/services/http_request_handler.dart';
 import 'package:llm_in_fabula/constants.dart';
 import 'package:llm_in_fabula/models/game_theme.dart';
 
-enum GamePhase {lobby, introduction, roleReveal, discussion, extraVote, lynch, nightIntro, nightReport, roleAction, checkWin, endGame}
+enum GamePhase {lobby, introduction, roleReveal, discussion, lynching, nightIntro, nightReport, roleAction, endGame}
 enum AppFlow {title, joinOrCreate, join, create, inGame,}
 
 class GameState extends ChangeNotifier{
@@ -33,6 +33,7 @@ class GameState extends ChangeNotifier{
 
   Tts tts = Tts();
   String? narratorText;
+  String? mysticText; // Medium or Seer revelations
 
   Timer? _ticker;
 
@@ -216,7 +217,7 @@ class GameState extends ChangeNotifier{
         break;
 
       case 'role_reveal':
-        _onRoleReveal(event['name'], event['description']);
+        _onRoleReveal(event['name'], event['description'], event['original_name']);
         break;
 
       case 'wolves_list':
@@ -236,6 +237,10 @@ class GameState extends ChangeNotifier{
         _onNightVictimReceived(event['victims_id']);
         break;
 
+      case 'lynch_result':
+        _onLynchVictimReceived(event['target_id']);
+        break;
+
       case 'death':
         _onDeath();
         break;
@@ -248,6 +253,10 @@ class GameState extends ChangeNotifier{
           MapEntry(int.parse(key), value as int)
         );
         _onTallyUpdate(tally);
+        break;
+
+      case 'action_outcome':
+        _onActionOutcome(event['target_name'], event['outcome']);
         break;
     }
   }
@@ -306,10 +315,11 @@ class GameState extends ChangeNotifier{
   }
 
   //TODO: non sto usando game_id e original_name
-  void _onRoleReveal(String roleName, String roleDescription){
+  void _onRoleReveal(String roleName, String roleDescription, String originalRoleName){
     debugPrint("Rolename: {$roleName}");
     player!.roleName = roleName;
     player!.roleDescription = roleDescription;
+    player!.originalRoleName = originalRoleName;
 
     notifyListeners();
   }
@@ -340,6 +350,14 @@ class GameState extends ChangeNotifier{
     }
   }
 
+  void _onLynchVictimReceived(int id){
+    final p = game!.getPlayerById(id);
+    if (p != null){
+      p.isDead = true;
+      victims.add(p);
+    }
+  }
+
   void _onDeath(){
     player!.isDead = true;
   }
@@ -354,6 +372,10 @@ class GameState extends ChangeNotifier{
     }
 
     notifyListeners();
+  }
+
+  void _onActionOutcome(String name, String outcome) {
+    mysticText = '$name is a $outcome';
   }
 
   //TODO: RIMUOVI

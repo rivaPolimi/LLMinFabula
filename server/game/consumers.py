@@ -222,6 +222,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "victims_id": event["victims_id"],
         })
 
+    async def lynch_result(self, event):
+        await self.send_json({
+            "type": "lynch_result",
+            "target_id": event["target_id"],
+            "target_name": event["target_name"],
+        })
+
     async def handle_phase_ack(self, content):
         """
         Handle phase acknowledgment from client.
