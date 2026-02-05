@@ -151,7 +151,7 @@ class GameEngine:
         killed_players = resolve_night(game)
         name_killed_players = [killed_player.nickname for killed_player in killed_players] if killed_players else []
 
-        NIGHT_REPORT_DURATION = 30
+        NIGHT_REPORT_DURATION = 300
 
         # Narrator generates the report for the night
         Narrator.gen_night_report(game, game.setting, name_killed_players)
