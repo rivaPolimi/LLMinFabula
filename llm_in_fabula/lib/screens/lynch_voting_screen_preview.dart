@@ -105,8 +105,8 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.8,
+                    mainAxisSpacing: 12, // Reduced from 16
+                    childAspectRatio: 0.9, // Adjusted from 0.8
                   ),
                   itemBuilder: (context, index) {
                     final player = _players[index];
@@ -119,11 +119,11 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
                         children: [
                           Image.asset(
                             'assets/icons/bara.png', // Tombstone image
-                            width: 60,
-                            height: 60,
+                            width: 50, // Reduced from 60
+                            height: 50, // Reduced from 60
                             fit: BoxFit.contain,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4), // Reduced from 8
                           Text(
                             player.nickname,
                             style: const TextStyle(
@@ -150,8 +150,8 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 60,
-                            height: 60,
+                            width: 50, // Reduced from 60
+                            height: 50, // Reduced from 60
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFF4B8B9A), // Teal color
@@ -165,10 +165,10 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
                             child: const Icon(
                               Icons.person,
                               color: Color(0xFF003943), // Darker Teal
-                              size: 40,
+                              size: 35, // Reduced from 40
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4), // Reduced from 8
                           Text(
                             player.nickname,
                             style: const TextStyle(
