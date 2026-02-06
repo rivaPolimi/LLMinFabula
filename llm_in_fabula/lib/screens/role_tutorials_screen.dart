@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/models/game_theme.dart';
 import 'package:llm_in_fabula/models/state.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 import 'package:provider/provider.dart';
 
 class RoleTutorialsScreen extends StatelessWidget {
-  const RoleTutorialsScreen({super.key});
+  final GameTheme? themeOverride;
+  const RoleTutorialsScreen({this.themeOverride, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.watch<GameState>().theme;
-    final roles = theme.roles.entries.toList();
+    final theme = themeOverride ?? context.watch<GameState>().theme;
+    final roles = GameThemes.getTheme('classic').roles.entries.toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF003943),
@@ -46,11 +49,12 @@ class RoleTutorialsScreen extends StatelessWidget {
                 separatorBuilder: (ctx, idx) => const SizedBox(height: 16),
                 itemBuilder: (ctx, index) {
                   final roleEntry = roles[index];
-                  final role = roleEntry.value;
+                  final baseRole = roleEntry.key;
 
                   return _buildRoleCard(
-                    name: role.name,
-                    icon: role.icon,
+                    name: theme.getRoleName(baseRole),
+                    icon: ThemedRoleIcon(baseRole: baseRole, themeOverride: theme,),
+                    description: theme.getRoleDescription(baseRole),
                   );
                 },
               ),
@@ -63,7 +67,8 @@ class RoleTutorialsScreen extends StatelessWidget {
 
   Widget _buildRoleCard({
     required String name,
-    required IconData icon,
+    required ThemedRoleIcon icon,
+    required String description,
   }) {
     // Altezza del contenitore (card)
     const double cardHeight = 80;
@@ -99,6 +104,14 @@ class RoleTutorialsScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: Color(0xFF003943),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
               ],
             ),
           ),
@@ -116,10 +129,7 @@ class RoleTutorialsScreen extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Icon(
-                icon,
-                size: circleSize * 0.65,
-              ),
+              child: icon,
             ),
           ),
         ],

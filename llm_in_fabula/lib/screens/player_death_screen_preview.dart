@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:llm_in_fabula/widgets/themed_widgets.dart';
 
 class PlayerDeathScreenPreview extends StatelessWidget {
   const PlayerDeathScreenPreview({super.key});
@@ -31,12 +32,7 @@ class PlayerDeathScreenPreview extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                'assets/icons/bara.png',
-                width: 180,
-                height: 180,
-                fit: BoxFit.contain,
-              ),
+              ThemedPlayerStatusIcon(isDead: true, isWolf: false, size: 180,),
               const SizedBox(height: 20),
               Text(
                 deadPlayerName,

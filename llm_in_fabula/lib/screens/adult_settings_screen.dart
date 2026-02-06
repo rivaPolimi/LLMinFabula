@@ -130,7 +130,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RoleTutorialsScreen(),
+                                builder: (_) => RoleTutorialsScreen(themeOverride: theme,),
                               ),
                             );
                           },

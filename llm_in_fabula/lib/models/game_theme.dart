@@ -70,6 +70,9 @@ class GameTheme {
   /// Get themed icon for a role
   IconData getRoleIcon(String baseRole) => roles[baseRole]?.icon ?? Icons.person;
 
+  /// Get themed description for a role
+  String getRoleDescription(String baseRole) => roles[baseRole]?.description ?? '';
+
   /// Create GameTheme from JSON
   factory GameTheme.fromJson(Map<String, dynamic> json) {
     return GameTheme(
@@ -96,6 +99,12 @@ class GameTheme {
     final def = _iconMap[eliminatedIcon];
     return def?.iconData ?? Icons.person;
   }
+  
+  /// Get the full icon definition for eliminated players (includes custom path if available)
+  IconDefinition? getEliminatedIconDefinition() {
+    if (eliminatedIcon == null) return null;
+    return _iconMap[eliminatedIcon];
+  }
 }
 
 /// Represents a themed element (name + icon)
@@ -104,12 +113,14 @@ class ThemeElement {
   final IconData icon;
   final String iconName; // For material icons
   final String? customIconPath; // For custom image icons (PNG, SVG, etc.)
+  final String? description; // Optional role description
   
   const ThemeElement({
     required this.name,
     required this.icon,
     String? iconName,
     this.customIconPath,
+    this.description,
   }) : iconName = iconName ?? 'circle';
   
   /// Check if this element uses a custom icon
@@ -119,6 +130,7 @@ class ThemeElement {
   factory ThemeElement.fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String;
     final icon = json['icon'];
+    final description = json['description'] as String?;
 
     if (icon is String) {
       final def = _iconMap[icon];
@@ -128,6 +140,7 @@ class ThemeElement {
         icon: def?.iconData ?? fallbackIcon,
         iconName: icon,
         customIconPath: def?.customPath,
+        description: description,
       );
     } else if (icon is Map<String, dynamic>) {
       final materialIconName = icon['material'] as String? ?? 'circle';
@@ -137,6 +150,7 @@ class ThemeElement {
         icon: _materialIconLookup[materialIconName] ?? Icons.circle,
         iconName: materialIconName,
         customIconPath: customPath,
+        description: description,
       );
     }
 
@@ -144,6 +158,7 @@ class ThemeElement {
       name: name,
       icon: Icons.circle,
       iconName: 'circle',
+      description: description,
     );
   }
   
@@ -152,6 +167,7 @@ class ThemeElement {
     if (customIconPath != null) {
       return {
         'name': name,
+        if (description != null) 'description': description,
         'icon': {
           'material': iconName,
           'custom': customIconPath,
@@ -160,6 +176,7 @@ class ThemeElement {
     }
     return {
       'name': name,
+      if (description != null) 'description': description,
       'icon': iconName,
     };
   }
@@ -276,6 +293,11 @@ class GameThemes {
     }
     
     return _loadedThemes[settingName.toLowerCase()] ?? medieval;
+  }
+
+  /// Get themed role description by setting and base role
+  static String getRoleDescription(String settingName, String baseRole) {
+    return getTheme(settingName).getRoleDescription(baseRole);
   }
   
   /// List of all available theme names

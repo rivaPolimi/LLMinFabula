@@ -24,18 +24,6 @@ sequenceDiagram
         Server ->> Timer: cancel
     else Timeout
         Timer -->> Server: timeout
-        Server ->>+ GameGroup: notify_game_phase(extra_time)
-        GameGroup -->>- Player: WS Event: extra_time
-        Server ->> Timer: extend (timer, 30s)
-        loop for each player who didn't vote before
-            Player ->> Server: vote
-        end
-
-        alt  All votes received in time
-            Server ->> Timer: cancel
-        else Timeout
-            Timer -->> Server: timeout
-        end
     end
 
     Server ->> Server: compute_result(poll)
