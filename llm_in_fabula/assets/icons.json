@@ -1,7 +1,7 @@
 {
   "icons": {
     "villager": { "material": "person", "custom": "assets/icons/villager.png"},
-    "wolf": { "material": "pets", "custom": "assets/icons/wolf_icon.png" },
+    "wolf": { "material": "pets", "custom": "assets/icons/wolf.png" },
     "seer": { "material": "visibility", "custom": "assets/icons/seer.png" },
     "hunter": { "material": "architecture", "custom": "assets/icons/hunter.png" },
     "madman": { "material": "science", "custom": "assets/icons/madman.png" },
@@ -19,7 +19,7 @@
     "seductress": { "material": "dangerous", "custom": "assets/icons/seductress.png" },
     "nightstalker": { "material": "dangerous", "custom": "assets/icons/nightstalker.png" },
     "holy_protector": { "material": "dangerous", "custom": "assets/icons/holy_protector.png" },
-    "vampire": { "material": "dangerous", "custom": "assets/icons/vampire_icon.png" },
+    "vampire": { "material": "dangerous", "custom": "assets/icons/vampire.png" },
     "survivor": { "material": "dangerous", "custom": "assets/icons/survivor.png" },
     "contaminated": { "material": "dangerous", "custom": "assets/icons/contaminated.png" },
     "mimic": { "material": "dangerous" },
@@ -29,7 +29,7 @@
     "distractor": { "material": "dangerous", "custom": "assets/icons/distractor.png" },
     "raider": { "material": "dangerous", "custom": "assets/icons/raider.png" },
     "perimeter_guard": { "material": "dangerous", "custom": "assets/icons/perimeter_guard.png" },
-    "zombie": { "material": "dangerous", "custom": "assets/icons/zombie_icon.png" },
+    "zombie": { "material": "dangerous", "custom": "assets/icons/zombie.png" },
     "headstone": { "material": "church", "custom": "assets/icons/bara.png" },
     "sign": { "material": "block" }
   }
