@@ -103,6 +103,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _nicknameController,
+                    style: TextStyle(color: Color.fromRGBO(9, 41, 52, 1),),
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding:
@@ -135,6 +136,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
                       Expanded(
                         child: TextFormField(
                           controller: _passwordController,
+                          style: TextStyle(color: Color.fromRGBO(9, 41, 52, 1),),
                           decoration: const InputDecoration(
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(
@@ -171,7 +173,6 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
                         if (!_formKey.currentState!.validate()) return;
 
                         final gameState = context.read<GameState>();
-                        //TODO: rimuovi final navigator = Navigator.of(context);
                         final messenger = ScaffoldMessenger.of(context);
 
                         setState(() {

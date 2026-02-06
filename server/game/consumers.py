@@ -90,7 +90,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "type": "role_reveal",
             "original_name": self.player.role.name,
             "name": setting.alternative_role_names[self.player.role.name],
-            "description": '', #setting.alternative_role_descriptions[self.player.role.name], TODO: da sbloccare
+            "description": setting.alternative_role_descriptions[self.player.role.name],
             "game_id": event["game_id"],
         })
 

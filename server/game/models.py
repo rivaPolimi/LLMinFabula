@@ -55,6 +55,7 @@ class Role(models.Model):
 class Setting(models.Model):
     name = models.CharField(max_length=50)
     alternative_role_names = models.JSONField()
+    alternative_role_descriptions = models.JSONField()
     initial_prompt = models.TextField()
 
 class Game(models.Model):
