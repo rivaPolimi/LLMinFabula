@@ -5,6 +5,7 @@ class Player {
   bool isDead = false;
   bool isWolf = false;
   late final String roleName;
+  late final String originalRoleName; // Name of role in the classic version
   late final String roleDescription;
 
   Player({required this.id, required this.nickname, this.isAdmin = false, this.isDead = false});

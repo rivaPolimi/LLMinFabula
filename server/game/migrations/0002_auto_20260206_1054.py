@@ -44,6 +44,19 @@ def seed_data(apps, schema_editor):
                 "guard": "guard", 
                 "wolf": "wolf"
             },
+            "alternative_role_descriptions": {
+                "villager": "A friendly helper who lives in the village. The Villager has no special magic powers. During the day, they talk with everyone, listen carefully, share ideas, and vote to decide who might be causing trouble. At night, the Villager simply rests. Their most important tools are kindness, attention, and working together with friends.",
+                "madman": "A very silly and confusing character who likes to act strange. The Madman looks like a normal Villager and has no night powers. Their goal is to make the village choose them during the day. If the village picks them, they win the game. They must act oddly without clearly saying who they are.",
+                "ghost": "",
+                "copycat": "",
+                "jailer": "",
+                "medium": "A gentle listener who can hear stories from players who are no longer in the game. Each night, the Medium may choose one of those players and learn what role they had. During the day, the Medium can share this helpful information to guide the village and make better choices.",
+                "seer": "A wise character with special sight. Each night, the Seer chooses one player and learns what role they truly have. This helps the village understand who is friendly and who is sneaky. The Seer must be careful about when to share this knowledge so they can keep helping for as long as possible.",
+                "courtesan": "A cheerful protector who keeps others safe with kindness and attention. Each night, the Courtesan chooses one player to visit, and that player is protected from nighttime trouble. Usually, she cannot choose the same player two nights in a row. Her choices help the village stay safe.",
+                "hunter": "A brave and watchful villager. If the Hunter has to leave the game, they may choose one other player to leave with them right away. This special ability happens only once and can change the game in surprising ways. Until then, the Hunter joins discussions like everyone else.",
+                "guard": "A careful protector who watches over the village. Each night, the Guard chooses one player to keep safe from nighttime tricks. Depending on the rules, the Guard may not be able to protect the same player every night. The Guard does not know who might be causing trouble.",
+                "wolf": "A sneaky character pretending to be friendly. During the day, the Wolf talks and votes like everyone else, trying not to be noticed. At night, the Wolves secretly choose one player to remove from the game. Wolves win when they have more Wolves than Villagers left."
+            },
             "initial_prompt": 
                 "You are the Gentle Old Storyteller of the peaceful village in Lupus in Fabula." +
                 "Your voice is warm, friendly, whimsical—like a grandparent reading a bedtime story." 
@@ -81,6 +94,19 @@ def seed_data(apps, schema_editor):
                 "hunter": "hunter", 
                 "guard": "guard", 
                 "wolf": "wolf"
+            },
+            "alternative_role_descriptions": {
+                "villager": "A simple inhabitant of the village with no special abilities. During the day, the Villager participates in discussions, shares suspicions, and votes to decide who should be lynched. At night, the Villager has no actions and is vulnerable to attacks. The Villager's strength lies entirely in logic, persuasion, and cooperation with other players to identify and eliminate the Wolves.",
+                "madman": "An unstable soul whose goal is not to survive, but to be executed by the village. The Madman appears as a normal Villager and has no night actions. They win immediately if they are lynched during the day. If killed by Wolves or other effects, they lose. Their challenge is to act suspicious enough to be voted out without revealing their true intention.",
+                "ghost": "", 
+                "copycat": "",
+                "jailer": "",
+                "medium": "A mystic who can commune with the dead. Each night, the Medium may choose one player who has already died and learn their true role. This information can be shared during the day to guide the village. The Medium cannot contact living players at night and gains no information if no one has died yet.",
+                "seer": "A visionary gifted with supernatural insight. Each night, the Seer chooses one living player and learns their true role, whether good or evil. The Seer must carefully decide when and how to reveal this information, as they are a prime target for the Wolves once suspected.",
+                "courtesan": "A charming protector who uses allure rather than force. Each night, the Courtesan selects one player to spend the night with, preventing that player from being targeted or affected by night actions. Typically, the same player cannot be chosen on consecutive nights. Her protection can save key roles but requires careful prediction.",
+                "hunter": "A skilled fighter always ready for a final strike. If the Hunter is killed, whether by lynching or by Wolves, they may immediately choose one other player to die with them. This ability triggers only upon death and can dramatically change the balance of the game.",
+                "guard": "A vigilant defender sworn to protect the village. Each night, the Guard chooses one player to protect from being eliminated by the Wolves. Depending on the rules, the Guard may or may not be allowed to protect the same player on consecutive nights. The Guard does not learn who the Wolves target.",
+                "wolf": "A hidden predator disguised among the villagers. Each night, the Wolves collectively choose one player to eliminate. During the day, they must blend in, lie convincingly, and manipulate votes to avoid suspicion. The Wolves win when they equal or outnumber the remaining villagers."
             },
             "initial_prompt": 
                 "You are the Old Narrator of the village in Lupus in Fabula." + 
@@ -122,6 +148,19 @@ def seed_data(apps, schema_editor):
                 "guard": "holy protector", 
                 "wolf": "vampire"
             },
+            "alternative_role_descriptions": {
+                "villager": "An ordinary mortal living under the shadow of the night. The Townsfolk has no special abilities and takes no actions during the night. During the day, they participate in discussions, share suspicions, and vote to execute a suspected Vampire or Thrall. Their only weapons are reason, intuition, and cooperation with other players.",
+                "madman": "A mortal secretly bound to dark forces, craving a public execution. The Thrall appears to be a normal Townsfolk and has no night actions. They immediately win if they are executed by the mortals during the day. If eliminated at night by Vampires or other effects, they lose. Their goal is to act suspicious enough to be condemned.",
+                "ghost": "",
+                "copycat": "",
+                "jailer": "",
+                "medium": "A mystic who hears whispers from beyond the grave. Each night, the Gravecaller may choose one dead player and learn their true role. This knowledge can be revealed during the day to guide the town. If no one has died yet, the Gravecaller gains no information.",
+                "seer": "A prophetic soul guided by lunar visions. Each night, the Moonseer selects one living player and learns their true role. This power is crucial for uncovering Vampires, but makes the Moonseer a high-value target once suspected. Careful timing and deception are key to survival.",
+                "courtesan": "A master of charm who shields others through distraction. Each night, the Seductress chooses one player to enchant, preventing them from being affected by night actions, including Vampire attacks. Usually, the same player cannot be chosen on consecutive nights. Her protection relies on anticipation rather than certainty.",
+                "hunter": "A relentless predator of the dark. When the Nightstalker is eliminated, whether by execution or by Vampires, they may immediately choose one other player to die with them. This ability triggers only upon death and can dramatically shift the balance between mortals and monsters.",
+                "guard": "A devout guardian wielding sacred wards. Each night, the Holy Protector chooses one player to protect from being drained by Vampires. Depending on the rules, the same player may not be protected on consecutive nights. The Holy Protector does not learn whom the Vampires targeted.",
+                "wolf": "An immortal creature of the night hiding among mortals. Each night, the Vampires collectively choose one player to drain of blood, eliminating them. During the day, they must deceive, manipulate, and blend in to avoid execution. Vampires win when they equal or outnumber the remaining mortals."
+            },
             "initial_prompt":
                 "You are the Ancient Chronicler of the Night, an old narrator who has wandered the shadowed realms for centuries. " +
                 "Your voice is mellow and echoing, like a whisper carried through moonlit crypts. " +
@@ -158,6 +197,19 @@ def seed_data(apps, schema_editor):
                 "hunter": "raider", 
                 "guard": "perimeter guard", 
                 "wolf": "zombie"
+            },
+            "alternative_role_descriptions": {
+                "villager": "An ordinary human struggling to stay alive in a world overrun by the undead. The Survivor has no special abilities and takes no actions at night. During the day, they discuss events, share suspicions, and vote to execute someone believed to be infected. Their survival depends entirely on teamwork, observation, and sound judgment.",
+                "madman": "A secretly infected individual who seeks exposure rather than survival. The Contaminated appears to be a normal Survivor and has no night actions. They immediately win if executed by the humans during the day. If eliminated at night by Zombies or other effects, they lose. Their aim is to appear dangerous enough to be voted out.",
+                "ghost": "",
+                "copycat": "",
+                "jailer": "",
+                "medium": "A sensitive soul able to hear echoes of the dead. Each night, the Spirit Listener may choose one player who has died and learn their true role. This information can be revealed during the day to help the Survivors identify threats. If no one has died yet, no information is gained.",
+                "seer": "A vigilant observer trained to spot signs of infection. Each night, the Tracker selects one living player and learns their true nature, such as whether they are human or a Zombie. This knowledge is powerful but makes the Tracker a likely target once discovered.",
+                "courtesan": "A clever manipulator who keeps danger at bay through diversion. Each night, the Distractor chooses one player to occupy, preventing them from being affected by night actions, including infection. Typically, the same player cannot be chosen on consecutive nights. Their protection relies on prediction and timing.",
+                "hunter": "A hardened fighter who refuses to go down alone. When the Raider is eliminated, either by execution or infection, they may immediately choose one other player to die with them. This final act can remove a Zombie or a key Survivor, dramatically impacting the game.",
+                "guard": "A watchful defender tasked with holding back the outbreak. Each night, the Perimeter Guard selects one player to protect from being infected by Zombies. Depending on the rules, the same player may not be guarded on consecutive nights. The Guard does not learn who the Zombies targeted.",
+                "wolf": "A mindless horror hiding among the living. Each night, the Zombies collectively choose one human to infect, removing them from play. During the day, they must conceal their nature and influence votes to spread chaos. Zombies win when they equal or outnumber the remaining Survivors."
             },
             "initial_prompt":
                 "You are the Weathered Survivor, an old narrator who has witnessed the world crumble under the staggering footsteps of the undead. "+

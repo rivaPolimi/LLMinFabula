@@ -20,7 +20,7 @@ class LynchResultsScreen extends StatelessWidget {
         final results = voteCounts.entries.map((entry) {
           // This is a bit of a hack, we need a way to get the player nickname from the ID
           // For now, we'll just show the ID
-          return _VoteResult('Player ${entry.key}', entry.value);
+          return _VoteResult(state.game!.getPlayerById(entry.key)!.nickname, entry.value);
         }).toList();
 
         // Sort the results by vote count in descending order

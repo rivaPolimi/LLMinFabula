@@ -220,10 +220,11 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _nicknameController,
+                    style: TextStyle(color: Color.fromRGBO(9, 41, 52, 1),),
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       filled: true,
                       fillColor: Color(0xFFDCC8A0),
                       border: OutlineInputBorder(
@@ -252,6 +253,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _passwordController,
+                          style: TextStyle(color: Color.fromRGBO(9, 41, 52, 1),),
                           decoration: const InputDecoration(
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(

@@ -72,8 +72,18 @@ class GameEngine:
         (ROLE_REVEAL or CHECK_WIN) -> NIGHT
         """
 
+        # Update night counter and reset targets
         game.night_counter += 1
+        game.wolf_target = None
+        game.courtesan_target = None
+        game.hunter_target = None
+        game.jailer_target = None
+        game.guard_target = None
+        game.lynch_target = None
+        game.current_turn_role = None
         GameEngine._transition(game, "begin_night")
+
+        game.save()
 
         NIGHT_INTRO_DURATION = 45
 
@@ -129,8 +139,9 @@ class GameEngine:
             handler = game.get_action_handler(poll.role)
             outcome = handler.perform_action(player, target, game)
     
-            # send outcome to clients
-            notify_action_outcome(game.id, target, poll.role, outcome)
+            # send outcome to clients if medium or seer acted
+            if poll.role in ["medium", "seer"]:
+                notify_action_outcome(game.id, target, poll.role, outcome) 
 
         # transition to NIGHT state
         GameEngine._transition(game, "end_action")
@@ -200,29 +211,10 @@ class GameEngine:
         GameEngine._transition(game, "start_discussion")
 
     @staticmethod
-    def start_extra_vote(game: Game, poll: Poll):
-        """
-        If players did not vote before the timer expires start an extra voting time.
-        DISCUSSION -> EXTRA_VOTE
-        """
-
-        # If timer expired spur players to vote
-        extra_duration = 30
-        poll.duration = extra_duration
-        start_poll_timer(poll)
-        poll.save()
-
-        # Notify extra time
-        notify_start_extra_time(game, extra_duration)
-
-        # Handle transition
-        GameEngine._transition(game, "start_extra_vote")
-
-    @staticmethod
     def end_discussion(game: Game, poll: Poll):
         """
         Close the discussion poll.
-        (DISCUSSION or EXTRA_VOTE) -> LYNCH
+        DISCUSSION -> LYNCH
         """
 
         # Set lynch target
@@ -245,12 +237,13 @@ class GameEngine:
             Narrator.gen_lynch_story(game, game.setting, "nobody", False)
         else:
             kill_player(game, game.lynch_target)
+            notify_lynch_outcome(game.id, game.lynch_target)
             Narrator.gen_lynch_story(game, game.setting, game.lynch_target.nickname, True)
 
         LYNCH_DURATION = 60
         
-        notify_phase_start(game.id, "lynch", LYNCH_DURATION)
-        start_phase_timer(game.id, "lynch", LYNCH_DURATION)
+        notify_phase_start(game.id, "lynching", LYNCH_DURATION)
+        start_phase_timer(game.id, "lynching", LYNCH_DURATION)
 
     @staticmethod
     def end_game(game: Game, winners: list[Player]):
@@ -269,15 +262,15 @@ class GameEngine:
         else:
             reason = "Villagers killed all wolves"
 
+        # Handle transition BEFORE deleting the game
+        GameEngine._transition(game, "end_game")
+
         # Send winners to clients
         handle_win(game, winners)
 
         # Tell the story with the narrator
         Narrator.gen_story_end(game, game.setting, winners_name, reason)
         notify_phase_start(game.id, "endGame", 0)
-
-        # Handle transition
-        GameEngine._transition(game, "end_game")
 
     @staticmethod
     @transaction.atomic

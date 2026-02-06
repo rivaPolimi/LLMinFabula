@@ -57,6 +57,7 @@ class ThemedRoleIcon extends StatelessWidget {
         color: color,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to material icon if image fails to load
+          debugPrint("Fallback icon loaded: $error");
           return Icon(element.icon, size: size, color: color);
         },
       );
@@ -89,9 +90,29 @@ class ThemedPlayerStatusIcon extends StatelessWidget {
     final theme = themeOverride ?? context.watch<GameState>().theme;
     
     if (isDead) {
-      // Show eliminated icon
-      final eliminatedIconData = theme.getEliminatedIcon();
-      return Icon(eliminatedIconData, size: size, color: color);
+      // Show eliminated icon (custom or material)
+      final eliminatedIconKey = theme.eliminatedIcon;
+      if (eliminatedIconKey != null) {
+        final eliminatedIconDef = theme.getEliminatedIconDefinition();
+        
+        // Use custom icon if available
+        if (eliminatedIconDef?.customPath != null) {
+          return Image.asset(
+            eliminatedIconDef!.customPath!,
+            width: size,
+            height: size,
+            color: color,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback to material icon if image fails to load
+              debugPrint("Fallback eliminated icon loaded: $error");
+              return Icon(theme.getEliminatedIcon(), size: size, color: color);
+            },
+          );
+        }
+      }
+      
+      // Use material icon
+      return Icon(theme.getEliminatedIcon(), size: size, color: color);
     } else if (isWolf) {
       return ThemedRoleIcon(baseRole: 'wolf', size: size, color: color,);
     } else {

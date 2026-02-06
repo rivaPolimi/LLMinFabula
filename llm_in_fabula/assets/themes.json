@@ -6,42 +6,42 @@
       "roles": {
         "villager": {
             "name": "Villager",
+            "description": "Has no special powers, only discussion and voting.",
             "icon": "villager"
         },
         "madman": {
             "name": "Madman",
+            "description": "Wins if they get banned from the village by votation.",
             "icon": "madman"
-        },
-        "copycat": {
-            "name": "Copycat",
-            "icon": "copycat"
-        },
-        "jailer": {
-            "name": "Jailer",
-            "icon": "jailer"
         },
         "medium": {
             "name": "Medium",
+            "description": "Can communicate telepatically with a banned player to learn their role.",
             "icon": "medium"
         },
         "seer": {
             "name": "Seer",
+            "description": "Each night can discover the true role of one player.",
             "icon": "seer"
         },
         "courtesan": {
             "name": "Courtesan",
+            "description": "Every night she keeps a player company, protecting them.",
             "icon": "courtesan"
         },
         "hunter": {
             "name": "Hunter",
+            "description": "When eliminated, can choose one player to take with him.",
             "icon": "hunter"
         },
         "guard": {
             "name": "Guard",
+            "description": "Each night protects one player from being eliminated.",
             "icon": "guard"
         },
         "wolf": {
             "name": "Wolf",
+            "description": "Each night chooses a villager to eliminate.",
             "icon": "wolf"
         }
       },
@@ -52,42 +52,42 @@
       "roles": {
         "villager": {
             "name": "Villager",
+            "description": "Has no special powers, only discussion and voting.",
             "icon": "villager"
         },
         "madman": {
             "name": "Madman",
+            "description": "Wins if they get lynched by the village.",
             "icon": "madman"
-        },
-        "copycat": {
-            "name": "Copycat",
-            "icon": "copycat"
-        },
-        "jailer": {
-            "name": "Jailer",
-            "icon": "jailer"
         },
         "medium": {
             "name": "Medium",
+            "description": "Can communicate with the spirit of a dead player to learn their role.",
             "icon": "medium"
         },
         "seer": {
             "name": "Seer",
+            "description": "Each night can discover the true role of one player.",
             "icon": "seer"
         },
         "courtesan": {
             "name": "Courtesan",
+            "description": "Each night she charms a player, protecting them.",
             "icon": "courtesan"
         },
         "hunter": {
             "name": "Hunter",
+            "description": "When killed can choose one player to take down with them.",
             "icon": "hunter"
         },
         "guard": {
             "name": "Guard",
+            "description": "Each night protects one player from being eliminated.",
             "icon": "guard"
         },
         "wolf": {
             "name": "Wolf",
+            "description": "Each night chooses a villager to eliminate.",
             "icon": "wolf"
         }
       },
@@ -98,42 +98,42 @@
       "roles": {
         "villager": {
             "name": "Townsfolk",
+            "description": "Has no special powers, only discussion and voting.",
             "icon": "townsfolk"
         },
         "madman": {
             "name": "Thrall",
+            "description": "Wins if executed by mortals.",
             "icon": "thrall"
-        },
-        "copycat": {
-            "name": "Bloody Mimic",
-            "icon": "bloody_mimic"
-        },
-        "jailer": {
-            "name": "Crypt Warden",
-            "icon": "crypt_warden"
         },
         "medium": {
             "name": "Gravecaller",
+            "description": "Can communicate with the spirit of a dead player to learn their role.",
             "icon": "gravecaller"
         },
         "seer": {
             "name": "Moonseer",
+            "description": "Each night can discover the true role of one player.",
             "icon": "moonseer"
         },
         "courtesan": {
             "name": "Seductress",
+            "description": "Each night she charms a player, protecting them.",
             "icon": "seductress"
         },
         "hunter": {
             "name": "Nightstalker",
+            "description": "When eliminated, can choose one player to take down with him.",
             "icon": "nightstalker"
         },
         "guard": {
             "name": "Holy Protector",
+            "description": "Each night protects one player from being drained.",
             "icon": "holy_protector"
         },
         "wolf": {
             "name": "Vampire",
+            "description": "Each night chooses a mortal to drain blood.",
             "icon": "vampire"
         }
       },
@@ -144,42 +144,42 @@
       "roles": {
         "villager": {
             "name": "Survivor",
+            "description": "Has no special powers, only discussion and voting.",
             "icon": "survivor"
         },
         "madman": {
             "name": "Contaminated",
+            "description": "Wins if executed by mortals.",
             "icon": "contaminated"
-        },
-        "copycat": {
-            "name": "Mimic",
-            "icon": "mimic"
-        },
-        "jailer": {
-            "name": "Barricade Warden",
-            "icon": "barricade_warden"
         },
         "medium": {
             "name": "Spirit Listener",
+            "description": "Can communicate with the spirit of a dead player to learn their role.",
             "icon": "spirit_listener"
         },
         "seer": {
             "name": "Tracker",
+            "description": "Each night can discover the true nature of one player.",
             "icon": "tracker"
         },
         "courtesan": {
             "name": "Distractor",
+            "description": "Each night she charms a player, protecting them.",
             "icon": "distractor"
         },
         "hunter": {
             "name": "Raider",
+            "description": "When eliminated, can choose one player to take down with him.",
             "icon": "raider"
         },
         "guard": {
             "name": "Perimeter Guard",
+            "description": "Each night protects one player from infection.",
             "icon": "perimeter_guard"
         },
         "wolf": {
             "name": "Zombie",
+            "description": "Each night infects one human.",
             "icon": "zombie"
         }
       },

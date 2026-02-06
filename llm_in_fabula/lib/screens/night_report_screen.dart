@@ -97,7 +97,7 @@ class _NightReportScreenState extends State<NightReportScreen> {
           height: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/play_background.png'),
+              image: AssetImage('assets/images/day_background.png'),
               fit: BoxFit.cover,
             ),
           ),

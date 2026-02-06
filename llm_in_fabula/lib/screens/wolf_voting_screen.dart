@@ -27,11 +27,20 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
       // Filter out non-votable players
       final currentPlayer = state.player!;
       final votablePlayers = state.game!.players.where((p) {
-        // Can't vote for yourself, dead players, or other wolves.
-        // This assumes roleName is available for all players if you are a wolf.
-        return !p.isDead &&
+        if (currentPlayer.isWolf) {
+          // Can't vote for yourself, dead players, or other wolves.
+          return !p.isDead &&
             p.id != currentPlayer.id &&
             !p.isWolf;
+        } else if (currentPlayer.originalRoleName == 'medium') {
+          // Medium can contact only dead people
+          return p.isDead &&
+            p.id != currentPlayer.id;
+        } else {
+          // Everybody else cannot vote for themselves or dead players.
+          return !p.isDead &&
+            p.id != currentPlayer.id;
+        }
       }).toList();
 
       return GradientPage(

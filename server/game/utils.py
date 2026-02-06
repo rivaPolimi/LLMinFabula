@@ -55,7 +55,8 @@ def kill_player(game: Game, player: Player):
     player.is_dead = True
     player.is_protected = False
     ghost = Role.objects.filter(name = "ghost").first()
-    player.role = ghost
+    if ghost:
+        player.role = ghost
     player.save()
 
     notify_player_eliminated(game.id, player.id)

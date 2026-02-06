@@ -122,11 +122,10 @@ async def end_poll(poll_id: int, game_id: int):
     
     from ..engine import GameEngine
     
-    # Check if we need extra voting time
-    everyone_voted = await retry_on_db_lock_async(check_everybody_voted, game, poll)
-    if game.state == "discussion" and not everyone_voted:
-        logger.info("Poll extra time: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
-        await retry_on_db_lock_async(GameEngine.start_extra_vote, game, poll)
+    logger.info("Poll timer expired: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
+    
+    if poll.expired:
+        logger.info("Poll already expired: game_id=%s poll_id=%s", game_id, poll_id)
         return
     
     # Mark as expired and handle (with retry)
@@ -227,11 +226,6 @@ async def end_poll_by_id(poll_id: int, player: Player = None):
     except Poll.DoesNotExist:
         logger.info("Poll expiry ignored: poll_id=%s not found", poll_id)
         return
-    
-    everyone_voted = await database_sync_to_async(check_everybody_voted)(poll.game, poll)
-    if poll.game.state == States.DISCUSSION and not everyone_voted:
-        logger.info("Poll extra time: game_id=%s poll_id=%s", poll.game_id, poll.id)
-        return GameEngine.start_extra_vote(poll.game, poll)
     
     # If poll already finished do not count the vote
     if poll.expired:

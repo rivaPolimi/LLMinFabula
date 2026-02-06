@@ -30,11 +30,10 @@ class PlayerDeathScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(
-                    state.theme.eliminatedIcon!,
-                    width: 180,
-                    height: 180,
-                    fit: BoxFit.contain,
+                  Icon(
+                    state.theme.getEliminatedIcon(),
+                    size: 180,
+                    color: const Color(0xFFDCC8A0),
                   ),
                   const SizedBox(height: 20),
                   Text(
