@@ -53,7 +53,7 @@ class RoleTutorialsScreen extends StatelessWidget {
 
                   return _buildRoleCard(
                     name: theme.getRoleName(baseRole),
-                    icon: ThemedRoleIcon(baseRole: baseRole, themeOverride: theme,),
+                    icon: ThemedRoleIcon(baseRole: baseRole, themeOverride: theme, size: 70,),
                     description: theme.getRoleDescription(baseRole),
                   );
                 },
