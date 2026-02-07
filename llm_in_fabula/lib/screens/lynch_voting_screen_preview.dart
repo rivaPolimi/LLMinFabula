@@ -82,134 +82,138 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
 
     return GradientPage(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            children: [
-              AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                automaticallyImplyLeading: true,
-                iconTheme: const IconThemeData(color: Colors.white),
-                centerTitle: true,
-                title: Text(
-                  '$minutes:$seconds',
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Expanded(
-                child: GridView.builder(
-                  itemCount: _players.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 12, // Reduced from 16
-                    childAspectRatio: 0.9, // Adjusted from 0.8
-                  ),
-                  itemBuilder: (context, index) {
-                    final player = _players[index];
-                    final isSelected = player.id == _selectedPlayerId;
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: Text(
+            '$minutes:$seconds',
+            style: const TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              children: [
+                Expanded(
+                  child: GridView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: _players.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 4,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final player = _players[index];
+                      final isSelected = player.id == _selectedPlayerId;
 
-                    if (player.isDead) {
-                      // Dead player UI
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/icons/bara.png', // Tombstone image
-                            width: 50, // Reduced from 60
-                            height: 50, // Reduced from 60
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 4), // Reduced from 8
-                          Text(
-                            player.nickname,
-                            style: const TextStyle(
-                              color: Color(0xFF9E9D89), // Muted color
-                              fontSize: 14,
-                              decoration: TextDecoration.lineThrough,
+                      if (player.isDead) {
+                        // Dead player UI
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/icons/bara.png',
+                              width: 38,
+                              height: 38,
+                              fit: BoxFit.contain,
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      );
-                    }
+                            const SizedBox(height: 4),
+                            Text(
+                              player.nickname,
+                              style: const TextStyle(
+                                color: Color(0xFF9E9D89),
+                                fontSize: 11,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        );
+                      }
 
-                    // Alive player UI
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedPlayerId = player.id;
-                        });
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 50, // Reduced from 60
-                            height: 50, // Reduced from 60
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF4B8B9A), // Teal color
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFFE4D2A6) // Highlight
-                                    : const Color(0xFF5D4D33), // Default
-                                width: isSelected ? 3 : 2,
+                      // Alive player UI
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedPlayerId = player.id;
+                          });
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF4B8B9A),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFE4D2A6)
+                                      : const Color(0xFF5D4D33),
+                                  width: isSelected ? 3 : 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Color(0xFF003943),
+                                size: 26,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Color(0xFF003943), // Darker Teal
-                              size: 35, // Reduced from 40
+                            const SizedBox(height: 4),
+                            Text(
+                              player.nickname,
+                              style: const TextStyle(
+                                color: Color(0xFFDCC8A0),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 4), // Reduced from 8
-                          Text(
-                            player.nickname,
-                            style: const TextStyle(
-                              color: Color(0xFFDCC8A0), // Beige text
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  width: 250,
+                  child: ElevatedButton(
+                    onPressed: _selectedPlayerId == null ? null : () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDCC8A0),
+                      foregroundColor: const Color(0xFF003943),
+                      disabledBackgroundColor:
+                          const Color(0xFFDCC8A0).withOpacity(0.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(
-                height: 48,
-                width: 250,
-                child: ElevatedButton(
-                  onPressed: _selectedPlayerId == null ? null : () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDCC8A0), // Beige
-                    foregroundColor: const Color(0xFF003943), // Dark Teal
-                    disabledBackgroundColor:
-                        const Color(0xFFDCC8A0).withOpacity(0.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
                     ),
-                  ),
-                  child: const Text(
-                    'confirm your vote',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    child: const Text(
+                      'confirm your vote',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
