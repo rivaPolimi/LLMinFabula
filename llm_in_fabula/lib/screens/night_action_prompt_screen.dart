@@ -27,7 +27,7 @@ class _NightActionPromptScreenState extends State<NightActionPromptScreen> {
   Widget build(BuildContext context) {
     return Consumer<GameState>(
       builder: (context, gameState, _) {
-        final isInTurn = gameState.player?.roleName == gameState.game?.rolePlaying;
+        final isInTurn = gameState.player?.originalRoleName == gameState.game?.rolePlaying;
         final roleActionPrompt = gameState.narratorText;
 
         return Scaffold(

@@ -3,8 +3,26 @@ import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/screens/play_screen.dart';
 import 'package:provider/provider.dart';
 
-class EndGameScreen extends StatelessWidget {
+class EndGameScreen extends StatefulWidget {
   const EndGameScreen({super.key});
+
+  @override
+  State<EndGameScreen> createState() => _EndGameScreenState();
+}
+
+class _EndGameScreenState extends State<EndGameScreen> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Delay to ensure context and provider are ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final gameState = context.read<GameState>();
+      // Empty callback to avoid the fire of an ACK to server
+      gameState.startTts((){});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +82,7 @@ class EndGameScreen extends StatelessWidget {
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        //Close websocket and leaves the lobby
+                        // Stop TTS, disconnect websocket, and return to title
                         state.disconnect();
                         state.goToTitle();
                         Navigator.pushAndRemoveUntil(
@@ -95,4 +113,10 @@ class EndGameScreen extends StatelessWidget {
       }
     );
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }
+

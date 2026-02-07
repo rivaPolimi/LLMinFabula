@@ -31,6 +31,6 @@
     "perimeter_guard": { "material": "dangerous", "custom": "assets/icons/perimeter_guard.png" },
     "zombie": { "material": "dangerous", "custom": "assets/icons/zombie.png" },
     "headstone": { "material": "church", "custom": "assets/icons/bara.png" },
-    "sign": { "material": "block" }
+    "sign": { "material": "block", "custom": "assets/icons/banned_sign.png" }
   }
 }

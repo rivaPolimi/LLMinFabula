@@ -41,7 +41,7 @@ class RoleScreen extends StatelessWidget {
                   ),
                   child: Center(
                     child: ThemedRoleIcon(
-                      baseRole: state.player!.roleName,
+                      baseRole: state.player!.originalRoleName,
                       size: 150,
                       color: const Color(0xFF08313F)
                     ),
