@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
-import 'package:llm_in_fabula/screens/end_game_screen_preview.dart';
+import 'package:llm_in_fabula/screens/end_game_screen.dart';
 import 'package:llm_in_fabula/screens/lynch_results_screen_preview.dart';
 import 'package:llm_in_fabula/screens/lynch_voting_screen_preview.dart';
 import 'package:llm_in_fabula/screens/night_action_prompt_screen_preview.dart';
@@ -140,7 +140,7 @@ class PlayScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const EndGameScreenPreview(),
+                          builder: (context) => const EndGameScreen(),
                         ),
                       );
                     },

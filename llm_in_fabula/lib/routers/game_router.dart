@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
 import 'package:llm_in_fabula/routers/discussion_router.dart';
 import 'package:llm_in_fabula/routers/role_action_router.dart';
-import 'package:llm_in_fabula/screens/end_screen_fake.dart';
+import 'package:llm_in_fabula/screens/end_game_screen.dart';
 import 'package:llm_in_fabula/screens/lobby_screen.dart';
 import 'package:llm_in_fabula/screens/lynch_outcome_screen.dart';
 import 'package:llm_in_fabula/screens/narrator_intro_screen.dart';
@@ -50,7 +50,7 @@ class GameRouter extends StatelessWidget {
 
       case GamePhase.endGame:
         //TODO: DA IMPLEMENTARE
-        return EndScreenFake();
+        return EndGameScreen();
     }  
   }
 }

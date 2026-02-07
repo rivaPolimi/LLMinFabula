@@ -36,7 +36,7 @@ class Narrator:
         # Ask LLM to generate an introduction
         conversation.append({
             "role": "user",
-            "content": "Please write an introduction for this lupus in fabula game."
+            "content": "Please write an introduction for this Lupus in Fabula game."
         })
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
@@ -94,7 +94,7 @@ class Narrator:
         # Ask LLM to generate the message
         conversation.append({
             "role": "user",
-            "content": "Write a short paragraph of no more than 50 words to tell that now is " + role_name + "'s turn",
+            "content": "Write a short paragraph of no more than  words to tell that now is " + role_name + "'s turn",
         })
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
@@ -169,7 +169,7 @@ class Narrator:
             "role": "user",
             "content":
                 f"""
-                    Write a narrative for the lynch phase of a *Lupus in Fabula* game, spoken by an
+                    Write a short narrative of max 100 words for the lynch phase of a Lupus in Fabula game, spoken by an
                     elderly storyteller who recounts the events as if by the glow of a fading sunset.
                     The tone should be solemn, atmospheric, and tinged with the weight of judgment.
 
@@ -192,7 +192,6 @@ class Narrator:
                         prevent the villagers from condemning anyone. No one is executed.
 
                     Do not reveal secret roles.
-                    Close the narration with a smooth transition into the coming night.
                 """
         })
         response = client.chat.completions.create(
@@ -222,7 +221,7 @@ class Narrator:
             "role": "user",
             "content": 
                 f"""
-                Write a closing tale for a game of *Lupus in Fabula*, narrated by an elderly storyteller
+                Write a closing tale for a game of Lupus in Fabula, narrated by an elderly storyteller
                 who speaks as if by the last embers of a village fire. The tone should be wise, poetic,
                 a little cryptic, and filled with the weight of the story's end.
 

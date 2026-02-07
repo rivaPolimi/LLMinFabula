@@ -95,6 +95,11 @@ class GameState extends ChangeNotifier{
   }
 
   //Manage the transitions till the lobby
+  void goToTitle(){
+    flow = AppFlow.title;
+    notifyListeners();
+  }
+
   void goToJoinOrCreate(){
     flow = AppFlow.joinOrCreate;
     notifyListeners();
@@ -195,7 +200,6 @@ class GameState extends ChangeNotifier{
   }
 
   void disconnect() {
-
     _ws.close();
   }
 

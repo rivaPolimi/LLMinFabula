@@ -26,13 +26,10 @@ stateDiagram-v2
 
     state Day {
         state Discussion
-        state "Extra Vote" as eVote
         state Lynch
 
         [*] --> Discussion
-        Discussion --> eVote
         Discussion --> Lynch
-        eVote --> Lynch
         Lynch --> [*]
     }
 
