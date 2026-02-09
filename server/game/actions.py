@@ -60,7 +60,7 @@ class CourtesanActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player: Player, target_player: Player, game: Game):
-        if game.jailer_target.id == acting_player.id:
+        if game.jailer_target and game.jailer_target.id == acting_player.id:
             game.courtesan_target = None
             return "Jailer blocked your ability"
 
@@ -76,7 +76,10 @@ class CourtesanActionHandler(BaseActionHandler):
         return "Target protected"
 
     def valid_target(self, acting_player: Player, game: Game):
-        return super().valid_target(acting_player, game).exclude(id == acting_player.id).exclude(id == game.courtesan_target.id)
+        queryset = super().valid_target(acting_player, game).exclude(id=acting_player.id)
+        if game.courtesan_target:
+            queryset = queryset.exclude(id=game.courtesan_target.id)
+        return queryset
 
 
 class GuardActionHandler(BaseActionHandler):
@@ -85,7 +88,7 @@ class GuardActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player: Player, target_player: Player, game: Game):
-        if game.jailer_target.id == acting_player.id:
+        if  game.jailer_target and game.jailer_target.id == acting_player.id:
             game.guard_target = None
             return "Jailer blocked your ability"
         
@@ -95,11 +98,14 @@ class GuardActionHandler(BaseActionHandler):
         
         target_player.is_protected = True
         game.guard_target = target_player
-
+        target_player.save()
         return "Target protected"
     
     def valid_target(self, acting_player: Player, game: Game):
-        return super().valid_target(acting_player, game).exclude(id == acting_player.id).exclude(id == game.guard_target.id)
+        queryset = super().valid_target(acting_player, game).exclude(id=acting_player.id)
+        if game.guard_target:
+            queryset = queryset.exclude(id=game.guard_target.id)
+        return queryset
 
 
 class HunterActionHandler(BaseActionHandler):
@@ -108,7 +114,7 @@ class HunterActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player: Player, target_player: Player, game: Game):
-        if game.jailer_target.id == acting_player.id:
+        if game.jailer_target and game.jailer_target.id == acting_player.id:
             game.hunter_target = None
             return "Jailer blocked your ability"
         
@@ -120,7 +126,7 @@ class HunterActionHandler(BaseActionHandler):
         return "Target aimed"
     
     def valid_target(self, acting_player: Player, game: Game):
-        return super().valid_target(acting_player, game).exclude(id == acting_player.id)
+        return super().valid_target(acting_player, game).exclude(id=acting_player.id)
 
 
 class JailerActionHandler(BaseActionHandler):
@@ -135,13 +141,13 @@ class JailerActionHandler(BaseActionHandler):
         
         game.jailer_target = target_player
         target_player.is_protected = True
-        
+        target_player.save()
         notify_player_in_jail(game.id, target_player.id)
 
         return "Player in jail"
     
     def valid_target(self, acting_player: Player, game: Game):
-        return super().valid_target(acting_player, game).exclude(id == acting_player.id)
+        return super().valid_target(acting_player, game).exclude(id=acting_player.id)
 
 
 class SeerActionHandler(BaseActionHandler):
@@ -150,13 +156,13 @@ class SeerActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player: Player, target_player: Player, game: Game):
-        if game.jailer_target.id == acting_player.id:
+        if game.jailer_target and game.jailer_target and game.jailer_target.id == acting_player.id:
             return "Jailer blocked your ability"
         
         if not target_player in self.valid_target(acting_player, game):
             return "None, invalid target"
         
-        if target_player.role == "wolf":
+        if target_player.role.name == "wolf":
             return "wolf"
         else:
             return "villager"
@@ -186,7 +192,7 @@ class CopycatActionHandler(BaseActionHandler):
     """
 
     def perform_action(self, acting_player: Player, target_player: Player, game: Game):
-        if not target_player in self.valid_target():
+        if not target_player in self.valid_target(acting_player, game):
             return "No one copied"
         
         if target_player.role.name == "wolf":
@@ -198,6 +204,6 @@ class CopycatActionHandler(BaseActionHandler):
             return "No one copied"
     
     def valid_target(self, acting_player: Player, game: Game):
-        return super().valid_target(acting_player, game).exclude(acting_player)
+        return super().valid_target(acting_player, game).exclude(id=acting_player.id)
     
 

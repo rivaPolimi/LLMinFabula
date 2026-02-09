@@ -41,7 +41,7 @@ def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
             return _event_loop
 
 
-def create_poll(game, duration=30, role="all"):
+def create_poll(game, duration=60, role="all"):
     """
     Create a poll for players to vote
     """
@@ -246,4 +246,3 @@ async def end_poll_by_id(poll_id: int, player: Player = None):
 
 def clear_poll(poll: Poll):
     Vote.objects.select_related("poll").filter(poll=poll).delete()
-    #TODO: also delete poll?

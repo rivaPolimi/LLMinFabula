@@ -2,10 +2,14 @@
 Helper functions for game and lobby management
 """
 
+import logging
+
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import *
 from .notifications import notify_player_eliminated, notify_game_end
+
+logger = logging.getLogger("redis_events")
 
     
 def get_players(game):
@@ -35,7 +39,7 @@ def resolve_night(game: Game):
         protected_player = game.courtesan_target
         game.courtesan_target = None
         if not protected_player.role == "wolf":
-            kill_player(protected_player)
+            kill_player(game, protected_player)
             killed_players.append(protected_player)
 
     # If hunter is killed also his target dies
@@ -61,14 +65,17 @@ def kill_player(game: Game, player: Player):
 
     notify_player_eliminated(game.id, player.id)
 
-def check_win(game):
+def check_win(game: Game):
     """
     Check if somebody as won
     """
-
+    logger.info("Lynch target: %s", game.lynch_target, extra={'game_id': game.id})
     # Madman wins if lynched
-    if game.lynch_target and game.lynch_target.role.name == "madman":
-        return True, game.lynch_target
+    if game.lynch_target:
+        logger.info("🎭 Lynch target role: %s", game.lynch_target.role_name if game.lynch_target.role_name else "None", extra={'game_id': game.id})
+        if game.lynch_target.role_name == "madman":
+            logger.info("🎉 MADMAN WINS! Madman was lynched", extra={'game_id': game.id})
+            return True, [game.lynch_target]
     
     wolves = list(game.get_active_players().filter(role__name = "wolf"))
     villagers = list(game.get_active_players().exclude(role__name = "wolf"))
@@ -101,6 +108,5 @@ def clear_game(game):
     """
     Removes the game instance from the DB
     """
-    #TODO: se i poll li cancello appena finiti non serve cancellarli qui se no devo cancellarli qui
     Player.objects.filter(game=game).delete()
     Game.objects.filter(id=game.id).delete()

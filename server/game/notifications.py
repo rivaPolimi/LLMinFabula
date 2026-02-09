@@ -89,7 +89,7 @@ def notify_poll_begin(game: Game, poll: Poll):
     )
 
 async def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):
-    # Acknowledge all the players in the poll of the vote. TODO: On client check the answers timestamp to avoid showing older votes
+    # Acknowledge all the players in the poll of the vote.
     channel_layer = get_channel_layer()
     
     # Convert tally to use player IDs as keys for JSON serialization

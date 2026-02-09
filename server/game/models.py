@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils.module_loading import import_string
 
-#TODO: riempire il db con i vari ruoli e setting
-
 class RedisEventLog(models.Model):
     """Store Redis event logs for admin viewing."""
     
@@ -155,22 +153,6 @@ class Game(models.Model):
     
 
 class Player(models.Model):
-    
-    #TODO: TOGLIERLI
-    ROLES_CHOICES = {
-        ("none", "None"),
-        ("wolf", "Wolf"),
-        ("villager", "Villager"),
-        ("seer", "Seer"),
-        ("madman", "Madman"),
-        ("courtesan", "Courtesan"),
-        ("medium", "Medium"),
-        ("hunter", "Hunter"),
-        ("jailer", "Jailer"),
-        ("copycat", "Copycat"), #TODO: immune al jailer
-        ("guard", "Guard"),
-        ("ghost", "Ghost"), # fake role for dead players
-    }
     
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="players")
     nickname = models.CharField(max_length=20)

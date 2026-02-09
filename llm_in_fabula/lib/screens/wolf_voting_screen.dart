@@ -95,17 +95,19 @@ class _WolfVotingScreenState extends State<WolfVotingScreen> {
                                 size: 40,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              player.nickname,
-                              style: const TextStyle(
-                                color: Color(0xFFDCC8A0), // Beige text
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(height: 4),
+                            Flexible(
+                              child: Text(
+                                player.nickname,
+                                style: const TextStyle(
+                                  color: Color(0xFFDCC8A0), // Beige text
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

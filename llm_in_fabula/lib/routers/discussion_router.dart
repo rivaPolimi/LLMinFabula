@@ -20,19 +20,18 @@ class _DiscussionRouterState extends State<DiscussionRouter> {
     });
   }
 
-  //TODO: cosa succede se premo back dopo aver votato?
-  void goBack(){}
-
   @override
   Widget build(BuildContext context) {
-    switch(step){
-      case DiscussionStep.vote:
-        return LynchVotingScreen(
-          onNext: goToResultScreen
-        );
+    final screenWidget = switch(step){
+      DiscussionStep.vote => LynchVotingScreen(
+        onNext: goToResultScreen
+      ),
+      DiscussionStep.result => LynchResultsScreen(),
+    };
 
-      case DiscussionStep.result:
-        return LynchResultsScreen();
-    }
+    return PopScope(
+      canPop: false,
+      child: screenWidget,
+    );
   }
 }

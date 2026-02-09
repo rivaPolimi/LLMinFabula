@@ -162,7 +162,7 @@ class _WolfVotingScreenPreviewState extends State<WolfVotingScreenPreview> {
                     backgroundColor: const Color(0xFFDCC8A0),
                     foregroundColor: const Color(0xFF003943),
                     disabledBackgroundColor:
-                        const Color(0xFFDCC8A0).withOpacity(0.5),
+                        const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),

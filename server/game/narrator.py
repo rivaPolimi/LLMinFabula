@@ -23,7 +23,6 @@ class Narrator:
         """
         Generate introduction for the game based on the setting provided by the user
         """
-        #TODO: GESTIRE BAMBINI
 
         client = Narrator.get_openai_client()
 
@@ -89,12 +88,13 @@ class Narrator:
             "content": setting.initial_prompt,
         }]
 
-        role_name = setting.alternative_role_names[role]
+        role_name = setting.alternative_role_names[role] if role != "courtesan" else "ladylove"
 
         # Ask LLM to generate the message
         conversation.append({
             "role": "user",
-            "content": "Write a short paragraph of no more than  words to tell that now is " + role_name + "'s turn",
+            "content": "Write a short paragraph of no more than 40 words to tell that now is " + role_name + "'s turn." +
+                "You should add the exact name of the role in the message, maintain a plain text format without '*'",
         })
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
@@ -102,6 +102,11 @@ class Narrator:
         )
 
         message = response.choices[0].message.content
+
+        # To avoid Azure restrictions we use "ladylove" instead of "courtesan" (or similar)
+        if role == "courtesan":
+            message = message.replace("ladylove", setting.alternative_role_names[role])
+            message = message.replace("Ladylove", setting.alternative_role_names[role])
 
         # Broadcast story to all players
         notify_narrator_story(game.id, "all", "roleAction", message)
@@ -225,7 +230,7 @@ class Narrator:
                 who speaks as if by the last embers of a village fire. The tone should be wise, poetic,
                 a little cryptic, and filled with the weight of the story's end.
 
-                The narrator must reveal who won the game. Use atmospheric storytelling, metaphors, and evocative imagery.
+                The narrator must reveal who won the game. Use atmospheric storytelling, and evocative imagery.
 
                 Insert the following details into the tale:
                 - Winner: {winners}
@@ -238,7 +243,7 @@ class Narrator:
                 - The Madman wins only if he is lynched by the village after the day discussion.
 
                 Write the narration as if the storyteller has witnessed the entire saga.
-                End with a sense of closure—quiet, solemn, or triumphant depending on the winner.
+                End with a sense of closure—quiet (wolves won), solemn (villagers won), or funny (Madman won) depending on the winner.
             """
         })
         response = client.chat.completions.create(

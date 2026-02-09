@@ -121,6 +121,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "text": "Not allowed",
                 })
 
+            # If poll expired ignore the vote
+            if poll.expired:
+                await self.send_json({
+                    "type": "Vote error",
+                    "text": "Poll expired",
+                })
+                return
+
             poll_finished = await record_vote(poll, self.player_id, content.get("target"))
             
             # Send updated tally to clients anyway, even if the poll is finished, to update the UI in real time

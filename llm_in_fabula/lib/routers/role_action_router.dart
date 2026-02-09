@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:llm_in_fabula/models/state.dart';
-import 'package:llm_in_fabula/screens/create_join_screen.dart';
 import 'package:llm_in_fabula/screens/night_action_end_screen.dart';
 import 'package:llm_in_fabula/screens/night_action_prompt_screen.dart';
 import 'package:llm_in_fabula/screens/wolf_voting_screen.dart';
-import 'package:provider/provider.dart';
 
 enum RoleActionStep {prompt, action, end}
 
@@ -42,18 +39,13 @@ class _RoleActionRouterState extends State<RoleActionRouter> {
     switch(step){
       case RoleActionStep.prompt:
         return NightActionPromptScreen(
-          onNext: goToVoteScreen
+          onNext: goToVoteScreen,
         );
 
       case RoleActionStep.action:
-        if(context.watch<GameState>().game?.rolePlaying == 'wolf'){
-          //TODO: aggiungere on back
-          return WolfVotingScreen(onNext: goToFinalPage,);
-        }
-        else{
-          //TODO implementare lo screen per gli altri ruoli
-          return CreateJoinScreen();
-        }
+        return WolfVotingScreen(
+          onNext: goToFinalPage,
+        );
 
       case RoleActionStep.end:
         return NightActionEndScreen();

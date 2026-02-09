@@ -38,6 +38,7 @@ class GameRouter extends StatelessWidget {
         final state = context.read<GameState>();
         state.mysticText = null;
         state.tally = {};
+        state.game!.rolePlaying = 'none';
 
         // This screen will show the second narrator text
         return const NarratorIntroScreen();
@@ -49,7 +50,6 @@ class GameRouter extends StatelessWidget {
         return RoleActionRouter();
 
       case GamePhase.endGame:
-        //TODO: DA IMPLEMENTARE
         return EndGameScreen();
     }  
   }

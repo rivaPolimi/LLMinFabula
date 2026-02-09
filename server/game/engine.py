@@ -8,8 +8,6 @@ from .narrator import Narrator
 from .services.phase import start_phase_timer
 from .fsm import GameStateMachine
 
-logger = logging.getLogger("redis_events")
-
 class GameEngine:
     """
     Centralized service layer to manage game flow and FSM transitions. 
@@ -101,7 +99,6 @@ class GameEngine:
         """
 
         next_role = game.next_active_role()
-        logger.info("Next role for night: %s", next_role.name if next_role else "None", extra={'game_id': game.id})
 
         if next_role is None:
             return GameEngine.finish_night(game)
@@ -141,7 +138,9 @@ class GameEngine:
     
             # send outcome to clients if medium or seer acted
             if poll.role in ["medium", "seer"]:
-                notify_action_outcome(game.id, target, poll.role, outcome) 
+                if outcome in ["wolf", "villager"]:
+                    outcome = game.setting.alternative_role_names[outcome]
+                notify_action_outcome(game.id, target, poll.role, outcome)
 
         # transition to NIGHT state
         GameEngine._transition(game, "end_action")
@@ -255,10 +254,10 @@ class GameEngine:
         winners_name = [winner.nickname for winner in winners]
 
         reason = ""
-        if winners[0].role.name == "wolf":
-            reason = "All villagers are eliminated"
-        elif winners[0].role.name == "madman":
+        if winners[0].role_name == "madman":
             reason = "The madman has been successfully lynched"
+        elif winners[0].role.name == "wolf":
+            reason = "All villagers are eliminated"
         else:
             reason = "Villagers killed all wolves"
 

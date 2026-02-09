@@ -24,7 +24,7 @@ class _NarratorIntroScreenState extends State<NarratorIntroScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GameState>(builder: (_, state, __) {
+    return Consumer<GameState>(builder: (_, state, _) {
       final introduction = state.narratorText ?? "";
 
       return Scaffold(

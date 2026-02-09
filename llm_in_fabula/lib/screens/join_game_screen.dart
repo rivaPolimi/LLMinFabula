@@ -194,7 +194,7 @@ class _JoinGameScreenState extends State<JoinGameScreen>{
 
                           gameState.goToGamePhase();
                         } catch (e, stackTrace) {
-                          //TODO: provvisorio, togliere e gestire meglio eccezioni
+                        
                           debugPrint('Create game error: $e');
                           debugPrintStack(stackTrace: stackTrace);
 

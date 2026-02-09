@@ -195,7 +195,7 @@ class _LynchVotingScreenPreviewState extends State<LynchVotingScreenPreview> {
                     backgroundColor: const Color(0xFFDCC8A0), // Beige
                     foregroundColor: const Color(0xFF003943), // Dark Teal
                     disabledBackgroundColor:
-                        const Color(0xFFDCC8A0).withOpacity(0.5),
+                        const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),

@@ -59,16 +59,18 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                               size: 50, // Reduced from 60
                             ),
                             const SizedBox(height: 4), // Reduced from 8
-                            Text(
-                              player.nickname,
-                              style: const TextStyle(
-                                color: Color(0xFF9E9D89),
-                                fontSize: 14,
-                                decoration: TextDecoration.lineThrough,
+                            Flexible(
+                              child: Text(
+                                player.nickname,
+                                style: const TextStyle(
+                                  color: Color(0xFF9E9D89),
+                                  fontSize: 14,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         );
@@ -103,16 +105,18 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                               ),
                             ),
                             const SizedBox(height: 4), // Reduced from 8
-                            Text(
-                              player.nickname,
-                              style: const TextStyle(
-                                color: Color(0xFFDCC8A0),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                            Flexible(
+                              child: Text(
+                                player.nickname,
+                                style: const TextStyle(
+                                  color: Color(0xFFDCC8A0),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -134,7 +138,7 @@ class _LynchVotingScreenState extends State<LynchVotingScreen> {
                       backgroundColor: const Color(0xFFDCC8A0),
                       foregroundColor: const Color(0xFF003943),
                       disabledBackgroundColor:
-                          const Color(0xFFDCC8A0).withOpacity(0.5),
+                          const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

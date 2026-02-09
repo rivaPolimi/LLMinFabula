@@ -203,6 +203,40 @@ class GameState extends ChangeNotifier{
     _ws.close();
   }
 
+  void resetGameState() {
+    // Stop any ongoing TTS
+    _stopTts();
+    
+    // Cancel timers
+    _ticker?.cancel();
+    
+    // Disconnect websocket if still connected
+    _ws.close();
+    
+    // Clear game data
+    _game = null;
+    _player = null;
+    
+    // Clear victims and votes
+    victims.clear();
+    tally.clear();
+    
+    // Reset phase and flow
+    phase = GamePhase.lobby;
+    flow = AppFlow.title;
+    _localPhaseStart = null;
+    
+    // Clear poll
+    currentPollId = -1;
+    
+    // Clear narrator and mystic text
+    narratorText = null;
+    mysticText = null;
+    
+    debugPrint("🔄 Game state has been reset");
+    notifyListeners();
+  }
+
   void _handleWsEvent(Map<String, dynamic> event){
     debugPrint("Handling event");
     switch (event['type']) {
@@ -211,7 +245,6 @@ class GameState extends ChangeNotifier{
         break;
 
       case 'game_phase':
-      //TODO: what if no duration?
         final startedAt = DateTime.parse(event['started_at']);
         _onUpdatePhase(event['phase'], startedAt, event['duration']);
         break;
@@ -318,7 +351,6 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 
-  //TODO: non sto usando game_id e original_name
   void _onRoleReveal(String roleName, String roleDescription, String originalRoleName){
     debugPrint("Rolename: {$roleName}");
     player!.roleName = roleName;

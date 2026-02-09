@@ -40,7 +40,6 @@ class CreateGameView(APIView):
         )
         player.save()
 
-        #TODO: differenza tra admin e non va controllata sul client
         return Response({"status": "Lobby created", "game_id": game.id, "player_id": player.id}, 
                         status=status.HTTP_201_CREATED)
 
@@ -62,7 +61,8 @@ class JoinGameView(APIView):
         player = Player.objects.create(
             nickname=nick, game=game
         )
-        #TODO: come tengo aggiornata la lista di players nella lobby?
+        player.save()
+        
         return Response({"game_id": game.id, "player_id": player.id, "players": list(game.get_active_players().values('id', 'nickname', 'is_dead'))},
                         status=status.HTTP_200_OK)
     

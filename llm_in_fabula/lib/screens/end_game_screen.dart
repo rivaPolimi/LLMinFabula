@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
-import 'package:llm_in_fabula/screens/play_screen.dart';
 import 'package:provider/provider.dart';
 
 class EndGameScreen extends StatefulWidget {
@@ -82,14 +81,8 @@ class _EndGameScreenState extends State<EndGameScreen> {
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Stop TTS, disconnect websocket, and return to title
-                        state.disconnect();
-                        state.goToTitle();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const PlayScreen()),
-                          (Route<dynamic> route) => false, // Remove all previous routes
-                        );
+                        // Reset entire game state for a fresh start
+                        state.resetGameState();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF003943),

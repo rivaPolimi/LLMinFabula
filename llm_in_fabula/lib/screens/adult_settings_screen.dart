@@ -53,13 +53,80 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
     _numberOfWolves = widget.numPlayers ~/ 5;
     _numberOfWolves = _numberOfWolves < 1 ? 1 : _numberOfWolves;
     _numberOfVillagers = widget.numPlayers - _numberOfWolves;
+
+    // Children setting: automatically select guard and seer roles
+    if(widget.settingName == 'Children') {
+      // Find indices of 'guard' and 'seer' in _secondaryRoles
+      final guardIndex = _secondaryRoles.indexOf('guard');
+      final seerIndex = _secondaryRoles.indexOf('seer');
+      
+      // Add them to selected indices and reduce villagers
+      if (guardIndex != -1) {
+        _selectedSecondaryIndices.add(guardIndex);
+        _numberOfVillagers--;
+      }
+      if (seerIndex != -1) {
+        _selectedSecondaryIndices.add(seerIndex);
+        _numberOfVillagers--;
+      }
+      
+      // Automatically create the game after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _createGame();
+      });
+    }
+  }
+
+  Future<void> _createGame() async {
+    if (!mounted) return;
+    
+    final gameState = context.read<GameState>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    _showLoadingDialog(context);
+
+    try {
+      await gameState.createGameAndSetSession(
+          widget.numPlayers,
+          widget.settingName.toLowerCase(),
+          widget.nickname,
+          widget.password,
+          buildRoleMap()
+      );
+
+      if(!context.mounted) return;
+
+      _hideLoadingDialog(context);
+
+      gameState.goToGamePhase();
+    } catch (e, stackTrace) {
+      debugPrint('Create game error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if(!mounted) return;
+
+      _hideLoadingDialog(context);
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if(mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Map<String ,int> buildRoleMap(){
     final Map<String, int> roleMap = {};
 
     roleMap['wolf'] = _numberOfWolves;
-    roleMap['villager'] = _numberOfVillagers;
 
     for(final index in _selectedSecondaryIndices){
       if(index < _secondaryRoles.length){
@@ -67,6 +134,8 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
         roleMap[roleName] = 1;
       }
     }
+
+    roleMap['villager'] = _numberOfVillagers;
 
     return roleMap;
   }
@@ -419,53 +488,9 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading
                         ? null
-                        : () async {
-                      final gameState = context.read<GameState>();
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      setState(() {
-                        _isLoading = true;
-                      });
-
-                      _showLoadingDialog(context);
-
-                      try {
-                        await gameState.createGameAndSetSession(
-                            widget.numPlayers,
-                            widget.settingName.toLowerCase(),
-                            widget.nickname,
-                            widget.password,
-                            buildRoleMap()
-                        );
-
-                        if(!context.mounted) return;
-
-                        _hideLoadingDialog(context);
-
-                        //gameState.addFakePlayersForTesting(widget.numPlayers);
-                        gameState.goToGamePhase();
-                      } catch (e, stackTrace) {
-                        debugPrint('Create game error: $e');
-                        debugPrintStack(stackTrace: stackTrace);
-
-                        if(!mounted) return;
-
-                        _hideLoadingDialog(context);
-
-                        messenger.showSnackBar(
-                          SnackBar(content: Text(e.toString())),
-                        );
-                      } finally {
-                        if(mounted) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        }
-                      }
+                        : () {
+                      _createGame();
                     },
-
-
-
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF003943),
                       foregroundColor: Colors.white,
@@ -486,7 +511,7 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFDCC8A0),
                       foregroundColor: const Color(0xFF003943),
-                      side: const BorderSide(color: const Color(0xFF003943), width: 1.5),
+                      side: const BorderSide(color: Color(0xFF003943), width: 1.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

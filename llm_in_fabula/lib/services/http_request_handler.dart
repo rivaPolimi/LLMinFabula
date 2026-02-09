@@ -5,18 +5,7 @@ import 'package:llm_in_fabula/models/session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:llm_in_fabula/constants.dart';
 
-//TODO: Remove debugPrint
-
 Future<GameSession> createGame(int numPlayers, String settingName, String nickname, String password, Map<String, int> roles) async{
-  debugPrint('➡️ createGame called');
-  debugPrint('Payload: ${json.encode({
-    'max_players': numPlayers,
-    'setting': settingName,
-    'nickname': nickname,
-    'password': password,
-    'roles_available': roles,
-  })}');
-
   final response = await http.post(
     Uri.parse('${getApiUrl()}/game/create_game/'),
     headers: <String, String>{
@@ -31,15 +20,11 @@ Future<GameSession> createGame(int numPlayers, String settingName, String nickna
     }),
   );
 
-  debugPrint('⬅️ Response status: ${response.statusCode}');
-  debugPrint('⬅️ Response body: ${response.body}');
-
   if(response.statusCode == 201){
     var decoded = jsonDecode(response.body) as Map<String, dynamic>;
     var player = Player(id: decoded['player_id'], nickname: nickname, isAdmin: true);
     var game = Game(id: decoded['game_id'], players: List.empty(growable: true), setting: settingName);
     game.players.add(player);
-    //openWebSocketConnection();
     return GameSession(game: game, player: player);
   }
   else {
@@ -47,13 +32,7 @@ Future<GameSession> createGame(int numPlayers, String settingName, String nickna
   }
 }
 
-Future<GameSession> joinGame(String nickname, String password) async{
-  debugPrint('➡️ joinGame called');
-  debugPrint('Payload: ${json.encode({
-    'nickname': nickname,
-    'password': password,
-  })}');
-  
+Future<GameSession> joinGame(String nickname, String password) async{  
   final response = await http.post(
     Uri.parse('${getApiUrl()}/game/join_game/'),
     headers: <String, String>{
@@ -78,15 +57,12 @@ Future<GameSession> joinGame(String nickname, String password) async{
     }
     var game = Game(id: decoded['game_id'], players: players);
     var player = Player(id: decoded['player_id'], nickname: nickname, isAdmin: false);
-    //openWebSocketConnection();
     return GameSession(game: game, player: player);
   } 
   else {
     throw Exception('Failed to join Game');  
   }
 }
-
-//List<dynamic> is not a subtype of List<Player>
 
 Future<bool> startGame(Game game, Player player) async{
   final response = await http.post(
@@ -99,7 +75,7 @@ Future<bool> startGame(Game game, Player player) async{
       'player_id': player.id,
     }),
   );
-  debugPrint(response.statusCode.toString());
+  
   if (response.statusCode == 200) {
     return true;
   } else {
