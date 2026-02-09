@@ -284,6 +284,9 @@ class Narrator:
         logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
+        if message is None:
+            logger.warning(f"[Game {game.id}] Lynch story generation returned empty content; using fallback")
+            message = "The village gathers in uneasy silence. No tale is told, only the weight of judgment remains."
         logger.debug(f"[Game {game.id}] Lynch story generated: {len(message)} characters")
 
         # Broadcast story to all players
