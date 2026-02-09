@@ -1,4 +1,5 @@
 import logging
+import time
 from django.db import transaction
 from .models import Game, Player, Poll, States
 from .services.poll import get_result, start_poll_timer, create_poll
@@ -7,6 +8,8 @@ from .notifications import *
 from .narrator import Narrator
 from .services.phase import start_phase_timer
 from .fsm import GameStateMachine
+
+logger = logging.getLogger(__name__)
 
 class GameEngine:
     """
@@ -32,21 +35,38 @@ class GameEngine:
         Starts the game. 
         LOBBY -> INTRODUCTION
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting game initialization")
 
+        transition_start = time.time()
         GameEngine._transition(game, "start_introduction")
+        logger.debug(f"[Game {game.id}] FSM transition completed in {time.time() - transition_start:.2f}s")
 
         # Generate introduction
+        intro_start = time.time()
+        logger.debug(f"[Game {game.id}] Calling Narrator.gen_introduction")
         Narrator.gen_introduction(game.id, game.setting)
+        logger.info(f"[Game {game.id}] Introduction generation completed in {time.time() - intro_start:.2f}s")
 
         # All wolves should know each other
+        wolves_start = time.time()
         wolves = game.get_active_players().filter(role__name="wolf")
         wolf_ids = [wolf.id for wolf in wolves]
         notify_wolves(game.id, wolf_ids)
+        logger.debug(f"[Game {game.id}] Wolf notification sent in {time.time() - wolves_start:.2f}s (wolf_count: {len(wolf_ids)})")
 
         # Notify client
         INTRO_DURATION = 120 # Max duration of introduction screen
+        notify_start = time.time()
         notify_phase_start(game.id, "introduction", INTRO_DURATION)
+        logger.debug(f"[Game {game.id}] Phase start notification sent in {time.time() - notify_start:.2f}s")
+        
+        timer_start = time.time()
         start_phase_timer(game.id, "introduction", INTRO_DURATION)
+        logger.debug(f"[Game {game.id}] Phase timer started in {time.time() - timer_start:.2f}s")
+
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] Game start_game() completed in {total_duration:.2f}s")
 
     @staticmethod
     def role_reveal(game: Game):

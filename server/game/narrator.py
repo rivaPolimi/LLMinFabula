@@ -1,8 +1,12 @@
 import os
+import logging
+import time
 from .models import *
 from .utils import *
 from .notifications import notify_narrator_story
 from openai import AzureOpenAI
+
+logger = logging.getLogger(__name__)
 
 class Narrator:
 
@@ -23,8 +27,11 @@ class Narrator:
         """
         Generate introduction for the game based on the setting provided by the user
         """
+        start_time = time.time()
+        logger.info(f"[Game {game_id}] Starting introduction generation")
 
         client = Narrator.get_openai_client()
+        logger.debug(f"[Game {game_id}] OpenAI client initialized")
 
         # Set the background prompt for the LLM.
         conversation = [{
@@ -37,21 +44,35 @@ class Narrator:
             "role": "user",
             "content": "Please write an introduction for this Lupus in Fabula game."
         })
+        
+        logger.debug(f"[Game {game_id}] Sending request to Azure OpenAI for introduction")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game_id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         introduction = response.choices[0].message.content
+        logger.debug(f"[Game {game_id}] Introduction generated: {len(introduction)} characters")
 
         # Broadcast the story to all players
+        notify_start = time.time()
         notify_narrator_story(game_id, "all", "introduction", introduction)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game_id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game_id}] Introduction generation completed in {total_duration:.2f}s (API: {api_duration:.2f}s, Notify: {notify_duration:.2f}s)")
 
     @staticmethod
     def gen_night_intro(game: Game, setting: Setting):
         """
         Generate introduction to night phase.
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting night intro generation")
 
         client = Narrator.get_openai_client()
 
@@ -65,21 +86,35 @@ class Narrator:
             "role": "user",
             "content": "Write a short introduction (max 45 seconds) to the night phase of the game",
         })
+        
+        logger.debug(f"[Game {game.id}] Sending request to Azure OpenAI for night intro")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
+        logger.debug(f"[Game {game.id}] Night intro generated: {len(message)} characters")
 
         # Broadcast story to all players
+        notify_start = time.time()
         notify_narrator_story(game.id, "all", "nightIntro", message)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game.id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] Night intro generation completed in {total_duration:.2f}s")
 
     @staticmethod
     def gen_role_action_message(game: Game, setting: Setting, role: str):
         """
         Generate the message that confirms the role turn.
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting role action message generation for role: {role}")
 
         client = Narrator.get_openai_client()
 
@@ -96,10 +131,15 @@ class Narrator:
             "content": "Write a short paragraph of no more than 40 words to tell that now is " + role_name + "'s turn." +
                 "You should add the exact name of the role in the message, maintain a plain text format without '*'",
         })
+        
+        logger.debug(f"[Game {game.id}] Sending request to Azure OpenAI for role action message")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
 
@@ -109,13 +149,21 @@ class Narrator:
             message = message.replace("Ladylove", setting.alternative_role_names[role])
 
         # Broadcast story to all players
+        notify_start = time.time()
         notify_narrator_story(game.id, "all", "roleAction", message)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game.id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] Role action message generation completed in {total_duration:.2f}s")
 
     @staticmethod
     def gen_night_report(game: Game, setting: Setting, killed_players: list[str]):
         """
         Generate the final report for the current night
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting night report generation for killed players: {killed_players}")
 
         client = Narrator.get_openai_client()
 
@@ -147,21 +195,35 @@ class Narrator:
                 The players who died during the night are: {killed_players if killed_players else "nobody"}               
                 """
         })
+        
+        logger.debug(f"[Game {game.id}] Sending request to Azure OpenAI for night report")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
+        logger.debug(f"[Game {game.id}] Night report generated: {len(message)} characters")
 
         # Broadcast story to all players
+        notify_start = time.time()
         notify_narrator_story(game.id, "all", "nightReport", message)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game.id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] Night report generation completed in {total_duration:.2f}s")
 
     @staticmethod
     def gen_lynch_story(game: Game, setting: Setting, voted_player: str, lynch_success: bool):
         """
         Generate the piece of story for the lynch phase
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting lynch story generation for player: {voted_player}, success: {lynch_success}")
 
         client = Narrator.get_openai_client()
 
@@ -199,21 +261,35 @@ class Narrator:
                     Do not reveal secret roles.
                 """
         })
+        
+        logger.debug(f"[Game {game.id}] Sending request to Azure OpenAI for lynch story")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
+        logger.debug(f"[Game {game.id}] Lynch story generated: {len(message)} characters")
 
         # Broadcast story to all players
+        notify_start = time.time()
         notify_narrator_story(game.id, "all", "lynch", message)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game.id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] Lynch story generation completed in {total_duration:.2f}s")
 
     @staticmethod
     def gen_story_end(game: Game, setting: Setting, winners: list[str], reason: str):
         """
         Generate the conclusion of the story
         """
+        start_time = time.time()
+        logger.info(f"[Game {game.id}] Starting end story generation for winners: {winners}, reason: {reason}")
 
         client = Narrator.get_openai_client()
 
@@ -246,14 +322,26 @@ class Narrator:
                 End with a sense of closure—quiet (wolves won), solemn (villagers won), or funny (Madman won) depending on the winner.
             """
         })
+        
+        logger.debug(f"[Game {game.id}] Sending request to Azure OpenAI for end story")
+        api_start = time.time()
         response = client.chat.completions.create(
             model=Narrator.get_deployment_name(),
             messages=conversation
         )
+        api_duration = time.time() - api_start
+        logger.info(f"[Game {game.id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 
         message = response.choices[0].message.content
+        logger.debug(f"[Game {game.id}] End story generated: {len(message)} characters")
 
         # Broadcast story to all players
+        notify_start = time.time()
         notify_narrator_story(game.id, "all", "endGame", message)
+        notify_duration = time.time() - notify_start
+        logger.debug(f"[Game {game.id}] Broadcast notification sent in {notify_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"[Game {game.id}] End story generation completed in {total_duration:.2f}s")
 
         

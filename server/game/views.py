@@ -1,5 +1,7 @@
 import json
 import random
+import logging
+import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +14,8 @@ from .models import Game, Player, Role, Setting, RedisEventLog
 from .utils import get_players
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+
+logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateGameView(APIView):
@@ -69,18 +73,24 @@ class JoinGameView(APIView):
 class StartGameView(APIView):
 
     def post(self, request):
+        request_start = time.time()
+        logger.info("StartGameView POST request received")
+        
         start_data = json.loads(request.body)
         game_id = start_data.get("game_id")
         player_id = start_data.get("player_id")
+        logger.info(f"StartGameView: game_id={game_id}, player_id={player_id}")
 
         game = get_object_or_404(Game, id=game_id)
         players_in_lobby = get_players(game)
 
         # Check that game exists and contains player
         if not players_in_lobby.filter(id=player_id).exists():
+            logger.warning(f"[Game {game_id}] Player {player_id} not in game")
             return Response({"error": "Player not in game"}, status=status.HTTP_403_FORBIDDEN)
 
         # assign roles
+        logger.debug(f"[Game {game_id}] Assigning roles to {len(list(players_in_lobby))} players")
         role_pool = []
         for name, limit in game.available_roles.items():
             role_pool.extend([name] * limit)
@@ -95,11 +105,23 @@ class StartGameView(APIView):
             player.role = role
             player.role_name = role_name
             player.save()
+        logger.info(f"[Game {game_id}] Roles assigned successfully")
 
         # Broadcast that game started
+        notify_start = time.time()
+        logger.debug(f"[Game {game_id}] Broadcasting game started notification")
         notify_game_started(game.id)
+        logger.debug(f"[Game {game_id}] Broadcast completed in {time.time() - notify_start:.2f}s")
 
-        GameEngine.start_game(game)      
+        # Start game engine
+        engine_start = time.time()
+        logger.info(f"[Game {game_id}] Starting GameEngine")
+        GameEngine.start_game(game)
+        engine_duration = time.time() - engine_start
+        logger.info(f"[Game {game_id}] GameEngine.start_game completed in {engine_duration:.2f}s")
+
+        total_duration = time.time() - request_start
+        logger.info(f"[Game {game_id}] StartGameView POST completed in {total_duration:.2f}s")
 
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)
 

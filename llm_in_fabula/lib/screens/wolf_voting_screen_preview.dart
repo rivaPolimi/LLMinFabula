@@ -178,25 +178,6 @@ class _WolfVotingScreenPreviewState extends State<WolfVotingScreenPreview> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-<<<<<<< HEAD
-                    );
-                  },
-                ),
-              ),
-              SizedBox(
-                height: 48,
-                width: 250,
-                child: ElevatedButton(
-                  onPressed: _selectedPlayerId == null ? null : () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDCC8A0),
-                    foregroundColor: const Color(0xFF003943),
-                    disabledBackgroundColor:
-                        const Color(0xFFDCC8A0).withValues(alpha: 0.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-=======
->>>>>>> affa3c611239e252ebe63fc42eda97503f4c06e1
                     ),
                     child: const Text(
                       'confirm your victim',
