@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:llm_in_fabula/models/model.dart';
 import '../shared_widgets.dart';
+
+// Private player class for preview purposes to keep this screen self-contained
+class _Player {
+  final int id;
+  final String nickname;
+  final bool isDead;
+
+  const _Player({required this.id, required this.nickname, this.isDead = false});
+}
 
 class WolfVotingScreenPreview extends StatefulWidget {
   const WolfVotingScreenPreview({super.key});
@@ -15,27 +23,27 @@ class _WolfVotingScreenPreviewState extends State<WolfVotingScreenPreview> {
   late Timer _timer;
   int _remainingSeconds = 30;
 
-  final List<Player> _players = [
-    Player(id: 1, nickname: 'Matte', isDead: false),
-    Player(id: 2, nickname: 'Gio', isDead: false),
-    Player(id: 3, nickname: 'Luca', isDead: false),
-    Player(id: 4, nickname: 'Giuli', isDead: false),
-    Player(id: 5, nickname: 'Andre', isDead: false),
-    Player(id: 6, nickname: 'Lisa', isDead: false),
-    Player(id: 7, nickname: 'Mark', isDead: false),
-    Player(id: 8, nickname: 'Dave', isDead: false),
-    Player(id: 9, nickname: 'Sofia', isDead: true),
-    Player(id: 10, nickname: 'Fra', isDead: false),
-    Player(id: 11, nickname: 'Marta', isDead: false),
-    Player(id: 12, nickname: 'Pie', isDead: false),
-    Player(id: 13, nickname: 'Ste', isDead: false),
-    Player(id: 14, nickname: 'Sara', isDead: false),
-    Player(id: 15, nickname: 'Maya', isDead: false),
-    Player(id: 16, nickname: 'Ali', isDead: false),
-    Player(id: 17, nickname: 'Diego', isDead: false),
-    Player(id: 18, nickname: 'Albi', isDead: false),
-    Player(id: 19, nickname: 'Sonia', isDead: true),
-    Player(id: 20, nickname: 'Robi', isDead: false),
+  final List<_Player> _players = [
+    const _Player(id: 1, nickname: 'Matte', isDead: false),
+    const _Player(id: 2, nickname: 'Gio', isDead: false),
+    const _Player(id: 3, nickname: 'Luca', isDead: false),
+    const _Player(id: 4, nickname: 'Giuli', isDead: false),
+    const _Player(id: 5, nickname: 'Andre', isDead: false),
+    const _Player(id: 6, nickname: 'Lisa', isDead: false),
+    const _Player(id: 7, nickname: 'Mark', isDead: false),
+    const _Player(id: 8, nickname: 'Dave', isDead: false),
+    const _Player(id: 9, nickname: 'Sofia', isDead: true),
+    const _Player(id: 10, nickname: 'Fra', isDead: false),
+    const _Player(id: 11, nickname: 'Marta', isDead: false),
+    const _Player(id: 12, nickname: 'Pie', isDead: false),
+    const _Player(id: 13, nickname: 'Ste', isDead: false),
+    const _Player(id: 14, nickname: 'Sara', isDead: false),
+    const _Player(id: 15, nickname: 'Maya', isDead: false),
+    const _Player(id: 16, nickname: 'Ali', isDead: false),
+    const _Player(id: 17, nickname: 'Diego', isDead: false),
+    const _Player(id: 18, nickname: 'Albi', isDead: false),
+    const _Player(id: 19, nickname: 'Sonia', isDead: true),
+    const _Player(id: 20, nickname: 'Robi', isDead: false),
   ];
 
   @override
@@ -72,83 +80,105 @@ class _WolfVotingScreenPreviewState extends State<WolfVotingScreenPreview> {
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
 
     return GradientPage(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            children: [
-              AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                automaticallyImplyLeading: true,
-                iconTheme: const IconThemeData(color: Colors.white),
-              ),
-              Text(
-                '$minutes:$seconds',
-                style: const TextStyle(color: Colors.white, fontSize: 24),
-              ),
-              const SizedBox(height: 32),
-              Expanded(
-                child: GridView.builder(
-                  itemCount: _players.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemBuilder: (context, index) {
-                    final player = _players[index];
-                    final isSelected = player.id == _selectedPlayerId;
-                    final isVotable = !player.isDead;
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: Text(
+            '$minutes:$seconds',
+            style: const TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              children: [
+                Expanded(
+                  child: GridView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: _players.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 4,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final player = _players[index];
+                      final isSelected = player.id == _selectedPlayerId;
+                      final isVotable = !player.isDead;
 
-                    return GestureDetector(
-                      onTap: isVotable
-                          ? () {
-                              setState(() {
-                                _selectedPlayerId = player.id;
-                              });
-                            }
-                          : null,
-                      child: Opacity(
-                        opacity: isVotable ? 1.0 : 0.4,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF4B8B9A),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFFE4D2A6)
-                                      : const Color(0xFF5D4D33),
-                                  width: isSelected ? 3 : 2,
+                      return GestureDetector(
+                        onTap: isVotable
+                            ? () {
+                                setState(() {
+                                  _selectedPlayerId = player.id;
+                                });
+                              }
+                            : null,
+                        child: Opacity(
+                          opacity: isVotable ? 1.0 : 0.4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF4B8B9A),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFFE4D2A6)
+                                        : const Color(0xFF5D4D33),
+                                    width: isSelected ? 3 : 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Color(0xFF003943),
+                                  size: 26,
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.person,
-                                color: Color(0xFF003943),
-                                size: 40,
+                              const SizedBox(height: 4),
+                              Text(
+                                player.nickname,
+                                style: const TextStyle(
+                                  color: Color(0xFFDCC8A0),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              player.nickname,
-                              style: const TextStyle(
-                                color: Color(0xFFDCC8A0),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  width: 250,
+                  child: ElevatedButton(
+                    onPressed: _selectedPlayerId == null ? null : () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDCC8A0),
+                      foregroundColor: const Color(0xFF003943),
+                      disabledBackgroundColor:
+                          const Color(0xFFDCC8A0).withOpacity(0.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
                       ),
+<<<<<<< HEAD
                     );
                   },
                 ),
@@ -165,18 +195,20 @@ class _WolfVotingScreenPreviewState extends State<WolfVotingScreenPreview> {
                         const Color(0xFFDCC8A0).withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
+=======
+>>>>>>> affa3c611239e252ebe63fc42eda97503f4c06e1
                     ),
-                  ),
-                  child: const Text(
-                    'confirm your victim',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    child: const Text(
+                      'confirm your victim',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
