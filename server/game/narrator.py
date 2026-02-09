@@ -5,6 +5,7 @@ from .models import *
 from .utils import *
 from .notifications import notify_narrator_story
 from openai import AzureOpenAI
+from openai import APITimeoutError, APIConnectionError
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,9 @@ class Narrator:
         return AzureOpenAI(
             azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
             api_key=os.environ.get("AZURE_OPENAI_KEY"),
-            api_version=os.environ.get("AZURE_DEPLOYMENT_MODEL")
+            api_version=os.environ.get("AZURE_DEPLOYMENT_MODEL"),
+            timeout=60.0,  # 60 second timeout
+            max_retries=2  # Retry up to 2 times on timeout
         )
 
     @staticmethod
@@ -47,10 +50,19 @@ class Narrator:
         
         logger.debug(f"[Game {game_id}] Sending request to Azure OpenAI for introduction")
         api_start = time.time()
-        response = client.chat.completions.create(
-            model=Narrator.get_deployment_name(),
-            messages=conversation
-        )
+        try:
+            response = client.chat.completions.create(
+                model=Narrator.get_deployment_name(),
+                messages=conversation
+            )
+        except (APITimeoutError, APIConnectionError) as e:
+            logger.error(f"[Game {game_id}] Azure OpenAI timeout/connection error: {str(e)}")
+            # Send a default introduction if LLM fails
+            introduction = "The storyteller begins the tale of Lupus in Fabula. The roles have been assigned. Let the game begin..."
+            notify_narrator_story(game_id, "all", "introduction", introduction)
+            total_duration = time.time() - start_time
+            logger.warning(f"[Game {game_id}] Using fallback introduction due to API error")
+            return
         api_duration = time.time() - api_start
         logger.info(f"[Game {game_id}] Azure OpenAI API call completed in {api_duration:.2f}s")
 

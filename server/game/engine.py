@@ -37,6 +37,9 @@ class GameEngine:
         """
         start_time = time.time()
         logger.info(f"[Game {game.id}] Starting game initialization")
+        # Force flush to ensure log is written before potential timeout
+        for handler in logger.handlers:
+            handler.flush()
 
         transition_start = time.time()
         GameEngine._transition(game, "start_introduction")

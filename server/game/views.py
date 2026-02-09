@@ -2,6 +2,7 @@ import json
 import random
 import logging
 import time
+from threading import Thread
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -113,15 +114,13 @@ class StartGameView(APIView):
         notify_game_started(game.id)
         logger.debug(f"[Game {game_id}] Broadcast completed in {time.time() - notify_start:.2f}s")
 
-        # Start game engine
-        engine_start = time.time()
-        logger.info(f"[Game {game_id}] Starting GameEngine")
-        GameEngine.start_game(game)
-        engine_duration = time.time() - engine_start
-        logger.info(f"[Game {game_id}] GameEngine.start_game completed in {engine_duration:.2f}s")
+        # Start game engine in background thread to avoid timeout
+        logger.info(f"[Game {game_id}] Starting GameEngine in background thread")
+        game_thread = Thread(target=GameEngine.start_game, args=(game,), daemon=True)
+        game_thread.start()
 
         total_duration = time.time() - request_start
-        logger.info(f"[Game {game_id}] StartGameView POST completed in {total_duration:.2f}s")
+        logger.info(f"[Game {game_id}] StartGameView POST completed in {total_duration:.2f}s (game engine running in background)")
 
         return Response({"detail": "Game started"}, status=status.HTTP_200_OK)
 

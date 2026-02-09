@@ -92,8 +92,8 @@ async def notify_updated_votes(game_id: int, poll: Poll, tally: Counter):
     # Acknowledge all the players in the poll of the vote.
     channel_layer = get_channel_layer()
     
-    # Convert tally to use player IDs as keys for JSON serialization
-    tally_data = {player.id: count for player, count in tally.items()} if tally else {}
+    # Convert tally to use player IDs as string keys for JSON serialization (Channels requires string keys)
+    tally_data = {str(player.id): count for player, count in tally.items()} if tally else {}
 
     await channel_layer.group_send(
         f"game_{game_id}_{poll.role}",
