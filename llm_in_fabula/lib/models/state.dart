@@ -447,34 +447,3 @@ class GameState extends ChangeNotifier{
     notifyListeners();
   }
 }
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/routing.py", line 48, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/sessions.py", line 44, in __call__
-    return await self.inner(dict(scope, cookies=cookies), receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/sessions.py", line 261, in __call__
-    return await self.inner(wrapper.scope, receive, wrapper.send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/auth.py", line 185, in __call__
-    return await super().__call__(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/middleware.py", line 24, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/routing.py", line 118, in __call__
-    return await application(
-           ^^^^^^^^^^^^^^^^^^
-    ...<10 lines>...
-    )
-    ^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/consumer.py", line 95, in app
-    return await consumer(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/consumer.py", line 58, in __call__
-    await await_many_dispatch(
-        [receive, self.channel_receive], self.dispatch
-    )
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/channels/utils.py", line 57, in await_many_dispatch
-    await task
-ValueError: int is not allowed for map key when strict_map_key=True
