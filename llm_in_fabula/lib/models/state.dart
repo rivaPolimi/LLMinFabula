@@ -412,38 +412,4 @@ class GameState extends ChangeNotifier{
   void _onActionOutcome(String name, String outcome) {
     mysticText = '$name is a $outcome';
   }
-
-  //TODO: RIMUOVI
-  //diego: added this method to add fake players to the lobby
-  void addFakePlayersForTesting(int totalPlayers) {
-    if (_game == null) return;
-
-    final List<String> fakeNames = [
-      'Sirius', 'Remus', 'Albus', 'Minerva', 'Draco', 'Luna', 'Ginny',
-      'Severus', 'Rubeus', 'Harry', 'Ron', 'Hermione', 'Neville'
-    ];
-
-    int currentPlayersCount = _game!.players.length;
-    int playersToAdd = totalPlayers - currentPlayersCount;
-
-    if (playersToAdd <= 0) return;
-
-    for (int i = 0; i < playersToAdd; i++) {
-      final name = (i < fakeNames.length) ? fakeNames[i] : 'Bot ${i + 1}';
-      // Usiamo un ID negativo per distinguerli facilmente dai giocatori reali
-      final fakePlayer = Player(
-        id: -1 - i,
-        nickname: name,
-        isAdmin: false,
-        isDead: false,
-      );
-      // Assign a default role to prevent initialization errors
-      fakePlayer.roleName = 'villager';
-      fakePlayer.roleDescription = 'A simple villager.';
-      _game!.players.add(fakePlayer);
-    }
-
-
-    notifyListeners();
-  }
 }

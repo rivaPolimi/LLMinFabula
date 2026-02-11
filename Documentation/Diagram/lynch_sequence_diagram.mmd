@@ -31,4 +31,4 @@ sequenceDiagram
     Bot -->>- Server: lynch_report
     Server ->>+ GameGroup: notify_narrator_story(lynch_report)
     GameGroup -->>- Player: WS Event: lynch_report
-    Server ->> Timer: start (30s)
+    Server ->> Timer: start (60s)

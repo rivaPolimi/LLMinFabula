@@ -53,28 +53,6 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
     _numberOfWolves = widget.numPlayers ~/ 5;
     _numberOfWolves = _numberOfWolves < 1 ? 1 : _numberOfWolves;
     _numberOfVillagers = widget.numPlayers - _numberOfWolves;
-
-    // Children setting: automatically select guard and seer roles
-    if(widget.settingName == 'Children') {
-      // Find indices of 'guard' and 'seer' in _secondaryRoles
-      final guardIndex = _secondaryRoles.indexOf('guard');
-      final seerIndex = _secondaryRoles.indexOf('seer');
-      
-      // Add them to selected indices and reduce villagers
-      if (guardIndex != -1) {
-        _selectedSecondaryIndices.add(guardIndex);
-        _numberOfVillagers--;
-      }
-      if (seerIndex != -1) {
-        _selectedSecondaryIndices.add(seerIndex);
-        _numberOfVillagers--;
-      }
-      
-      // Automatically create the game after build completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _createGame();
-      });
-    }
   }
 
   Future<void> _createGame() async {
@@ -304,181 +282,186 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
 
                 const SizedBox(height: 25),
 
-                // --- SECONDARY ROLES GRID ---
-                const Text(
-                  'Choose secondary roles',
-                  style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
+                if(widget.settingName != 'Children')
+                  Column(
+                    children: [
+                      // --- SECONDARY ROLES GRID ---
+                      const Text(
+                        'Choose secondary roles',
+                        style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
 
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 45),
-                  itemCount: _secondaryRoles.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 1,
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 45),
+                        itemCount: _secondaryRoles.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 1,
+                        ),
+                        itemBuilder: (context, index) {
+                          const double gridBtnSize = 90.0;
+                          final String roleKey = _secondaryRoles[index];
+
+                          return Center(
+                            child: RoleButton(
+                              size: gridBtnSize,
+                              roleKey: roleKey,
+                              theme: theme,
+                              isSelected: _selectedSecondaryIndices.contains(index),
+                              onTap: () => _toggleSecondarySelection(index),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // --- WOLF COUNTER ---
+                      Column(
+                        children: [
+                          Text(
+                            'Number Of ${theme.getRoleName('wolf')}: $_numberOfWolves',
+                            style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: 160,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF003943),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black/*.withOpacity(0.1)*/,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                      onTap: () {
+                                        if (_numberOfWolves > 1) {
+                                          setState(() {
+                                            _numberOfWolves--;
+                                          });
+                                        }
+                                      },
+                                      child: const Center(
+                                        child: Icon(Icons.remove, color: Colors.white, size: 28),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 1.5,
+                                  color: Colors.white70,
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                ),
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                                      onTap: () {
+                                        setState(() {
+                                          _numberOfWolves++;
+                                        });
+                                      },
+                                      child: const Center(
+                                        child: Icon(Icons.add, color: Colors.white, size: 28),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // --- VILLAGER COUNTER ---
+                      Column(
+                        children: [
+                          Text(
+                            'Number Of ${theme.getRoleName('villager')}: $_numberOfVillagers',
+                            style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: 160,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF003943),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black/*.withOpacity(0.1)*/,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                      onTap: () {
+                                        if (_numberOfVillagers > 1) {
+                                          setState(() {
+                                            _numberOfVillagers--;
+                                          });
+                                        }
+                                      },
+                                      child: const Center(
+                                        child: Icon(Icons.remove, color: Colors.white, size: 28),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 1.5,
+                                  color: Colors.white70,
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                ),
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                                      onTap: () {
+                                        setState(() {
+                                          _numberOfVillagers++;
+                                        });
+                                      },
+                                      child: const Center(
+                                        child: Icon(Icons.add, color: Colors.white, size: 28),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  itemBuilder: (context, index) {
-                    const double gridBtnSize = 90.0;
-                    final String roleKey = _secondaryRoles[index];
-
-                    return Center(
-                      child: RoleButton(
-                        size: gridBtnSize,
-                        roleKey: roleKey,
-                        theme: theme,
-                        isSelected: _selectedSecondaryIndices.contains(index),
-                        onTap: () => _toggleSecondarySelection(index),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 30),
-
-                // --- WOLF COUNTER ---
-                Column(
-                  children: [
-                    Text(
-                      'Number Of ${theme.getRoleName('wolf')}: $_numberOfWolves',
-                      style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: 160,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF003943),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black/*.withOpacity(0.1)*/,
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-                                onTap: () {
-                                  if (_numberOfWolves > 1) {
-                                    setState(() {
-                                      _numberOfWolves--;
-                                    });
-                                  }
-                                },
-                                child: const Center(
-                                  child: Icon(Icons.remove, color: Colors.white, size: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 1.5,
-                            color: Colors.white70,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                          Expanded(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
-                                onTap: () {
-                                  setState(() {
-                                    _numberOfWolves++;
-                                  });
-                                },
-                                child: const Center(
-                                  child: Icon(Icons.add, color: Colors.white, size: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // --- VILLAGER COUNTER ---
-                Column(
-                  children: [
-                    Text(
-                      'Number Of ${theme.getRoleName('villager')}: $_numberOfVillagers',
-                      style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: 160,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF003943),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black/*.withOpacity(0.1)*/,
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-                                onTap: () {
-                                  if (_numberOfVillagers > 1) {
-                                    setState(() {
-                                      _numberOfVillagers--;
-                                    });
-                                  }
-                                },
-                                child: const Center(
-                                  child: Icon(Icons.remove, color: Colors.white, size: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 1.5,
-                            color: Colors.white70,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                          Expanded(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
-                                onTap: () {
-                                  setState(() {
-                                    _numberOfVillagers++;
-                                  });
-                                },
-                                child: const Center(
-                                  child: Icon(Icons.add, color: Colors.white, size: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
 
                 const SizedBox(height: 40),
 

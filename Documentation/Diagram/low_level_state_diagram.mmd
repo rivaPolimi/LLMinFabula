@@ -4,20 +4,22 @@ stateDiagram-v2
         state "Role Reveal" as role
         state "Introduction" as intro
         [*] --> Lobby
-        Lobby --> role
-        role --> intro
-        intro --> [*]
+        Lobby --> intro
+        intro --> role
+        role --> [*]
     }
 
     state Night {
+        state "Night Introduction" as night_intro
         state "Night" as night
         state "Role Play" as action
         state "Night Report" as report
 
-        [*] --> night
+        [*] --> night_intro
+        night_intro --> night
         night --> action
         action --> night
-        night --> report: "if each role played"
+        night --> report: "if each role<br> played"
         report --> [*]
     }
 

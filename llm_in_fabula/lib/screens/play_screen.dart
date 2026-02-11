@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:llm_in_fabula/models/state.dart';
-import 'package:llm_in_fabula/screens/end_game_screen.dart';
-import 'package:llm_in_fabula/screens/lynch_results_screen_preview.dart';
-import 'package:llm_in_fabula/screens/lynch_voting_screen_preview.dart';
-import 'package:llm_in_fabula/screens/night_action_prompt_screen_preview.dart';
-import 'package:llm_in_fabula/screens/player_death_screen_preview.dart';
-import 'package:llm_in_fabula/screens/role_screen_preview.dart';
-import 'package:llm_in_fabula/screens/wolf_voting_screen_preview.dart';
 import 'package:provider/provider.dart';
 
 // 1.5) PLAY SCREEN (schermata centrale 'play with friends')
@@ -63,92 +56,6 @@ class PlayScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // Aggiungi il pulsante di test qui
-            //Positioned(
-            //  top: 50,
-            //  right: 20,
-            //  child: Column(
-            //    children: [
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const RoleScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Role'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const WolfVotingScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Wolf'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const LynchVotingScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Lynch'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const PlayerDeathScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Death'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const LynchResultsScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Results'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const NightActionPromptScreenPreview(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test Night Action'),
-            //      ),
-            //      ElevatedButton(
-            //        onPressed: () {
-            //          Navigator.push(
-            //            context,
-            //            MaterialPageRoute(
-            //              builder: (context) => const EndGameScreen(),
-            //            ),
-            //          );
-            //        },
-            //        child: const Text('Test End Game'),
-            //      ),
-            //    ],
-            //  )
-            //)
           ],
         ),
       ),

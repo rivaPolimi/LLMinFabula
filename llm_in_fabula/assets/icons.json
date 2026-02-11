@@ -31,6 +31,8 @@
     "perimeter_guard": { "material": "dangerous", "custom": "assets/icons/perimeter_guard.png" },
     "zombie": { "material": "dangerous", "custom": "assets/icons/zombie.png" },
     "headstone": { "material": "church", "custom": "assets/icons/bara.png" },
-    "sign": { "material": "block", "custom": "assets/icons/banned_sign.png" }
+    "sign": { "material": "block", "custom": "assets/icons/banned_sign.png" },
+    "baby_wolf": {"material": "pets", "custom": "assets/icons/babyWolf.png"},
+    "kid": {"material": "person", "custom": "assets/icons/child.png"}
   }
 }

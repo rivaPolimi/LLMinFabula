@@ -7,7 +7,7 @@
         "villager": {
             "name": "Villager",
             "description": "Has no special powers, only discussion and voting.",
-            "icon": "villager"
+            "icon": "kid"
         },
         "madman": {
             "name": "Madman",
@@ -42,7 +42,7 @@
         "wolf": {
             "name": "Wolf",
             "description": "Each night chooses a villager to eliminate.",
-            "icon": "wolf"
+            "icon": "baby_wolf"
         }
       },
       "eliminated_icon": "sign"

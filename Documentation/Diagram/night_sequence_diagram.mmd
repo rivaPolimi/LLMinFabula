@@ -37,7 +37,7 @@ sequenceDiagram
             Server ->>+ GameGroup: notify_narrator_story(role_message)
             GameGroup -->>- Player: WS Event: role_message
         end
-        Server ->> Timer: start (45s)
+        Server ->> Timer: start (60s)
 
         Player ->> Player: read(role_message)
 
