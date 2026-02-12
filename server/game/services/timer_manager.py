@@ -3,10 +3,7 @@ In-memory timer manager using asyncio.
 Replaces Redis keyspace notifications with a simple background task.
 """
 import asyncio
-import logging
 from typing import Callable, Coroutine
-
-logger = logging.getLogger("redis_events")
 
 # Global registry of pending timers
 _timers: dict[str, asyncio.Task] = {}
@@ -40,16 +37,14 @@ async def schedule_timer(
         # Cancel any existing timer with this key
         if key in _timers:
             _timers[key].cancel()
-            logger.info("Cancelled existing timer: %s", key)
         _callbacks[key] = callback
     
     async def timer_task():
         try:
             await asyncio.sleep(delay_seconds)
-            logger.info("Timer fired: %s (after %ss)", key, delay_seconds)
             await callback(key)
         except asyncio.CancelledError:
-            logger.info("Timer cancelled: %s", key)
+            pass
         finally:
             lock = await _get_lock()
             async with lock:
@@ -60,7 +55,6 @@ async def schedule_timer(
     async with lock:
         _timers[key] = task
     
-    logger.info("Scheduled timer: %s expires in %ss", key, delay_seconds)
 
 def cancel_timer(key: str) -> bool:
     """
@@ -73,7 +67,6 @@ def cancel_timer(key: str) -> bool:
         callback = _callbacks.get(key)
 
         if not task:
-            logger.warning("Timer not found for cancellation: %s", key)
             # Still try to fire callback if present
             if callback:
                 loop = asyncio.get_event_loop()
@@ -83,7 +76,6 @@ def cancel_timer(key: str) -> bool:
 
         loop = task.get_loop()
         if loop.is_closed():
-            logger.warning("Event loop is closed, cannot cancel timer: %s", key)
             return False
 
         async def async_cancel():
@@ -93,9 +85,7 @@ def cancel_timer(key: str) -> bool:
                 cb = _callbacks.pop(key, None)
                 if existing:
                     existing.cancel()
-                    logger.info("Cancelled timer: %s", key)
                     return cb
-                logger.warning("Timer not found during cancellation: %s", key)
                 return cb
 
         future = asyncio.run_coroutine_threadsafe(async_cancel(), loop)
@@ -104,7 +94,6 @@ def cancel_timer(key: str) -> bool:
             asyncio.run_coroutine_threadsafe(cb(key), loop)
         return True
     except Exception as e:
-        logger.error("Error cancelling timer %s: %s", key, e)
         return False
 
 
@@ -122,4 +111,3 @@ async def cleanup_timers():
             task.cancel()
         _timers.clear()
         _callbacks.clear()
-    logger.info("Cleaned up all timers")

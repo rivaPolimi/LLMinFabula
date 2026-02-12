@@ -1,13 +1,10 @@
-import logging
 import asyncio
 import threading
 from collections import Counter
-from ..models import Poll, Vote, Player, Game, States
+from ..models import Poll, Vote, Player, Game
 from channels.db import database_sync_to_async
 from .timer_manager import schedule_timer
 from ..db_utils import retry_on_db_lock_async
-
-logger = logging.getLogger("redis_events")
 
 POLL_EXTRA_TIME = 10
 
@@ -36,7 +33,6 @@ def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
                 
                 thread = threading.Thread(target=run_loop, daemon=True, name="asyncio-event-loop-poll")
                 thread.start()
-                logger.info("Started background asyncio event loop thread for polls")
             
             return _event_loop
 
@@ -69,11 +65,8 @@ def start_poll_timer(poll: Poll):
     try:
         loop = _get_or_create_event_loop()
         asyncio.run_coroutine_threadsafe(schedule(), loop)
-    except Exception as e:
-        logger.error("Error scheduling poll timer: %s", e)
+    except Exception:
         return
-    
-    logger.info("Starting poll timer: game_id=%s poll_id=%s duration=%ss", poll.game_id, poll.id, duration, extra={'game_id': poll.game_id, 'poll_id': poll.id})
 
 
 async def _on_poll_expire(key: str):
@@ -84,18 +77,15 @@ async def _on_poll_expire(key: str):
         # Parse key: poll:pollId_gameId
         parts = key.replace('poll:', '').rsplit('_', 1)
         if len(parts) != 2:
-            logger.error("Invalid poll key format: %s", key)
             return
         
         poll_id_str, game_id_str = parts
         poll_id = int(poll_id_str)
         game_id = int(game_id_str)
         
-        logger.info("Poll timer expired: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
-        
         await end_poll(poll_id, game_id)
-    except Exception as e:
-        logger.exception("Error handling poll expiry for key %s: %s", key, e)
+    except Exception:
+        return
 
 
 async def end_poll(poll_id: int, game_id: int):
@@ -110,22 +100,16 @@ async def end_poll(poll_id: int, game_id: int):
         poll = await retry_on_db_lock_async(get_poll)
         game = poll.game
     except Poll.DoesNotExist:
-        logger.error("Poll not found: poll_id=%s game_id=%s", poll_id, game_id)
         return
-    except Exception as e:
-        logger.exception("Error fetching poll: %s", e)
+    except Exception:
         return
     
     if poll.expired:
-        logger.info("Poll already expired: game_id=%s poll_id=%s", game_id, poll_id)
         return
     
     from ..engine import GameEngine
     
-    logger.info("Poll timer expired: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
-    
     if poll.expired:
-        logger.info("Poll already expired: game_id=%s poll_id=%s", game_id, poll_id)
         return
     
     # Mark as expired and handle (with retry)
@@ -134,17 +118,15 @@ async def end_poll(poll_id: int, game_id: int):
         poll.save()
         
         if poll.role == "all":
-            logger.info("Ending discussion poll: game_id=%s poll_id=%s", game_id, poll_id, extra={'game_id': game_id, 'poll_id': poll_id})
             GameEngine.end_discussion(game, poll)
         else:
-            logger.info("Ending role poll: game_id=%s poll_id=%s role=%s", game_id, poll_id, poll.role, extra={'game_id': game_id, 'poll_id': poll_id})
             player = poll.get_voter()
             GameEngine.role_action(game, player, None, poll)
     
     try:
         await retry_on_db_lock_async(mark_expired_and_transition)
     except Exception as e:
-        logger.exception("Error ending poll: %s", e)
+        return
 
 
 async def record_vote(poll: Poll, voter_id: int, target_id: int):
@@ -224,24 +206,20 @@ async def end_poll_by_id(poll_id: int, player: Player = None):
     try:
         poll = await database_sync_to_async(Poll.objects.select_related("game").get)(id=poll_id)
     except Poll.DoesNotExist:
-        logger.info("Poll expiry ignored: poll_id=%s not found", poll_id)
         return
     
     # If poll already finished do not count the vote
     if poll.expired:
-        logger.info("Poll already expired: game_id=%s poll_id=%s", poll.game_id, poll.id)
         return
 
     # Cancel the poll timer since everyone has voted
     poll_key = f"poll:{poll.id}_{poll.game_id}"
     timer_cancelled = cancel_timer(poll_key)
     if timer_cancelled:
-        logger.info("Poll timer cancelled (everyone voted): game_id=%s poll_id=%s", poll.game_id, poll.id, extra={'game_id': poll.game_id, 'poll_id': poll.id})
         # Callback will execute end_poll immediately
         return
 
     # Fallback: if no timer existed, end now
-    logger.info("Poll timer not found; ending directly: game_id=%s poll_id=%s", poll.game_id, poll.id)
     return await end_poll(poll.id, poll.game_id)
 
 def clear_poll(poll: Poll):

@@ -1,35 +1,6 @@
 from django.db import models
 from django.utils.module_loading import import_string
 
-class RedisEventLog(models.Model):
-    """Store Redis event logs for admin viewing."""
-    
-    LOG_LEVELS = [
-        ('DEBUG', 'Debug'),
-        ('INFO', 'Info'),
-        ('WARNING', 'Warning'),
-        ('ERROR', 'Error'),
-        ('CRITICAL', 'Critical'),
-    ]
-    
-    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
-    level = models.CharField(max_length=10, choices=LOG_LEVELS, default='INFO', db_index=True)
-    logger_name = models.CharField(max_length=100, default='redis_events')
-    message = models.TextField()
-    
-    # Optional context fields
-    game_id = models.IntegerField(null=True, blank=True, db_index=True)
-    poll_id = models.IntegerField(null=True, blank=True)
-    phase = models.CharField(max_length=50, null=True, blank=True)
-    
-    class Meta:
-        ordering = ['-timestamp']
-        verbose_name = 'Redis Event Log'
-        verbose_name_plural = 'Redis Event Logs'
-    
-    def __str__(self):
-        return f"{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')} [{self.level}] {self.message[:50]}"
-
 class States(models.TextChoices):
     LOBBY = "lobby"
     INTRODUCTION = "introduction"

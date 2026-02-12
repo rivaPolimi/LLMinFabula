@@ -1,11 +1,8 @@
-import logging
 import asyncio
 import threading
 from ..models import Game
 from .timer_manager import schedule_timer
 from ..db_utils import retry_on_db_lock_async
-
-logger = logging.getLogger("redis_events")
 
 # Global reference to the background event loop
 _event_loop: asyncio.AbstractEventLoop | None = None
@@ -32,7 +29,6 @@ def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
                 
                 thread = threading.Thread(target=run_loop, daemon=True, name="asyncio-event-loop")
                 thread.start()
-                logger.info("Started background asyncio event loop thread")
             
             return _event_loop
 
@@ -50,11 +46,8 @@ def start_phase_timer(game_id: int, phase_name: str, duration: int):
     try:
         loop = _get_or_create_event_loop()
         asyncio.run_coroutine_threadsafe(schedule(), loop)
-    except Exception as e:
-        logger.error("Error scheduling phase timer: %s", e)
+    except Exception:
         return
-    
-    logger.info("Starting phase timer: game_id=%s phase=%s duration=%ss", game_id, phase_name, duration, extra={'game_id': game_id, 'phase': phase_name})
 
 
 async def _on_phase_expire(key: str):
@@ -65,17 +58,14 @@ async def _on_phase_expire(key: str):
         # Parse key: phase:phaseName_gameId
         parts = key.replace('phase:', '').rsplit('_', 1)
         if len(parts) != 2:
-            logger.error("Invalid phase key format: %s", key)
             return
         
         phase_name, game_id_str = parts
         game_id = int(game_id_str)
         
-        logger.info("Phase timer expired: game_id=%s phase=%s", game_id, phase_name, extra={'game_id': game_id, 'phase': phase_name})
-        
         await end_phase(phase_name, game_id)
-    except Exception as e:
-        logger.exception("Error handling phase expiry for key %s: %s", key, e)
+    except Exception:
+        return
 
 
 async def end_phase(phase_name: str, game_id: int):
@@ -89,15 +79,12 @@ async def end_phase(phase_name: str, game_id: int):
         
         game = await retry_on_db_lock_async(get_game)
     except Game.DoesNotExist:
-        logger.error("Game not found: game_id=%s", game_id)
         return
     except Exception as e:
-        logger.exception("Error fetching game: %s", e)
         return
 
     # Verify we're in the right phase
     if game.state != phase_name:
-        logger.info("Ignoring phase expiry: game_id=%s expected=%s actual=%s", game_id, phase_name, game.state)
         return
     
     from ..engine import GameEngine
@@ -113,10 +100,9 @@ async def end_phase(phase_name: str, game_id: int):
     
     handler = transitions.get(phase_name)
     if handler:
-        logger.info("Executing phase transition: phase=%s (game_id=%s)", phase_name, game_id, extra={'game_id': game_id, 'phase': phase_name})
         try:
             await retry_on_db_lock_async(handler, game)
-        except Exception as e:
-            logger.exception("Error executing phase handler: %s", e)
+        except Exception:
+            return
     else:
-        logger.warning("No handler for phase: %s", phase_name)
+        return

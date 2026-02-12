@@ -1,13 +1,10 @@
 """
 Database utility functions for handling SQLite locking issues.
 """
-import logging
 import time
 from functools import wraps
 from django.db import transaction
 from django.db.utils import OperationalError
-
-logger = logging.getLogger("redis_events")
 
 # Maximum retries for database operations
 MAX_RETRIES = 5
@@ -33,10 +30,6 @@ def retry_on_db_lock(max_retries=MAX_RETRIES):
                     if "database is locked" in str(e):
                         last_exception = e
                         if attempt < max_retries - 1:
-                            logger.warning(
-                                "Database locked, retrying in %.2fs (attempt %d/%d)",
-                                delay, attempt + 1, max_retries
-                            )
                             time.sleep(delay)
                             delay = min(delay * 2, 1.0)  # Cap at 1 second
                         continue
@@ -44,7 +37,6 @@ def retry_on_db_lock(max_retries=MAX_RETRIES):
                         raise
             
             # If we got here, we've exhausted retries
-            logger.error("Database locked after %d retries", max_retries)
             raise last_exception
         
         return wrapper
@@ -77,10 +69,6 @@ async def retry_on_db_lock_async(func, *args, max_retries=MAX_RETRIES, **kwargs)
             if "database is locked" in str(e):
                 last_exception = e
                 if attempt < max_retries - 1:
-                    logger.warning(
-                        "Database locked, retrying in %.2fs (attempt %d/%d)",
-                        delay, attempt + 1, max_retries
-                    )
                     await asyncio.sleep(delay)
                     delay = min(delay * 2, 1.0)
                     
@@ -96,5 +84,4 @@ async def retry_on_db_lock_async(func, *args, max_retries=MAX_RETRIES, **kwargs)
             else:
                 raise
     
-    logger.error("Database locked after %d retries", max_retries)
     raise last_exception

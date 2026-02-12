@@ -52,10 +52,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         self.close()
 
     async def receive_json(self, content):
-        import logging
-        logger = logging.getLogger("redis_events")
-        logger.info("WebSocket message received: type=%s content=%s", content.get("type"), content)
-        
         msg_type = content.get("type")
 
         if msg_type == "vote":
@@ -244,12 +240,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         Handle phase acknowledgment from client.
         Cancel the server-side timer when client acknowledges it received the phase start.
         """
-        import logging
         from .services.timer_manager import cancel_timer
-        
-        logger = logging.getLogger("redis_events")
-
-        logger.info("Received phase ACK from client: game_id=%s content=%s", self.game_id, content, extra={'game_id': self.game_id})
         
         phase_name = content.get("phase")
         
@@ -267,20 +258,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         cancelled = cancel_timer(key)
         
         if cancelled:
-            logger.info(
-                "Phase timer cancelled by client ACK: game_id=%s phase=%s",
-                self.game_id, phase_name,
-                extra={'game_id': self.game_id, 'phase': phase_name}
-            )
             await self.send_json({
                 "type": "ack_success",
                 "message": f"Timer cancelled for phase: {phase_name}"
             })
         else:
-            logger.warning(
-                "Failed to cancel phase timer: game_id=%s phase=%s",
-                self.game_id, phase_name
-            )
             await self.send_json({
                 "type": "ack_warning",
                 "message": f"Timer not found for phase: {phase_name}"

@@ -2,14 +2,10 @@
 Helper functions for game and lobby management
 """
 
-import logging
-
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import *
 from .notifications import notify_player_eliminated, notify_game_end
-
-logger = logging.getLogger("redis_events")
 
     
 def get_players(game):
@@ -69,12 +65,9 @@ def check_win(game: Game):
     """
     Check if somebody as won
     """
-    logger.info("Lynch target: %s", game.lynch_target, extra={'game_id': game.id})
     # Madman wins if lynched
     if game.lynch_target:
-        logger.info("🎭 Lynch target role: %s", game.lynch_target.role_name if game.lynch_target.role_name else "None", extra={'game_id': game.id})
         if game.lynch_target.role_name == "madman":
-            logger.info("🎉 MADMAN WINS! Madman was lynched", extra={'game_id': game.id})
             return True, [game.lynch_target]
     
     wolves = list(game.get_active_players().filter(role__name = "wolf"))

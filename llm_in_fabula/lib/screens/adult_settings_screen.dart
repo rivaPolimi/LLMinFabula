@@ -174,10 +174,19 @@ class _AdultSettingsScreenState extends State<AdultSettingsScreen> {
                         alignment: Alignment.centerRight,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RoleTutorialsScreen(themeOverride: theme,),
+                            showDialog<void>(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (_) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                insetPadding: const EdgeInsets.all(16),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: SizedBox(
+                                    height: MediaQuery.of(context).size.height * 0.85,
+                                    child: RoleTutorialsScreen(themeOverride: theme),
+                                  ),
+                                ),
                               ),
                             );
                           },

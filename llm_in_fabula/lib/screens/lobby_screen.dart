@@ -13,7 +13,6 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   bool _isLoading = false;
-  bool _showRoles = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +42,21 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           padding: const EdgeInsets.only(top: 16.0, right: 16.0),
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              setState(() {
-                                _showRoles = true;
-                              });
+                              showDialog<void>(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (_) => Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  insetPadding: const EdgeInsets.all(16),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: SizedBox(
+                                      height: MediaQuery.of(context).size.height * 0.85,
+                                      child: const RoleTutorialsScreen(),
+                                    ),
+                                  ),
+                                ),
+                              );
                             },
                             icon: const Icon(Icons.menu, size: 16),
                             label: const Text('Roles'),
@@ -130,7 +141,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           width: 200,
                           child: ElevatedButton(
                             onPressed: !_isLoading && gameState.player!.isAdmin &&
-                                    gameState.game!.players.length >= 4
+                                    gameState.game!.players.length >= 5
                                   ? () {
                                     setState(() {
                                       _isLoading = true;
@@ -182,49 +193,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ),
-            // --- ROLES OVERLAY ---
-            if (_showRoles)
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showRoles = false;
-                  });
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.black54,
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () {}, // Prevent tap-through
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          maxWidth: 600,
-                          maxHeight: 700,
-                        ),
-                        margin: const EdgeInsets.all(20),
-                        child: Stack(
-                          children: [
-                            const RoleTutorialsScreen(),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: IconButton(
-                                icon: const Icon(Icons.close, color: Colors.white),
-                                onPressed: () {
-                                  setState(() {
-                                    _showRoles = false;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),

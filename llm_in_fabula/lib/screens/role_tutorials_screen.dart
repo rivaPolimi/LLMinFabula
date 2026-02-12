@@ -11,7 +11,12 @@ class RoleTutorialsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = themeOverride ?? context.watch<GameState>().theme;
-    final roles = GameThemes.getTheme('classic').roles.entries.toList();
+    final allRoles = GameThemes.getTheme('classic').roles.entries.toList();
+    final roles = theme.settingName.toLowerCase() == 'children'
+      ? allRoles
+        .where((role) => role.key == 'wolf' || role.key == 'villager')
+        .toList()
+      : allRoles;
 
     return Scaffold(
       backgroundColor: const Color(0xFF003943),

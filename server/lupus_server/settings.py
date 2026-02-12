@@ -174,39 +174,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'db_log': {
-            'level': 'INFO',
-            'class': 'game.logging_handlers.DatabaseLogHandler',
-        },
-    },
-    'loggers': {
-        # Dedicated logger for Redis keyspace events and timers
-        'redis_events': {
-            'handlers': ['console', 'db_log'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        # Surface Django logs too (optional)
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
-}
